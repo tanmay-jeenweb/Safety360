@@ -19,6 +19,9 @@ import CategoryMaster from "./pages/admin/category/CategoryMaster";
 import TrainingModuleMaster from "./pages/admin/training/TrainingModuleMaster";
 import CreateTrainingModule from "./pages/admin/training/CreateTrainingModule";
 import DepartmentMaster from "./pages/admin/department/DepartmentMaster";
+import QuestionBankMaster from "./pages/admin/questions/QuestionBankMaster";
+import CreateQuestion from "./pages/admin/questions/CreateQuestion";
+import QuestionPaperMaster from "./pages/admin/questions/QuestionPaperMaster";
 import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
@@ -100,6 +103,20 @@ export default function AppRoutes() {
                 <Route path="/admin/departments" element={<DepartmentMaster />} />
             </Route>
 
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_bank" requiredAction="read" />}>
+                <Route path="/admin/question-bank" element={<QuestionBankMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_bank" requiredAction="write" />}>
+                <Route path="/admin/question-bank/create" element={<CreateQuestion />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_bank" requiredAction="update" />}>
+                <Route path="/admin/question-bank/edit/:id" element={<CreateQuestion />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" />}>
+                <Route path="/admin/question-paper" element={<QuestionPaperMaster />} />
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>
                 <Route path="/admin/employees" element={<EmployeeMaster />} />
             </Route>
