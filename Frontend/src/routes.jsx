@@ -15,6 +15,7 @@ import RoleMaster from "./pages/admin/role/RoleMaster";
 import TrainerMaster from "./pages/admin/trainer/TrainerMaster";
 import CertificateTemplateMaster from "./pages/admin/certificate/CertificateTemplateMaster";
 import RatingScaleMaster from "./pages/admin/rating/RatingScaleMaster";
+import DepartmentMaster from "./pages/admin/department/DepartmentMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -73,6 +74,10 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="rating_scale_master" requiredAction="read" />}>
                 <Route path="/admin/rating-scales" element={<RatingScaleMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="department_master" requiredAction="read" />}>
+                <Route path="/admin/departments" element={<DepartmentMaster />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />
