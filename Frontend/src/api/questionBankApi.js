@@ -19,3 +19,8 @@ export const updateQuestion = async (id, data) => {
 export const deleteQuestion = async (id) => {
     return apiClient.delete(`/question-bank/delete/${id}`);
 };
+
+export const getQuestionsByModule = async (moduleId) => {
+    return apiClient.get(`/question-bank/module/${moduleId}`);
+};
+

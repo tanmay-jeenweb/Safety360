@@ -145,11 +145,42 @@ const deleteQuestion = async (id) => {
     return result;
 };
 
+const getQuestionsByModule = async (moduleId) => {
+    const query = `
+        SELECT 
+            qb.id,
+            qb.module_id,
+            COALESCE(tm.module_name, 'Unknown') AS module_name,
+            qb.language,
+            qb.question_type,
+            qb.question_text,
+            qb.options,
+            qb.correct_answer,
+            qb.added_by,
+            COALESCE(u.name, 'Unknown') AS added_by_name,
+            qb.created_at,
+            qb.updated_at
+        FROM question_bank qb
+        LEFT JOIN training_modules tm ON qb.module_id = tm.id
+        LEFT JOIN users u ON qb.added_by = u.id
+        WHERE qb.module_id = ?
+        ORDER BY qb.created_at DESC
+    `;
+    const [results] = await db.execute(query, [moduleId]);
+
+    return results.map(row => ({
+        ...row,
+        options: typeof row.options === 'string' ? JSON.parse(row.options) : (row.options || [])
+    }));
+};
+
 module.exports = {
     createQuestionBankTable,
     createQuestion,
     getAllQuestions,
     getQuestionById,
     updateQuestion,
-    deleteQuestion
+    deleteQuestion,
+    getQuestionsByModule
 };
+

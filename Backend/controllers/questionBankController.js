@@ -3,7 +3,8 @@ const {
     getAllQuestions,
     getQuestionById,
     updateQuestion,
-    deleteQuestion
+    deleteQuestion,
+    getQuestionsByModule
 } = require("../models/questionBankModel.js");
 const { createAuditLog } = require("../models/auditLogModel.js");
 
@@ -162,10 +163,26 @@ const deleteQuestionController = async (req, res) => {
     }
 };
 
+// ─── Get Questions By Module ID ──────────────────────────────────────────────
+const getQuestionsByModuleController = async (req, res) => {
+    try {
+        const { moduleId } = req.params;
+        const questions = await getQuestionsByModule(moduleId);
+        res.status(200).json({
+            success: true,
+            data: questions
+        });
+    } catch (error) {
+        console.error("Error fetching questions by module:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch questions for module" });
+    }
+};
+
 module.exports = {
     addQuestionController,
     getAllQuestionsController,
     getQuestionByIdController,
     updateQuestionController,
-    deleteQuestionController
+    deleteQuestionController,
+    getQuestionsByModuleController
 };

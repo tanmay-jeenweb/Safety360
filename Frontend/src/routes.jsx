@@ -22,6 +22,7 @@ import DepartmentMaster from "./pages/admin/department/DepartmentMaster";
 import QuestionBankMaster from "./pages/admin/questions/QuestionBankMaster";
 import CreateQuestion from "./pages/admin/questions/CreateQuestion";
 import QuestionPaperMaster from "./pages/admin/questions/QuestionPaperMaster";
+import CreateQuestionPaper from "./pages/admin/questions/CreateQuestionPaper";
 import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
@@ -115,12 +116,20 @@ export default function AppRoutes() {
                 <Route path="/admin/question-bank/edit/:id" element={<CreateQuestion />} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRole="admin" />}>
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="read" />}>
                 <Route path="/admin/question-paper" element={<QuestionPaperMaster />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>
                 <Route path="/admin/employees" element={<EmployeeMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="write" />}>
+                <Route path="/admin/question-paper/create" element={<CreateQuestionPaper />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="update" />}>
+                <Route path="/admin/question-paper/edit/:id" element={<CreateQuestionPaper />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />
