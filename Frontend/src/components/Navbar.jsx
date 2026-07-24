@@ -464,24 +464,26 @@ export default function Navbar() {
                                             </button>
                                         )}
 
-                                        <button
-                                            onClick={() => {
-                                                navigate("/admin/question-paper");
-                                                setIsQuestionsOpen(false);
-                                            }}
-                                            className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/question-paper")
-                                                ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
-                                                }`}
-                                        >
-                                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/question-paper") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
-                                                }`}>
-                                                <i className="fa-solid fa-file-signature text-xs"></i>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-sm font-semibold leading-snug">Question Paper</p>
-                                            </div>
-                                        </button>
+                                        {(isAdmin || hasPermission("question_paper", "read")) && (
+                                            <button
+                                                onClick={() => {
+                                                    navigate("/admin/question-paper");
+                                                    setIsQuestionsOpen(false);
+                                                }}
+                                                className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/question-paper")
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    }`}
+                                            >
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/question-paper") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
+                                                    }`}>
+                                                    <i className="fa-solid fa-file-signature text-xs"></i>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-semibold leading-snug">Question Paper</p>
+                                                </div>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             )}
