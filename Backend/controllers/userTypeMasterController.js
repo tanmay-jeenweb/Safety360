@@ -7,6 +7,11 @@ const {
 } = require('../models/userTypeModel.js');
 const { createAuditLog } = require('../models/auditLogModel.js');
 
+const filterActivePermissions = (perms) => {
+    if (!Array.isArray(perms)) return [];
+    return perms.filter(p => p.canRead || p.canWrite || p.canUpdate || p.canDelete);
+};
+
 const addUserType = async (req, res) => {
     try {
         const { typeName, permissions } = req.body;
@@ -18,6 +23,8 @@ const addUserType = async (req, res) => {
         }
 
         const userType = await createUserType(typeName, addedBy, deviceId, permissions || []);
+        const activePerms = filterActivePermissions(permissions || []);
+
         await createAuditLog(
             addedBy,
             req.user?.name || req.user?.username || 'Unknown',
@@ -28,7 +35,7 @@ const addUserType = async (req, res) => {
             {
                 id: userType.insertId,
                 type_name: typeName,
-                permissions: permissions || [],
+                permissions: activePerms,
                 added_by: addedBy,
                 device_id: deviceId
             }
@@ -82,17 +89,24 @@ const updateUserTypeController = async (req, res) => {
         }
 
         await updateUserType(id, typeName, permissions || []);
+
+        const cleanedBefore = {
+            ...beforeData,
+            permissions: filterActivePermissions(beforeData.permissions)
+        };
+        const activePerms = filterActivePermissions(permissions || []);
+
         await createAuditLog(
             req.user?.id,
             req.user?.name || req.user?.username || 'Unknown',
             deviceId,
             'User Type Master',
             'updated',
-            beforeData,
+            cleanedBefore,
             {
-                ...beforeData,
+                ...cleanedBefore,
                 type_name: typeName,
-                permissions: permissions || []
+                permissions: activePerms
             }
         );
 
