@@ -159,16 +159,16 @@ export default function Navbar() {
                                 </span>
                             </button>
                             {isOpen && (
-                                <div className="absolute left-0 top-full mt-1.5 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 origin-top-left animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="flex flex-col gap-1">
+                                <div className="absolute left-0 top-full mt-1.5 w-[520px] bg-white border border-slate-200 rounded-2xl shadow-xl p-2.5 z-50 origin-top-left animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="grid grid-cols-2 gap-1.5">
                                         <button
                                             onClick={() => {
                                                 navigate("/admin/dashboard");
                                                 setIsOpen(false);
                                             }}
                                             className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname === "/admin/dashboard"
-                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                 }`}
                                         >
                                             <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname === "/admin/dashboard" ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -187,8 +187,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/user-types")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/user-types") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -208,8 +208,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/clients")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/clients") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -229,8 +229,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/sites")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/sites") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -250,8 +250,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/roles")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/roles") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -271,8 +271,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/trainers")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/trainers") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"

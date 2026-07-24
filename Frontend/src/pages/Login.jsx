@@ -68,8 +68,8 @@ export default function Login() {
                 {/* Showroom Image container with subtle drop shadow and hover effect - Shifted higher */}
                 <div className="w-full flex justify-center items-center max-h-[70%] z-10 relative -top-16">
                     <img
-                        src="/Gravity Logo.png"
-                        alt="Gravity Store front"
+                        src="/Jasmin new (12).png"
+                        alt="Safety360 Store front"
                         className="w-[95%] h-auto object-contain transition-transform duration-[6000ms] hover:scale-103 ease-out drop-shadow-[0_20px_50px_rgba(37,51,97,0.35)]"
                     />
                 </div>

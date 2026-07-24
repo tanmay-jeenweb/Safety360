@@ -73,7 +73,7 @@ const createUserByAdmin = async (req, res) => {
             dateOfJoin || null,
             typeof deviceVerificationRequired === 'boolean' ? deviceVerificationRequired : true,
             true,
-            role || 'user'
+            role || 'employee'
         );
 
         const adminDeviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
@@ -93,7 +93,7 @@ const createUserByAdmin = async (req, res) => {
                 mob_no: mobNo || null,
                 date_of_join: dateOfJoin || null,
                 device_verification_required: deviceVerificationRequired,
-                role: role || 'user'
+                role: role || 'employee'
             }
         );
 
