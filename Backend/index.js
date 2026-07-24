@@ -15,6 +15,8 @@ const clientRoutes = require("./routes/clientRoutes.js");
 const siteRoutes = require("./routes/siteRoutes.js");
 const roleRoutes = require("./routes/roleRoutes.js");
 const trainerRoutes = require("./routes/trainerRoutes.js");
+const certificateTemplateRoutes = require("./routes/certificateTemplateRoutes.js");
+const ratingScaleRoutes = require("./routes/ratingScaleRoutes.js");
 
 // Model Initializations
 const { initUserModel } = require("./models/userModel.js");
@@ -25,6 +27,8 @@ const { createClientsTable } = require("./models/clientModel.js");
 const { createSitesTable } = require("./models/siteModel.js");
 const { createRolesTable } = require("./models/roleModel.js");
 const { createTrainersTable } = require("./models/trainerModel.js");
+const { createCertificateTemplatesTable } = require("./models/certificateTemplateModel.js");
+const { createRatingScalesTable } = require("./models/ratingScaleModel.js");
 
 const app = express();
 
@@ -68,6 +72,8 @@ app.use(["/api/clients", "/clients"], clientRoutes);
 app.use(["/api/sites", "/sites"], siteRoutes);
 app.use(["/api/roles", "/roles"], roleRoutes);
 app.use(["/api/trainers", "/trainers"], trainerRoutes);
+app.use(["/api/certificate-templates", "/certificate-templates"], certificateTemplateRoutes);
+app.use(["/api/rating-scales", "/rating-scales"], ratingScaleRoutes);
 
 // Global 404 handler
 app.use((req, res) => {
@@ -95,6 +101,8 @@ const startServer = async () => {
         await createSitesTable();
         await createRolesTable();
         await createTrainersTable();
+        await createCertificateTemplatesTable();
+        await createRatingScalesTable();
 
         console.log("All database tables are initialized and ready.");
 
