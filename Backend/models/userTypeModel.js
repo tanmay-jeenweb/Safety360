@@ -16,6 +16,10 @@ const MASTERS = [
     { key: 'deposit_stock_approval', label: 'Deposit & Stock Approval' },
     { key: 'user_master', label: 'User Master' },
     { key: 'device_approval', label: 'Device Approval' },
+    { key: 'client_master', label: 'Client Master' },
+    { key: 'site_master', label: 'Site Master' },
+    { key: 'role_master', label: 'Role Master' },
+    { key: 'trainer_master', label: 'Trainer Master' },
 ];
 
 // ─── Table creation ──────────────────────────────────────────────────────────

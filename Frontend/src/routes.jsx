@@ -9,6 +9,10 @@ import Dashboard from "./pages/admin/Dashboard";
 import UserGroupMaster from "./pages/admin/user/UserGroupMaster";
 import CreateUser from "./pages/admin/user/CreateUser";
 import CreateUserType from "./pages/admin/user/CreateUserType";
+import ClientMaster from "./pages/admin/client/ClientMaster";
+import SiteMaster from "./pages/admin/site/SiteMaster";
+import RoleMaster from "./pages/admin/role/RoleMaster";
+import TrainerMaster from "./pages/admin/trainer/TrainerMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -43,6 +47,22 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="user_type" requiredAction="write" />}>
                 <Route path="/admin/user-types/create" element={<CreateUserType />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="client_master" requiredAction="read" />}>
+                <Route path="/admin/clients" element={<ClientMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="site_master" requiredAction="read" />}>
+                <Route path="/admin/sites" element={<SiteMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="role_master" requiredAction="read" />}>
+                <Route path="/admin/roles" element={<RoleMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="trainer_master" requiredAction="read" />}>
+                <Route path="/admin/trainers" element={<TrainerMaster />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />

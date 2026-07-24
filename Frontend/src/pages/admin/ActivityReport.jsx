@@ -25,9 +25,30 @@ function DetailModal({ isOpen, row, onClose }) {
     return vBefore !== vAfter;
   };
 
-  const formatValue = (val) => {
+  const formatValue = (key, val) => {
     if (val === null || val === undefined) return <span style={{ color: "#94a3b8" }}>—</span>;
     if (typeof val === "boolean") return val ? "True" : "False";
+    if (key === "permissions" && Array.isArray(val)) {
+      const active = val.filter(p => p.canRead || p.canWrite || p.canUpdate || p.canDelete);
+      if (active.length === 0) return <span style={{ color: "#94a3b8" }}>No permissions set</span>;
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {active.map((p, idx) => {
+            const actions = [];
+            if (p.canRead) actions.push("Read");
+            if (p.canWrite) actions.push("Write");
+            if (p.canUpdate) actions.push("Update");
+            if (p.canDelete) actions.push("Delete");
+            const label = p.masterName || p.master_name || "Unknown";
+            return (
+              <div key={idx} style={{ fontSize: 12 }}>
+                <strong style={{ color: "#1e293b" }}>{label}</strong>: <span style={{ color: "#0284c7" }}>{actions.join(", ")}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
     if (typeof val === "object") return JSON.stringify(val);
     return String(val);
   };
@@ -116,7 +137,7 @@ function DetailModal({ isOpen, row, onClose }) {
                         background: changed ? "rgba(254, 243, 199, 0.4)" : "transparent"
                       }}>
                         <td style={{ padding: "10px 14px", fontWeight: 550, color: "#1e293b", width: "30%" }}>{key}</td>
-                        <td style={{ padding: "10px 14px", color: "#475569", width: "35%", wordBreak: "break-all" }}>{formatValue(beforeObj[key])}</td>
+                        <td style={{ padding: "10px 14px", color: "#475569", width: "35%", wordBreak: "break-all" }}>{formatValue(key, beforeObj[key])}</td>
                         <td style={{
                           padding: "10px 14px",
                           color: changed ? "#92400e" : "#475569",
@@ -124,7 +145,7 @@ function DetailModal({ isOpen, row, onClose }) {
                           width: "35%",
                           wordBreak: "break-all"
                         }}>
-                          {formatValue(afterObj[key])}
+                          {formatValue(key, afterObj[key])}
                         </td>
                       </tr>
                     );
