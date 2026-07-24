@@ -19,6 +19,7 @@ import CategoryMaster from "./pages/admin/category/CategoryMaster";
 import TrainingModuleMaster from "./pages/admin/training/TrainingModuleMaster";
 import CreateTrainingModule from "./pages/admin/training/CreateTrainingModule";
 import DepartmentMaster from "./pages/admin/department/DepartmentMaster";
+import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -97,6 +98,10 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="department_master" requiredAction="read" />}>
                 <Route path="/admin/departments" element={<DepartmentMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>
+                <Route path="/admin/employees" element={<EmployeeMaster />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />
