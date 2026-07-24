@@ -16,6 +16,7 @@ const MASTERS = [
     { key: 'department_master', label: 'Department Master' },
     { key: 'question_bank', label: 'Question Bank Master' },
     { key: 'question_paper', label: 'Question Paper Master' },
+    { key: 'employee_master', label: 'Employee Master' },
 ];
 
 // ─── Table creation ──────────────────────────────────────────────────────────
