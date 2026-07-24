@@ -91,7 +91,7 @@ const createUser = async (
     dateOfJoin = null,
     deviceVerificationRequired = true,
     active = true,
-    role = 'user'
+    role = 'employee'
 ) => {
 
     const query = `

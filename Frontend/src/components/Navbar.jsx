@@ -167,8 +167,8 @@ export default function Navbar() {
                                                 setIsOpen(false);
                                             }}
                                             className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname === "/admin/dashboard"
-                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                 }`}
                                         >
                                             <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname === "/admin/dashboard" ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -187,8 +187,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/user-types")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/user-types") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -208,8 +208,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/clients")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/clients") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -229,8 +229,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/sites")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/sites") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -250,8 +250,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/roles")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/roles") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
@@ -271,8 +271,8 @@ export default function Navbar() {
                                                     setIsOpen(false);
                                                 }}
                                                 className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/trainers")
-                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
-                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/trainers") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
