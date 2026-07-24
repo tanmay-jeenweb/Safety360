@@ -307,9 +307,9 @@ export default function CreateQuestion() {
                                                 type="button"
                                                 onClick={handleAddOption}
                                                 style={{
-                                                    background: "linear-gradient(135deg, #ea580c, #c2410c)", color: "#fff", border: "none",
+                                                    background: "linear-gradient(135deg, #253361, #1a2446)", color: "#fff", border: "none",
                                                     borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700,
-                                                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6, shadow: "sm"
+                                                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(37,51,97,0.25)"
                                                 }}
                                             >
                                                 <i className="fa-solid fa-plus text-xs"></i> Add Option
@@ -409,8 +409,9 @@ export default function CreateQuestion() {
                                 disabled={saving}
                                 style={{
                                     padding: "10px 24px", borderRadius: 9, border: "none",
-                                    background: "linear-gradient(135deg, #ea580c, #c2410c)", color: "#fff",
-                                    fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1
+                                    background: saving ? "#94a3b8" : "linear-gradient(135deg, #253361, #1a2446)", color: "#fff",
+                                    fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1,
+                                    boxShadow: saving ? "none" : "0 3px 10px rgba(37,51,97,0.3)"
                                 }}
                             >
                                 {saving ? "Saving..." : isEditMode ? "Update Question" : "Create Question"}
