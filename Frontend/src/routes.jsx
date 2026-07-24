@@ -93,6 +93,8 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="training_module_master" requiredAction="update" />}>
                 <Route path="/admin/training-modules/edit/:id" element={<CreateTrainingModule />} />
+            </Route>
+
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="department_master" requiredAction="read" />}>
                 <Route path="/admin/departments" element={<DepartmentMaster />} />
             </Route>
