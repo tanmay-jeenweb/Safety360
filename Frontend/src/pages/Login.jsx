@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { loginUser } from "../api/authApi";
 import { getDeviceId } from "../utils/device";
-const logo = "/Jasmin-Logo.png";
+const logo = "/Gravity Logo.png";
 import jwlogo from "../assets/jwLogo.jpeg";
 
 
@@ -53,7 +53,7 @@ export default function Login() {
     };
 
     return (
-        <div className="h-screen w-screen flex flex-col md:flex-row bg-gradient-to-br from-[#1c0a00] via-slate-950 to-[#1f0d02] font-sans antialiased text-slate-200 overflow-hidden relative">
+        <div className="h-screen w-screen flex flex-col md:flex-row bg-gradient-to-br from-[#0b1021] via-slate-950 to-[#0d142a] font-sans antialiased text-slate-200 overflow-hidden relative">
 
             {/* Ambient Glows (placed on parent to prevent clipping at 50% width and scrollbar triggers) */}
             {/* Left side glow */}
@@ -68,9 +68,9 @@ export default function Login() {
                 {/* Showroom Image container with subtle drop shadow and hover effect - Shifted higher */}
                 <div className="w-full flex justify-center items-center max-h-[70%] z-10 relative -top-16">
                     <img
-                        src="/Jasmin new (12).png"
-                        alt="Safety360 Store front"
-                        className="w-[95%] h-auto object-contain transition-transform duration-[6000ms] hover:scale-103 ease-out drop-shadow-[0_20px_50px_rgba(234,88,12,0.25)]"
+                        src="/Gravity Logo.png"
+                        alt="Gravity Store front"
+                        className="w-[95%] h-auto object-contain transition-transform duration-[6000ms] hover:scale-103 ease-out drop-shadow-[0_20px_50px_rgba(37,51,97,0.35)]"
                     />
                 </div>
 
@@ -101,7 +101,7 @@ export default function Login() {
                         <img
                             src={logo}
                             alt="Safety360 Logo"
-                            className="h-16 sm:h-20 w-auto mb-2 drop-shadow-[0_4px_16px_rgba(234,88,12,0.25)] hover:scale-105 transition-transform duration-300"
+                            className="h-16 sm:h-20 w-auto mb-2 drop-shadow-[0_4px_16px_rgba(37,51,97,0.35)] hover:scale-105 transition-transform duration-300"
                         />
                         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight text-center">
                             Welcome Back
@@ -184,7 +184,7 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-2.5 rounded-xl text-white text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 bg-orange-600 hover:bg-orange-500 shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:shadow-[0_4px_25px_rgba(234,88,12,0.5)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-75 disabled:cursor-not-allowed flex justify-center items-center gap-2 cursor-pointer"
+                                className="w-full py-2.5 rounded-xl text-white text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 bg-orange-600 hover:bg-orange-500 shadow-[0_4px_15px_rgba(37,51,97,0.35)] hover:shadow-[0_4px_25px_rgba(37,51,97,0.5)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-75 disabled:cursor-not-allowed flex justify-center items-center gap-2 cursor-pointer"
                             >
                                 {loading ? (
                                     <>

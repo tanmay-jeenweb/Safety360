@@ -29,7 +29,7 @@ const MASTERS = [
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];
 const PERM_LABELS = { canRead: "Read", canWrite: "Write / Approval", canUpdate: "Update", canDelete: "Delete" };
 const PERM_COLORS = {
-  canRead:   { bg: "#fff7ed", border: "#fed7aa", text: "#ea580c", check: "#ea580c" },
+  canRead:   { bg: "#f0f3fa", border: "#c2d0eb", text: "#253361", check: "#253361" },
   canWrite:  { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", check: "#16a34a" },
   canUpdate: { bg: "#fffbeb", border: "#fde68a", text: "#b45309", check: "#d97706" },
   canDelete: { bg: "#fff1f2", border: "#fecdd3", text: "#be123c", check: "#e11d48" },
@@ -211,7 +211,7 @@ export default function CreateUserType() {
                 padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b",
                 transition: "border 0.2s",
               }}
-              onFocus={e => e.target.style.borderColor = "#ea580c"}
+              onFocus={e => e.target.style.borderColor = "#253361"}
               onBlur={e => e.target.style.borderColor = "#cbd5e1"}
             />
           </div>
@@ -228,8 +228,8 @@ export default function CreateUserType() {
                 onClick={toggleAll}
                 style={{
                   fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 8, cursor: "pointer",
-                  border: "1.5px solid #ea580c", color: isAllAll() ? "#fff" : "#ea580c",
-                  background: isAllAll() ? "#ea580c" : "#e6ebf0", transition: "all 0.2s"
+                  border: "1.5px solid #253361", color: isAllAll() ? "#fff" : "#253361",
+                  background: isAllAll() ? "#253361" : "#e6ebf0", transition: "all 0.2s"
                 }}
               >
                 {isAllAll() ? "Deselect All" : "Select All"}
@@ -296,7 +296,7 @@ export default function CreateUserType() {
                       >
                         <td style={{ padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#334155", borderBottom: "1px solid #f1f5f9" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ea580c", flexShrink: 0 }} />
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#253361", flexShrink: 0 }} />
                             {master.label}
                           </div>
                         </td>
@@ -343,9 +343,9 @@ export default function CreateUserType() {
                             onClick={() => toggleRow(master.key)}
                             style={{
                               fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, cursor: "pointer",
-                              border: `1.5px solid ${rowAll ? "#ea580c" : "#cbd5e1"}`,
+                              border: `1.5px solid ${rowAll ? "#253361" : "#cbd5e1"}`,
                               color: rowAll ? "#fff" : "#64748b",
-                              background: rowAll ? "#ea580c" : "#f8fafc",
+                              background: rowAll ? "#253361" : "#f8fafc",
                               transition: "all 0.15s"
                             }}
                           >
@@ -393,9 +393,9 @@ export default function CreateUserType() {
               disabled={saving}
               style={{
                 padding: "10px 28px", borderRadius: 9, border: "none",
-                background: saving ? "#94a3b8" : "linear-gradient(135deg,#ea580c,#c2410c)",
+                background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
                 color: "#fff", fontWeight: 700, fontSize: 14, cursor: saving ? "not-allowed" : "pointer",
-                boxShadow: saving ? "none" : "0 2px 8px rgba(234,88,12,0.35)",
+                boxShadow: saving ? "none" : "0 2px 8px rgba(37,51,97,0.35)",
                 transition: "all 0.2s"
               }}
             >

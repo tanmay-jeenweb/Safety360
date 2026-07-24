@@ -61,7 +61,7 @@ export default function DeviceRegistration() {
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                 <div>
                     <h2 className="mt-2 text-center text-3xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-2">
-                        <svg className="w-8 h-8 text-[#ea580c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-8 h-8 text-[#253361]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                         Register Device
@@ -94,7 +94,7 @@ export default function DeviceRegistration() {
                                 />
                                 {loading && (
                                     <div className="absolute right-3 top-2.5">
-                                        <div className="animate-spin h-4 w-4 border-2 border-[#ea580c] rounded-full border-t-transparent"></div>
+                                        <div className="animate-spin h-4 w-4 border-2 border-[#253361] rounded-full border-t-transparent"></div>
                                     </div>
                                 )}
                             </div>
@@ -106,7 +106,7 @@ export default function DeviceRegistration() {
                         <button
                             type="submit"
                             disabled={loading || submitting}
-                            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-[#ea580c] hover:bg-[#c2410c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ea580c] transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-[#253361] hover:bg-[#1a2446] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#253361] transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {submitting ? "Submitting..." : "Submit for Approval"}
                         </button>

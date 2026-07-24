@@ -292,7 +292,7 @@ export default function AdminDashboard() {
                     <div className="flex justify-end">
                         <button
                             onClick={() => handleApproveDevice(row.id)}
-                            className="inline-flex justify-center rounded-md px-4 py-2 text-sm font-semibold text-white bg-[#ea580c] hover:bg-[#c2410c] shadow-sm"
+                            className="inline-flex justify-center rounded-md px-4 py-2 text-sm font-semibold text-white bg-[#253361] hover:bg-[#1a2446] shadow-sm"
                         >
                             Approve
                         </button>
@@ -373,7 +373,7 @@ export default function AdminDashboard() {
                                     onClick={() => setActiveTab(tab)}
                                     className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors
                                         ${activeTab === tab
-                                            ? 'border-[#ea580c] text-[#ea580c]'
+                                            ? 'border-[#253361] text-[#253361]'
                                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                                         }`}
                                 >
@@ -423,7 +423,7 @@ export default function AdminDashboard() {
                                 (hasPermission("user_master", "write") || user.role === "admin") && (
                                     <button
                                         onClick={() => navigate('/admin/users/create')}
-                                        className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ea580c] text-white hover:bg-[#c2410c] transition-colors cursor-pointer shadow-sm hover:shadow"
+                                        className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#253361] text-white hover:bg-[#1a2446] transition-colors cursor-pointer shadow-sm hover:shadow"
                                         title="Create User"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
@@ -457,7 +457,7 @@ export default function AdminDashboard() {
                             <select
                                 value={auditUserFilter}
                                 onChange={(e) => setAuditUserFilter(e.target.value)}
-                                className="block w-full sm:w-64 pl-3 pr-10 py-2 text-base border border-slate-300 focus:outline-none focus:ring-[#ea580c] focus:border-[#ea580c] sm:text-sm rounded-lg"
+                                className="block w-full sm:w-64 pl-3 pr-10 py-2 text-base border border-slate-300 focus:outline-none focus:ring-[#253361] focus:border-[#253361] sm:text-sm rounded-lg"
                             >
                                 <option value="all">All Users</option>
                                 {users.map(u => (
