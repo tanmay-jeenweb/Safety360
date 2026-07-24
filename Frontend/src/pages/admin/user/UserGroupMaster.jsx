@@ -26,6 +26,7 @@ const MASTERS = [
   { key: "site_master", label: "Site Master" },
   { key: "role_master", label: "Role Master" },
   { key: "trainer_master", label: "Trainer Master" },
+  { key: "certificate_template_master", label: "Certificate Template Master" },
 ];
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];
 const PERM_LABELS = { canRead: "Read", canWrite: "Write / Approval", canUpdate: "Update", canDelete: "Delete" };

@@ -13,6 +13,7 @@ import ClientMaster from "./pages/admin/client/ClientMaster";
 import SiteMaster from "./pages/admin/site/SiteMaster";
 import RoleMaster from "./pages/admin/role/RoleMaster";
 import TrainerMaster from "./pages/admin/trainer/TrainerMaster";
+import CertificateTemplateMaster from "./pages/admin/certificate/CertificateTemplateMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -63,6 +64,10 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="trainer_master" requiredAction="read" />}>
                 <Route path="/admin/trainers" element={<TrainerMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="certificate_template_master" requiredAction="read" />}>
+                <Route path="/admin/certificate-templates" element={<CertificateTemplateMaster />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />
