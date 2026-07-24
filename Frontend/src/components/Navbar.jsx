@@ -11,6 +11,7 @@ export default function Navbar() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const [isOpen, setIsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isQuestionsOpen, setIsQuestionsOpen] = useState(false);
     const { hasPermission } = usePermission();
 
     useEffect(() => {
@@ -21,10 +22,13 @@ export default function Navbar() {
             if (isProfileOpen && !e.target.closest("#profile-dropdown")) {
                 setIsProfileOpen(false);
             }
+            if (isQuestionsOpen && !e.target.closest("#questions-dropdown")) {
+                setIsQuestionsOpen(false);
+            }
         };
         document.addEventListener("click", handleOutsideClick);
         return () => document.removeEventListener("click", handleOutsideClick);
-    }, [isOpen, isProfileOpen]);
+    }, [isOpen, isProfileOpen, isQuestionsOpen]);
 
     const handleLogout = async () => {
         try {
@@ -390,6 +394,74 @@ export default function Navbar() {
                                                 </div>
                                             </button>
                                         )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Questions Dropdown */}
+                        <div className="relative" id="questions-dropdown">
+                            <button
+                                onClick={() => setIsQuestionsOpen(!isQuestionsOpen)}
+                                className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${isQuestionsOpen || location.pathname.startsWith("/admin/question-bank") || location.pathname.startsWith("/admin/question-paper") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
+                                    }`}
+                            >
+                                <span className="flex items-center gap-2 truncate">
+                                    <span className="font-semibold text-white truncate">Questions</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={2.5}
+                                        stroke="currentColor"
+                                        className={`w-3.5 h-3.5 text-slate-300 transition-transform duration-200 ${isQuestionsOpen ? "rotate-180 text-white" : ""}`}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </span>
+                            </button>
+                            {isQuestionsOpen && (
+                                <div className="absolute left-0 top-full mt-1.5 w-60 bg-white border border-slate-200 rounded-2xl shadow-xl p-2.5 z-50 origin-top-left animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="flex flex-col gap-1.5">
+                                        {(isAdmin || hasPermission("question_bank", "read")) && (
+                                            <button
+                                                onClick={() => {
+                                                    navigate("/admin/question-bank");
+                                                    setIsQuestionsOpen(false);
+                                                }}
+                                                className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/question-bank")
+                                                    ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    }`}
+                                            >
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/question-bank") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
+                                                    }`}>
+                                                    <i className="fa-solid fa-circle-question text-xs"></i>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-semibold leading-snug">Question Bank</p>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        <button
+                                            onClick={() => {
+                                                navigate("/admin/question-paper");
+                                                setIsQuestionsOpen(false);
+                                            }}
+                                            className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/question-paper")
+                                                ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                }`}
+                                        >
+                                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/question-paper") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
+                                                }`}>
+                                                <i className="fa-solid fa-file-signature text-xs"></i>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-semibold leading-snug">Question Paper</p>
+                                            </div>
+                                        </button>
                                     </div>
                                 </div>
                             )}

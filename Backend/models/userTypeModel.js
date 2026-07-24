@@ -14,6 +14,7 @@ const MASTERS = [
     { key: 'category_master', label: 'Category Master' },
     { key: 'training_module_master', label: 'Training Module Master' },
     { key: 'department_master', label: 'Department Master' },
+    { key: 'question_bank', label: 'Question Bank Master' },
 ];
 
 // ─── Table creation ──────────────────────────────────────────────────────────

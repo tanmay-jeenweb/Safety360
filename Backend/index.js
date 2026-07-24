@@ -20,6 +20,7 @@ const ratingScaleRoutes = require("./routes/ratingScaleRoutes.js");
 const categoryRoutes = require("./routes/categoryRoutes.js");
 const trainingModuleRoutes = require("./routes/trainingModuleRoutes.js");
 const departmentRoutes = require("./routes/departmentRoutes.js");
+const questionBankRoutes = require("./routes/questionBankRoutes.js");
 
 // Model Initializations
 const { initUserModel } = require("./models/userModel.js");
@@ -35,6 +36,7 @@ const { createRatingScalesTable } = require("./models/ratingScaleModel.js");
 const { createCategoriesTable } = require("./models/categoryModel.js");
 const { createTrainingModulesTable } = require("./models/trainingModuleModel.js");
 const { createDepartmentsTable } = require("./models/departmentModel.js");
+const { createQuestionBankTable } = require("./models/questionBankModel.js");
 
 const app = express();
 
@@ -83,6 +85,7 @@ app.use(["/api/rating-scales", "/rating-scales"], ratingScaleRoutes);
 app.use(["/api/categories", "/categories"], categoryRoutes);
 app.use(["/api/training-modules", "/training-modules"], trainingModuleRoutes);
 app.use(["/api/departments", "/departments"], departmentRoutes);
+app.use(["/api/question-bank", "/question-bank"], questionBankRoutes);
 
 // Global 404 handler
 app.use((req, res) => {
@@ -115,6 +118,7 @@ const startServer = async () => {
         await createCategoriesTable();
         await createTrainingModulesTable();
         await createDepartmentsTable();
+        await createQuestionBankTable();
 
         console.log("All database tables are initialized and ready.");
 
