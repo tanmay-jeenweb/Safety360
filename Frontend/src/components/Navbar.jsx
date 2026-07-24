@@ -159,8 +159,8 @@ export default function Navbar() {
                                 </span>
                             </button>
                             {isOpen && (
-                                <div className="absolute left-0 top-full mt-1.5 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 origin-top-left animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="flex flex-col gap-1">
+                                <div className="absolute left-0 top-full mt-1.5 w-[520px] bg-white border border-slate-200 rounded-2xl shadow-xl p-2.5 z-50 origin-top-left animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="grid grid-cols-2 gap-1.5">
                                         <button
                                             onClick={() => {
                                                 navigate("/admin/dashboard");
