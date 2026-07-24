@@ -19,6 +19,7 @@ const MASTERS = [
   { key: "rating_scale_master", label: "Rating Scale Master" },
   { key: "category_master", label: "Category Master" },
   { key: "training_module_master", label: "Training Module Master" },
+  { key: "department_master", label: "Department Master" },
 ];
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];
 const PERM_LABELS = { canRead: "Read", canWrite: "Write / Approval", canUpdate: "Update", canDelete: "Delete" };
