@@ -141,6 +141,7 @@ export default function Navbar() {
                         <div className="relative" id="masters-dropdown">
                             <button
                                 onClick={() => setIsOpen(!isOpen)}
+//                                 className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${isOpen || location.pathname === "/admin/dashboard" || location.pathname.startsWith("/admin/user-types") || location.pathname.startsWith("/admin/clients") || location.pathname.startsWith("/admin/sites") || location.pathname.startsWith("/admin/roles") || location.pathname.startsWith("/admin/trainers") || location.pathname.startsWith("/admin/certificate-templates") || location.pathname.startsWith("/admin/rating-scales") || location.pathname.startsWith("/admin/categories") || location.pathname.startsWith("/admin/training-modules") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
                                 className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${isOpen || location.pathname === "/admin/dashboard" || location.pathname.startsWith("/admin/user-types") || location.pathname.startsWith("/admin/clients") || location.pathname.startsWith("/admin/sites") || location.pathname.startsWith("/admin/roles") || location.pathname.startsWith("/admin/trainers") || location.pathname.startsWith("/admin/certificate-templates") || location.pathname.startsWith("/admin/rating-scales") || location.pathname.startsWith("/admin/departments") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
                                     }`}
                             >
@@ -327,6 +328,13 @@ export default function Navbar() {
                                             </button>
                                         )}
 
+                                        {(isAdmin || hasPermission("category_master", "read")) && (
+                                            <button
+                                                onClick={() => {
+                                                    navigate("/admin/categories");
+                                                    setIsOpen(false);
+                                                }}
+                                                className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/categories")
                                         {(isAdmin || hasPermission("department_master", "read")) && (
                                             <button
                                                 onClick={() => {
@@ -338,6 +346,33 @@ export default function Navbar() {
                                                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
                                                     }`}
                                             >
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/categories") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
+                                                    }`}>
+                                                    <i className="fa-solid fa-tags text-xs"></i>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-semibold leading-snug">Category Master</p>
+                                                </div>
+                                            </button>
+                                        )}
+
+                                        {(isAdmin || hasPermission("training_module_master", "read")) && (
+                                            <button
+                                                onClick={() => {
+                                                    navigate("/admin/training-modules");
+                                                    setIsOpen(false);
+                                                }}
+                                                className={`relative group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all cursor-pointer text-left border border-transparent ${location.pathname.startsWith("/admin/training-modules")
+                                                        ? "bg-orange-50/70 text-orange-700 font-semibold border-orange-100/50"
+                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-100"
+                                                    }`}
+                                            >
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/training-modules") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
+                                                    }`}>
+                                                    <i className="fa-solid fa-book-open text-xs"></i>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-semibold leading-snug">Training Module Master</p>
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm shrink-0 ${location.pathname.startsWith("/admin/departments") ? "bg-orange-100/80 text-orange-700" : "bg-slate-100/80 text-slate-500"
                                                     }`}>
                                                     <i className="fa-solid fa-sitemap text-xs"></i>
