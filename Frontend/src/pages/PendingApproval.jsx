@@ -44,7 +44,7 @@ export default function PendingApproval() {
                 <div className="mt-8">
                     <Link
                         to="/"
-                        className="inline-flex justify-center items-center py-2.5 px-6 border border-slate-300 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ea580c] transition-colors shadow-sm"
+                        className="inline-flex justify-center items-center py-2.5 px-6 border border-slate-300 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#253361] transition-colors shadow-sm"
                     >
                         Back to Login
                     </Link>

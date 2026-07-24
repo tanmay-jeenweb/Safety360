@@ -74,7 +74,7 @@ export default function Profile() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ea580c] focus:border-[#ea580c] sm:text-sm transition-colors duration-200"
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#253361] focus:border-[#253361] sm:text-sm transition-colors duration-200"
               />
             </div>
 
@@ -91,7 +91,7 @@ export default function Profile() {
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ea580c] focus:border-[#ea580c] sm:text-sm transition-colors duration-200"
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#253361] focus:border-[#253361] sm:text-sm transition-colors duration-200"
               />
             </div>
 
@@ -107,7 +107,7 @@ export default function Profile() {
                 type="text"
                 value={form.mob_no}
                 onChange={(e) => setForm({ ...form, mob_no: e.target.value })}
-                className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ea580c] focus:border-[#ea580c] sm:text-sm transition-colors duration-200"
+                className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#253361] focus:border-[#253361] sm:text-sm transition-colors duration-200"
               />
             </div>
 
@@ -115,13 +115,13 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="mr-4 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ea580c] transition-colors duration-200"
+                className="mr-4 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#253361] transition-colors duration-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-[#ea580c] border border-transparent rounded-lg hover:bg-[#c2410c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ea580c] transition-colors duration-200 shadow-sm"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#253361] border border-transparent rounded-lg hover:bg-[#1a2446] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#253361] transition-colors duration-200 shadow-sm"
               >
                 Save Changes
               </button>

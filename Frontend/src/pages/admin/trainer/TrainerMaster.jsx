@@ -49,7 +49,7 @@ function TrainerFormModal({ isOpen, onClose, onSave, editingRow, saving }) {
                 <div style={{
                     padding: "20px 24px", borderBottom: "1px solid #f1f5f9",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    background: "linear-gradient(135deg, #ea580c, #c2410c)"
+                    background: "linear-gradient(135deg, #253361, #1a2446)"
                 }}>
                     <div>
                         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>
@@ -94,7 +94,7 @@ function TrainerFormModal({ isOpen, onClose, onSave, editingRow, saving }) {
                                     width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1",
                                     borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b"
                                 }}
-                                onFocus={e => e.target.style.borderColor = "#ea580c"}
+                                onFocus={e => e.target.style.borderColor = "#253361"}
                                 onBlur={e => e.target.style.borderColor = "#cbd5e1"}
                                 autoFocus
                             />
@@ -117,7 +117,7 @@ function TrainerFormModal({ isOpen, onClose, onSave, editingRow, saving }) {
                                     width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1",
                                     borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b"
                                 }}
-                                onFocus={e => e.target.style.borderColor = "#ea580c"}
+                                onFocus={e => e.target.style.borderColor = "#253361"}
                                 onBlur={e => e.target.style.borderColor = "#cbd5e1"}
                             />
                         </div>
@@ -144,10 +144,10 @@ function TrainerFormModal({ isOpen, onClose, onSave, editingRow, saving }) {
                             disabled={saving || !trainerName.trim() || !trainerEmail.trim()}
                             style={{
                                 padding: "9px 24px", borderRadius: 8, border: "none",
-                                background: saving ? "#94a3b8" : "linear-gradient(135deg,#ea580c,#c2410c)",
+                                background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
                                 color: "#fff", fontWeight: 700, fontSize: 13,
                                 cursor: saving ? "not-allowed" : "pointer",
-                                boxShadow: saving ? "none" : "0 2px 8px rgba(234,88,12,0.35)"
+                                boxShadow: saving ? "none" : "0 2px 8px rgba(37,51,97,0.35)"
                             }}
                         >
                             {saving ? "Saving…" : editingRow ? "Save Changes" : "Create Trainer"}
@@ -273,7 +273,7 @@ export default function TrainerMaster() {
                                 onClick={() => handleOpenEditModal(row)}
                                 style={{
                                     display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center",
-                                    borderRadius: 8, border: "1px solid #fed7aa", background: "#fff7ed", color: "#ea580c", cursor: "pointer"
+                                    borderRadius: 8, border: "1px solid #c2d0eb", background: "#f0f3fa", color: "#253361", cursor: "pointer"
                                 }}
                                 title="Edit Trainer"
                             >
@@ -335,8 +335,8 @@ export default function TrainerMaster() {
                                 onClick={handleOpenAddModal}
                                 style={{
                                     display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
-                                    borderRadius: 9, background: "linear-gradient(135deg,#ea580c,#c2410c)", color: "#fff",
-                                    border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(234,88,12,0.35)"
+                                    borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
+                                    border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
                                 }}
                                 title="Add Trainer"
                             >

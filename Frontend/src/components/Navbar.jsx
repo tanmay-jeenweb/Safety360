@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { logoutUser } from "../api/authApi";
 import { usePermission } from "../context/PermissionContext";
 
-const logo = "/Jasmin-Logo.png";
+const logo = "/Gravity Logo.png";
 
 export default function Navbar() {
     const navigate = useNavigate();
@@ -122,13 +122,13 @@ export default function Navbar() {
 
             {/* Second Row: Navigation Links */}
             {user.role && (
-                <div className="bg-[#ea580c] border-t border-slate-200 px-4 sm:px-6 lg:px-8 py-0 flex flex-wrap items-center gap-4">
+                <div className="bg-[#253361] border-t border-slate-200 px-4 sm:px-6 lg:px-8 py-0 flex flex-wrap items-center gap-4">
                     <div className="flex items-center relative z-30">
                         {/* Dashboard Tab */}
                         <div className="relative">
                             <button
                                 onClick={() => navigate("/admin/home")}
-                                className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-l border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname === "/admin/home" ? "bg-white/15" : "bg-[#ea580c] hover:bg-white/5"
+                                className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-l border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname === "/admin/home" ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
                                     }`}
                             >
                                 <span className="flex items-center gap-2 font-semibold text-white truncate">
@@ -141,7 +141,7 @@ export default function Navbar() {
                         <div className="relative" id="masters-dropdown">
                             <button
                                 onClick={() => setIsOpen(!isOpen)}
-                                className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${isOpen || location.pathname === "/admin/dashboard" || location.pathname.startsWith("/admin/user-types") || location.pathname.startsWith("/admin/clients") || location.pathname.startsWith("/admin/sites") || location.pathname.startsWith("/admin/roles") || location.pathname.startsWith("/admin/trainers") ? "bg-white/15" : "bg-[#ea580c] hover:bg-white/5"
+                                className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${isOpen || location.pathname === "/admin/dashboard" || location.pathname.startsWith("/admin/user-types") || location.pathname.startsWith("/admin/clients") || location.pathname.startsWith("/admin/sites") || location.pathname.startsWith("/admin/roles") || location.pathname.startsWith("/admin/trainers") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
                                     }`}
                             >
                                 <span className="flex items-center gap-2 truncate">
@@ -294,7 +294,7 @@ export default function Navbar() {
                             <div className="relative">
                                 <button
                                     onClick={() => navigate("/admin/report")}
-                                    className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname.startsWith("/admin/report") ? "bg-white/15" : "bg-[#ea580c] hover:bg-white/5"
+                                    className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname.startsWith("/admin/report") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
                                         }`}
                                 >
                                     <span className="flex items-center gap-2 font-semibold text-white truncate">

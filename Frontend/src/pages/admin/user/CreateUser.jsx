@@ -185,7 +185,7 @@ export default function CreateUser() {
                                 type="checkbox"
                                 checked={newUserForm.deviceVerificationRequired}
                                 onChange={(e) => setNewUserForm({ ...newUserForm, deviceVerificationRequired: e.target.checked })}
-                                className="h-4 w-4 text-[#ea580c] border-slate-300 rounded focus:ring-[#ea580c]"
+                                className="h-4 w-4 text-[#253361] border-slate-300 rounded focus:ring-[#253361]"
                             />
                             <label htmlFor="deviceVerification" className="text-sm font-medium text-slate-700">
                                 Require device verification for this user
@@ -195,7 +195,7 @@ export default function CreateUser() {
                             <button
                                 type="submit"
                                 disabled={creatingUser}
-                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#ea580c] hover:bg-[#c2410c] focus:ring-2 focus:ring-offset-2 focus:ring-[#ea580c] disabled:opacity-50 transition-colors"
+                                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#253361] hover:bg-[#1a2446] focus:ring-2 focus:ring-offset-2 focus:ring-[#253361] disabled:opacity-50 transition-colors"
                             >
                                 {creatingUser ? "Creating..." : "Create User Account"}
                             </button>

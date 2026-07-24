@@ -30,7 +30,7 @@ const MASTERS = [
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];
 const PERM_LABELS = { canRead: "Read", canWrite: "Write / Approval", canUpdate: "Update", canDelete: "Delete" };
 const PERM_COLORS = {
-  canRead: { bg: "#fff7ed", border: "#fed7aa", text: "#ea580c", check: "#ea580c" },
+  canRead: { bg: "#f0f3fa", border: "#c2d0eb", text: "#253361", check: "#253361" },
   canWrite: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", check: "#16a34a" },
   canUpdate: { bg: "#fffbeb", border: "#fde68a", text: "#b45309", check: "#d97706" },
   canDelete: { bg: "#fff1f2", border: "#fecdd3", text: "#be123c", check: "#e11d48" },
@@ -217,7 +217,7 @@ function EditModal({ row, onClose, onSave, saving }) {
         boxShadow: "0 25px 60px rgba(0,0,0,0.2)", overflow: "hidden"
       }}>
         {/* Modal Header */}
-        <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#ea580c,#c2410c)" }}>
+        <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#253361,#1a2446)" }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>Edit User Type</h2>
             <p style={{ margin: "4px 0 0", fontSize: 13, color: "#d9e2ec" }}>Update the name and module permissions</p>
@@ -242,7 +242,7 @@ function EditModal({ row, onClose, onSave, saving }) {
               value={typeName}
               onChange={(e) => setTypeName(e.target.value)}
               style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b" }}
-              onFocus={e => e.target.style.borderColor = "#ea580c"}
+              onFocus={e => e.target.style.borderColor = "#253361"}
               onBlur={e => e.target.style.borderColor = "#cbd5e1"}
             />
           </div>
@@ -254,7 +254,7 @@ function EditModal({ row, onClose, onSave, saving }) {
               <button
                 type="button"
                 onClick={toggleAll}
-                style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 7, cursor: "pointer", border: `1.5px solid #ea580c`, color: isAllAll() ? "#fff" : "#ea580c", background: isAllAll() ? "#ea580c" : "#e6ebf0", transition: "all 0.2s" }}
+                style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 7, cursor: "pointer", border: `1.5px solid #253361`, color: isAllAll() ? "#fff" : "#253361", background: isAllAll() ? "#253361" : "#e6ebf0", transition: "all 0.2s" }}
               >
                 {isAllAll() ? "Deselect All" : "Select All"}
               </button>
@@ -295,7 +295,7 @@ function EditModal({ row, onClose, onSave, saving }) {
                         onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 0 ? "#fff" : "#f8fafc"}>
                         <td style={{ padding: "11px 12px", fontSize: 13, fontWeight: 600, color: "#334155", borderBottom: "1px solid #f1f5f9" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#ea580c" }} />
+                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#253361" }} />
                             {master.label}
                           </div>
                         </td>
@@ -315,7 +315,7 @@ function EditModal({ row, onClose, onSave, saving }) {
                         })}
                         <td style={{ textAlign: "center", padding: "11px 8px", borderBottom: "1px solid #f1f5f9" }}>
                           <button type="button" onClick={() => toggleRow(master.key)}
-                            style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 5, cursor: "pointer", border: `1.5px solid ${rowAll ? "#ea580c" : "#cbd5e1"}`, color: rowAll ? "#fff" : "#64748b", background: rowAll ? "#ea580c" : "#f8fafc", transition: "all 0.15s" }}>
+                            style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 5, cursor: "pointer", border: `1.5px solid ${rowAll ? "#253361" : "#cbd5e1"}`, color: rowAll ? "#fff" : "#64748b", background: rowAll ? "#253361" : "#f8fafc", transition: "all 0.15s" }}>
                             {rowAll ? "✓" : "All"}
                           </button>
                         </td>
@@ -337,7 +337,7 @@ function EditModal({ row, onClose, onSave, saving }) {
           <button
             onClick={() => onSave(row.id, typeName, permissions)}
             disabled={saving || !typeName.trim()}
-            style={{ padding: "9px 24px", borderRadius: 8, border: "none", background: saving ? "#94a3b8" : "linear-gradient(135deg,#ea580c,#c2410c)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: saving ? "not-allowed" : "pointer", boxShadow: saving ? "none" : "0 2px 8px rgba(234,88,12,0.35)" }}>
+            style={{ padding: "9px 24px", borderRadius: 8, border: "none", background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: saving ? "not-allowed" : "pointer", boxShadow: saving ? "none" : "0 2px 8px rgba(37,51,97,0.35)" }}>
             {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
@@ -441,7 +441,7 @@ export default function UserGroupMaster() {
             {canUpdate && (
               <button
                 onClick={() => setEditingRow(row)}
-                style={{ display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid #fed7aa", background: "#fff7ed", color: "#ea580c", cursor: "pointer" }}
+                style={{ display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid #c2d0eb", background: "#f0f3fa", color: "#253361", cursor: "pointer" }}
                 title="Edit"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" style={{ width: 15, height: 15 }}>
@@ -498,7 +498,7 @@ export default function UserGroupMaster() {
             hasPermission("user_type", "write") ? (
               <button
                 onClick={() => navigate("/admin/user-types/create")}
-                style={{ display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center", borderRadius: 9, background: "linear-gradient(135deg,#ea580c,#c2410c)", color: "#fff", border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(234,88,12,0.35)" }}
+                style={{ display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center", borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff", border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)" }}
                 title="Create User Type"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>

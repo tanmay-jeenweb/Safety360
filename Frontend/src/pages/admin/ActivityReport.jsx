@@ -65,7 +65,7 @@ function DetailModal({ isOpen, row, onClose }) {
         maxHeight: "90vh"
       }}>
         {/* Modal Header */}
-        <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#ea580c,#c2410c)" }}>
+        <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#253361,#1a2446)" }}>
           <div style={{ flex: 1 }}>
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>Activity Log Detail</h2>
             <p style={{ margin: "4px 0 0", fontSize: 13, color: "#d9e2ec" }}>

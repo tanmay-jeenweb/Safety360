@@ -2,28 +2,39 @@
 
 @theme {
   --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
-  /* Primary brand orange color and its variations */
-  --color-indigo-50: #fff7ed;
-  --color-indigo-100: #ffedd5;
-  --color-indigo-200: #fed7aa;
-  --color-indigo-300: #fdba74;
-  --color-indigo-400: #fb923c;
-  --color-indigo-500: #f97316;
-  --color-indigo-600: #ea580c; /* Primary brand orange */
-  --color-indigo-700: #c2410c;
-  --color-indigo-800: #9a3412;
-  --color-indigo-900: #7c2d12;
+  /* Primary brand color (#253361) and its variations */
+  --color-orange-50: #f0f3fa;
+  --color-orange-100: #e0e7f5;
+  --color-orange-200: #c2d0eb;
+  --color-orange-300: #93a6d7;
+  --color-orange-400: #556bb5;
+  --color-orange-500: #33447a;
+  --color-orange-600: #253361; /* Primary brand color */
+  --color-orange-700: #1a2446;
+  --color-orange-800: #131b35;
+  --color-orange-900: #0c1224;
 
-  --color-blue-50: #fff7ed;
-  --color-blue-100: #ffedd5;
-  --color-blue-200: #fed7aa;
-  --color-blue-300: #fdba74;
-  --color-blue-400: #fb923c;
-  --color-blue-500: #f97316;
-  --color-blue-600: #ea580c;
-  --color-blue-700: #c2410c;
-  --color-blue-800: #9a3412;
-  --color-blue-900: #ea580c; /* Target header/pagination color */
+  --color-indigo-50: #f0f3fa;
+  --color-indigo-100: #e0e7f5;
+  --color-indigo-200: #c2d0eb;
+  --color-indigo-300: #93a6d7;
+  --color-indigo-400: #556bb5;
+  --color-indigo-500: #33447a;
+  --color-indigo-600: #253361; /* Primary brand color */
+  --color-indigo-700: #1a2446;
+  --color-indigo-800: #131b35;
+  --color-indigo-900: #0c1224;
+
+  --color-blue-50: #f0f3fa;
+  --color-blue-100: #e0e7f5;
+  --color-blue-200: #c2d0eb;
+  --color-blue-300: #93a6d7;
+  --color-blue-400: #556bb5;
+  --color-blue-500: #33447a;
+  --color-blue-600: #253361;
+  --color-blue-700: #1a2446;
+  --color-blue-800: #131b35;
+  --color-blue-900: #253361;
 }
 
 /* Login page: white placeholder text for glass inputs */
