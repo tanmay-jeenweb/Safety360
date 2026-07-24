@@ -6,17 +6,6 @@ import toast from "react-hot-toast";
 
 const MASTERS = [
   { key: "user_type",             label: "User Type Master" },
-  { key: "label_master",          label: "Label Master" },
-  { key: "inquiry_source_master", label: "Inquiry Source Master" },
-  { key: "company_brand_master",  label: "Company Brand Master" },
-  { key: "document_master",       label: "Document Master" },
-  { key: "team_role_master",      label: "Team Role Master" },
-  { key: "call_outcome_master",   label: "Call Outcome Master" },
-  { key: "mobile_brand_master",   label: "Brand Master" },
-  { key: "bank_master",           label: "Finance Company Master" },
-  { key: "finance_machine_master", label: "Finance Machine Master" },
-  { key: "store_details_approval", label: "Store Details Approval" },
-  { key: "deposit_stock_approval", label: "Deposit & Stock Approval" },
   { key: "user_master",             label: "User Master" },
   { key: "device_approval",         label: "Device Approval" },
   { key: "client_master",            label: "Client Master" },
@@ -25,6 +14,8 @@ const MASTERS = [
   { key: "trainer_master",           label: "Trainer Master" },
   { key: "certificate_template_master", label: "Certificate Template Master" },
   { key: "rating_scale_master",      label: "Rating Scale Master" },
+  { key: "category_master",          label: "Category Master" },
+  { key: "training_module_master",   label: "Training Module Master" },
 ];
 
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];

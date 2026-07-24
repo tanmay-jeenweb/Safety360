@@ -15,6 +15,9 @@ import RoleMaster from "./pages/admin/role/RoleMaster";
 import TrainerMaster from "./pages/admin/trainer/TrainerMaster";
 import CertificateTemplateMaster from "./pages/admin/certificate/CertificateTemplateMaster";
 import RatingScaleMaster from "./pages/admin/rating/RatingScaleMaster";
+import CategoryMaster from "./pages/admin/category/CategoryMaster";
+import TrainingModuleMaster from "./pages/admin/training/TrainingModuleMaster";
+import CreateTrainingModule from "./pages/admin/training/CreateTrainingModule";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -73,6 +76,22 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="rating_scale_master" requiredAction="read" />}>
                 <Route path="/admin/rating-scales" element={<RatingScaleMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="category_master" requiredAction="read" />}>
+                <Route path="/admin/categories" element={<CategoryMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="training_module_master" requiredAction="read" />}>
+                <Route path="/admin/training-modules" element={<TrainingModuleMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="training_module_master" requiredAction="write" />}>
+                <Route path="/admin/training-modules/create" element={<CreateTrainingModule />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="training_module_master" requiredAction="update" />}>
+                <Route path="/admin/training-modules/edit/:id" element={<CreateTrainingModule />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />
