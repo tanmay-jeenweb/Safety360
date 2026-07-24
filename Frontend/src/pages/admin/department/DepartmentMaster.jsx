@@ -248,7 +248,7 @@ export default function DepartmentMaster() {
                                 onClick={() => handleDelete(row.id)}
                                 style={{
                                     display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center",
-                                    borderRadius: 8, border: "1px solid #fecdd3", background: "#fff1f2", color: "#e11d48", cursor: "pointer"
+                                    borderRadius: 8, border: "1px solid #fecdd3", background: "#fff1f2", color: "#be123c", cursor: "pointer"
                                 }}
                                 title="Delete Department"
                             >
@@ -265,87 +265,10 @@ export default function DepartmentMaster() {
         return cols;
     }, [hasPermission]);
 
-    const canWrite = hasPermission("department_master", "write");
-
     return (
-        <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
-            <Navbar />
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter',sans-serif" }}>
+            <Navbar title="CRM Admin" />
 
-            <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px 48px" }}>
-                {/* Header */}
-                <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    flexWrap: "wrap", gap: 16, marginBottom: 24
-                }}>
-                    <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <div style={{
-                                width: 40, height: 40, borderRadius: 12,
-                                background: "linear-gradient(135deg, #253361, #1a2446)",
-                                display: "flex", alignItems: "center", justifyContent: "center", color: "#fff"
-                            }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" style={{ width: 22, height: 22 }}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5s.75 0 .75.75v1.5c0 .75-.75.75-.75.75H9m0-3h1.5m-1.5 6h1.5s.75 0 .75.75v1.5c0 .75-.75.75-.75.75H9m0-3h1.5m-1.5 6h1.5s.75 0 .75.75v1.5c0 .75-.75.75-.75.75H9m0-3h1.5" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0f172a" }}>
-                                    Department Master
-                                </h1>
-                                <p style={{ margin: "2px 0 0", fontSize: 13, color: "#64748b" }}>
-                                    Manage organization departments and department records
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {canWrite && (
-                        <button
-                            onClick={handleOpenAddModal}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 8,
-                                padding: "10px 20px", borderRadius: 10, border: "none",
-                                background: "linear-gradient(135deg, #253361, #1a2446)",
-                                color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer",
-                                boxShadow: "0 4px 14px rgba(37,51,97,0.3)"
-                            }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" style={{ width: 16, height: 16 }}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            Add Department
-                        </button>
-                    )}
-                </div>
-
-                {/* Error Notification */}
-                {error && (
-                    <div style={{
-                        background: "#fff1f2", border: "1px solid #fecdd3", borderRadius: 12,
-                        padding: "14px 18px", marginBottom: 20, color: "#be123c", fontSize: 14,
-                        display: "flex", alignItems: "center", gap: 10
-                    }}>
-                        <span>⚠️</span>
-                        <span>{error}</span>
-                    </div>
-                )}
-
-                {/* Data Table */}
-                <div style={{
-                    background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)", overflow: "hidden"
-                }}>
-                    <DataTable
-                        data={departments}
-                        columns={columns}
-                        loading={loading}
-                        searchPlaceholder="Search departments..."
-                        emptyMessage="No departments found. Click 'Add Department' to create one."
-                    />
-                </div>
-            </div>
-
-            {/* Form Modal */}
             <DepartmentFormModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
@@ -353,6 +276,40 @@ export default function DepartmentMaster() {
                 editingRow={editingRow}
                 saving={saving}
             />
+
+            <main style={{ flex: 1, display: "flex", flexDirection: "column", width: "100%", margin: "0 auto", padding: "32px 30px" }}>
+                {error && (
+                    <div style={{ background: "#fff1f2", border: "1px solid #fecdd3", color: "#be123c", padding: "12px 16px", borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500 }}>
+                        {error}
+                    </div>
+                )}
+
+                <DataTable
+                    tableId="department_master"
+                    title="Department Master"
+                    data={departments}
+                    columns={columns}
+                    loading={loading}
+                    searchPlaceholder="Search departments..."
+                    actionButton={
+                        hasPermission("department_master", "write") ? (
+                            <button
+                                onClick={handleOpenAddModal}
+                                style={{
+                                    display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                                    borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
+                                    border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
+                                }}
+                                title="Add Department"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        ) : null
+                    }
+                />
+            </main>
         </div>
     );
 }
