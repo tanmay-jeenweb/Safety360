@@ -21,6 +21,7 @@ const MASTERS = [
     { key: 'role_master', label: 'Role Master' },
     { key: 'trainer_master', label: 'Trainer Master' },
     { key: 'certificate_template_master', label: 'Certificate Template Master' },
+    { key: 'rating_scale_master', label: 'Rating Scale Master' },
 ];
 
 // ─── Table creation ──────────────────────────────────────────────────────────
