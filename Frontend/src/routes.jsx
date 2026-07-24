@@ -22,6 +22,7 @@ import DepartmentMaster from "./pages/admin/department/DepartmentMaster";
 import QuestionBankMaster from "./pages/admin/questions/QuestionBankMaster";
 import CreateQuestion from "./pages/admin/questions/CreateQuestion";
 import QuestionPaperMaster from "./pages/admin/questions/QuestionPaperMaster";
+import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -116,6 +117,8 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" />}>
                 <Route path="/admin/question-paper" element={<QuestionPaperMaster />} />
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>
+                <Route path="/admin/employees" element={<EmployeeMaster />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/admin/home" replace />} />
