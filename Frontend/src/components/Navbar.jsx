@@ -489,6 +489,21 @@ export default function Navbar() {
                             )}
                         </div>
 
+                        {/* Batches Tab */}
+                        {(isAdmin || hasPermission("batch_master", "read")) && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => navigate("/admin/batches")}
+                                    className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname.startsWith("/admin/batches") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2 font-semibold text-white truncate">
+                                        Batches
+                                    </span>
+                                </button>
+                            </div>
+                        )}
+
                         {/* Activity Report Tab */}
                         {isAdmin && (
                             <div className="relative">
@@ -498,7 +513,6 @@ export default function Navbar() {
                                         }`}
                                 >
                                     <span className="flex items-center gap-2 font-semibold text-white truncate">
-                                        <i className="fa-solid fa-list-check text-xs"></i>
                                         Activity Report
                                     </span>
                                 </button>
