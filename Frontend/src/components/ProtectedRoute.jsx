@@ -21,21 +21,23 @@ export default function ProtectedRoute({ allowedRole, allowedModule, requiredMas
         );
     }
 
+    const redirectPath = user.role === "employee" ? "/employee/dashboard" : "/";
+
     // Role check (admin or specific master permission)
     if (allowedRole && user.role !== allowedRole && !(allowedRole === "admin" && user.role === "super admin")) {
         const isAllowedByMaster = (requiredMaster && hasPermission(requiredMaster, requiredAction)) ||
                                   (requiredMasters && requiredMasters.some(m => hasPermission(m, requiredAction)));
         if (!isAllowedByMaster) {
-            return <Navigate to="/user/home" replace />;
+            return <Navigate to={redirectPath} replace />;
         }
     }
 
     // Master permission check
     if (requiredMaster && !hasPermission(requiredMaster, requiredAction)) {
-        return <Navigate to="/user/home" replace />;
+        return <Navigate to={redirectPath} replace />;
     }
     if (requiredMasters && !requiredMasters.some(m => hasPermission(m, requiredAction))) {
-        return <Navigate to="/user/home" replace />;
+        return <Navigate to={redirectPath} replace />;
     }
 
     // Module check

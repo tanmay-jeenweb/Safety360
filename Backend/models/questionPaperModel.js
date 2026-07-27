@@ -102,7 +102,7 @@ const getQuestionPaperById = async (id) => {
     if (qIds.length > 0) {
         // Query database for all question details using db.query for array flattening
         const [qRows] = await db.query(
-            `SELECT qb.id, qb.question_text, qb.question_type, qb.correct_answer 
+            `SELECT qb.id, qb.question_text, qb.question_type, qb.options, qb.correct_answer 
              FROM question_bank qb 
              WHERE qb.id IN (?)`,
             [qIds]

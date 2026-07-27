@@ -19,3 +19,15 @@ export const deleteEmployee = async (id) => {
 export const importEmployees = async (records) => {
     return apiClient.post("/employees/import", records);
 };
+
+export const getMyActiveTests = async () => {
+    return apiClient.get("/employees/my-tests");
+};
+
+export const getTestDetails = async (batchId, testType) => {
+    return apiClient.get(`/employees/test-details/${batchId}/${testType}`);
+};
+
+export const submitTest = async (payload) => {
+    return apiClient.post("/employees/submit-test", payload);
+};
