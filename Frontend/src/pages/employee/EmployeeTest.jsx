@@ -123,7 +123,7 @@ export default function EmployeeTest() {
 
                     <button
                         onClick={() => navigate("/employee/dashboard")}
-                        className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 hover:shadow-[0_6px_20px_rgba(249,115,22,0.3)] hover:-translate-y-0.5 cursor-pointer"
+                        className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-3 rounded-2xl text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
                     >
                         Back to Dashboard
                     </button>
@@ -236,7 +236,7 @@ export default function EmployeeTest() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition-all hover:shadow-[0_6px_20px_rgba(249,115,22,0.3)] hover:-translate-y-0.5 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-1.5"
                             >
                                 {submitting ? "Submitting..." : "Submit Exam"}
                             </button>

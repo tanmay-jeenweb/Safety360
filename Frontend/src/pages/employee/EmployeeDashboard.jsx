@@ -173,7 +173,7 @@ export default function EmployeeDashboard() {
 
                                     <button
                                         onClick={() => handleStartTest(test.batchId, test.testType)}
-                                        className="w-full py-2.5 rounded-xl text-white text-xs font-semibold tracking-wider transition-all duration-300 bg-orange-600 hover:bg-orange-500 hover:shadow-[0_6px_20px_rgba(249,115,22,0.3)] hover:-translate-y-0.5 cursor-pointer flex justify-center items-center gap-2"
+                                        className="w-full py-2.5 rounded-xl text-white text-xs font-semibold tracking-wider transition-all duration-300 bg-orange-600 hover:bg-orange-500 hover:-translate-y-0.5 cursor-pointer flex justify-center items-center gap-2"
                                     >
                                         <span>Start Exam</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
