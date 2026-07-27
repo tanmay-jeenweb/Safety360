@@ -24,6 +24,7 @@ import CreateQuestion from "./pages/admin/questions/CreateQuestion";
 import QuestionPaperMaster from "./pages/admin/questions/QuestionPaperMaster";
 import CreateQuestionPaper from "./pages/admin/questions/CreateQuestionPaper";
 import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
+import BatchMaster from "./pages/admin/batch/BatchMaster";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -122,6 +123,10 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>
                 <Route path="/admin/employees" element={<EmployeeMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="batch_master" requiredAction="read" />}>
+                <Route path="/admin/batches" element={<BatchMaster />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="write" />}>

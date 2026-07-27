@@ -21,7 +21,9 @@ const MASTERS = [
   { key: "training_module_master", label: "Training Module Master" },
   { key: "department_master", label: "Department Master" },
   { key: "question_bank", label: "Question Bank Master" },
+  { key: "question_paper", label: "Question Paper Master" },
   { key: "employee_master", label: "Employee Master" },
+  { key: "batch_master", label: "Batch Master" },
 ];
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];
 const PERM_LABELS = { canRead: "Read", canWrite: "Write / Approval", canUpdate: "Update", canDelete: "Delete" };
