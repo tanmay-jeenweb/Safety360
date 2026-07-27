@@ -34,27 +34,68 @@ const login = async (req, res) => {
         }
 
         // Find User
-        const user = await findUserByUsername(username);
+        let user = await findUserByUsername(username);
+        let isEmployee = false;
+
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            // Check if there is an employee with this employee_code
+            const [empRows] = await db.execute(
+                "SELECT * FROM employees WHERE employee_code = ?",
+                [username]
+            );
+            if (empRows.length > 0) {
+                user = empRows[0];
+                isEmployee = true;
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found"
+                });
+            }
         }
 
-        if (user.active === 0 || user.active === false) {
+        if (!isEmployee && (user.active === 0 || user.active === false)) {
             return res.status(403).json({
                 success: false,
                 message: "Your account is deactivated. Please contact an administrator."
             });
         }
 
-        // Compare Password
+        // Compare Password (which is plain text phone number for employee, checked against hashed password in db)
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials"
+            });
+        }
+
+        if (isEmployee) {
+            const token = jwt.sign(
+                {
+                    id: user.id,
+                    role: "employee",
+                    name: user.full_name,
+                    username: user.employee_code,
+                    client_id: user.client_id,
+                    site_id: user.site_id
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "1d" }
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: "Employee login successful",
+                token,
+                user: {
+                    id: user.id,
+                    name: user.full_name,
+                    username: user.employee_code,
+                    role: "employee",
+                    client_id: user.client_id,
+                    site_id: user.site_id
+                }
             });
         }
 
@@ -299,6 +340,14 @@ const getMyPermissions = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 isAdmin: true,
+                permissions: {}
+            });
+        }
+
+        if (req.user.role === 'employee') {
+            return res.status(200).json({
+                success: true,
+                isAdmin: false,
                 permissions: {}
             });
         }

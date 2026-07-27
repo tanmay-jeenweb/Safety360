@@ -6,9 +6,19 @@ const {
     deleteEmployeeController,
     importEmployeesController
 } = require('../controllers/employeeController.js');
+const {
+    getMyTestsController,
+    getTestDetailsController,
+    submitTestController
+} = require('../controllers/employeePortalController.js');
 const { verifyToken, verifyPermission } = require('../middleware/authMiddleware.js');
 
 const router = express.Router();
+
+// Employee Portal routes
+router.get('/my-tests', verifyToken, getMyTestsController);
+router.get('/test-details/:batchId/:testType', verifyToken, getTestDetailsController);
+router.post('/submit-test', verifyToken, submitTestController);
 
 router.post('/add', verifyToken, verifyPermission('employee_master', 'write'), addEmployee);
 router.post('/import', verifyToken, verifyPermission('employee_master', 'write'), importEmployeesController);

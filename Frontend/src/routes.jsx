@@ -29,6 +29,8 @@ import ManageBatch from "./pages/admin/batch/ManageBatch";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
+import EmployeeTest from "./pages/employee/EmployeeTest";
 
 export default function AppRoutes() {
     return (
@@ -36,6 +38,12 @@ export default function AppRoutes() {
             <Route path="/" element={<Login />} />
             <Route path="/device-registration" element={<DeviceRegistration />} />
             <Route path="/pending-approval" element={<PendingApproval />} />
+
+            {/* Employee Portal Routes */}
+            <Route element={<ProtectedRoute allowedRole="employee" />}>
+                <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+                <Route path="/employee/test/:batchId/:testType" element={<EmployeeTest />} />
+            </Route>
 
             <Route element={<ProtectedRoute />}>
                 <Route path="/profile" element={<Profile />} />

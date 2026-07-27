@@ -39,7 +39,11 @@ export default function Login() {
             localStorage.setItem("token", token);
             sessionStorage.setItem("loginTime", new Date().toLocaleTimeString());
             window.dispatchEvent(new Event("auth-change"));
-            navigate("/admin/dashboard");
+            if (user.role === "employee") {
+                navigate("/employee/dashboard");
+            } else {
+                navigate("/admin/dashboard");
+            }
 
         } catch (error) {
             if (error.response?.data?.status === "DEVICE_MISMATCH") {

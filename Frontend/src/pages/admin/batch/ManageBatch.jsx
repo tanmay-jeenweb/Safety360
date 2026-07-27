@@ -107,6 +107,14 @@ export default function ManageBatch() {
         );
     }, [batch, employees, participants]);
 
+    const preTestsSubmittedCount = useMemo(() => {
+        return participants.filter(p => p.pre_test_score !== null).length;
+    }, [participants]);
+
+    const postTestsSubmittedCount = useMemo(() => {
+        return participants.filter(p => p.post_test_score !== null).length;
+    }, [participants]);
+
     // Search query filter for available employees
     const filteredAvailableEmployees = useMemo(() => {
         if (!availableEmployees.length) return [];
@@ -520,11 +528,11 @@ export default function ManageBatch() {
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Pre-Tests Submitted</span>
-                        <div className="text-2xl font-black text-slate-900">0 / {participants.length}</div>
+                        <div className="text-2xl font-black text-slate-900">{preTestsSubmittedCount} / {participants.length}</div>
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Post Tests Submitted</span>
-                        <div className="text-2xl font-black text-slate-900">0 / {participants.length}</div>
+                        <div className="text-2xl font-black text-slate-900">{postTestsSubmittedCount} / {participants.length}</div>
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Feedbacks Received</span>
@@ -738,9 +746,9 @@ export default function ManageBatch() {
                                                     className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                                 />
                                             </td>
-                                            <td className="py-4 px-6 text-center text-slate-400 font-semibold">—</td>
-                                            <td className="py-4 px-6 text-center text-slate-400 font-semibold">—</td>
-                                            <td className="py-4 px-6 text-center text-slate-400 font-semibold">—</td>
+                                            <td className="py-4 px-6 text-center font-bold text-slate-700">{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
+                                            <td className="py-4 px-6 text-center font-bold text-slate-700">{part.post_test_score !== null ? part.post_test_score : "—"}</td>
+                                            <td className="py-4 px-6 text-center font-bold text-slate-700">{part.final_score !== null ? part.final_score : "—"}</td>
                                             <td className="py-4 px-6 text-center">
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase">
                                                     {part.band_badge || 'UNTESTED'}

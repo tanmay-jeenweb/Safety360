@@ -18,18 +18,34 @@ const verifyToken = async (req, res, next) => {
         req.user = decoded;
 
         if (!req.user.username || !req.user.name) {
-            const [rows] = await db.execute(
-                "SELECT name, username, role FROM users WHERE id = ?",
-                [req.user.id]
-            );
+            if (req.user.role === "employee") {
+                const [rows] = await db.execute(
+                    "SELECT full_name AS name, employee_code AS username FROM employees WHERE id = ?",
+                    [req.user.id]
+                );
 
-            if (rows.length) {
-                req.user = {
-                    ...req.user,
-                    name: rows[0].name,
-                    username: rows[0].username,
-                    role: rows[0].role || req.user.role
-                };
+                if (rows.length) {
+                    req.user = {
+                        ...req.user,
+                        name: rows[0].name,
+                        username: rows[0].username,
+                        role: "employee"
+                    };
+                }
+            } else {
+                const [rows] = await db.execute(
+                    "SELECT name, username, role FROM users WHERE id = ?",
+                    [req.user.id]
+                );
+
+                if (rows.length) {
+                    req.user = {
+                        ...req.user,
+                        name: rows[0].name,
+                        username: rows[0].username,
+                        role: rows[0].role || req.user.role
+                    };
+                }
             }
         }
 
