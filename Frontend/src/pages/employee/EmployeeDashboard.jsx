@@ -79,20 +79,21 @@ export default function EmployeeDashboard() {
             </header>
 
             {/* Dashboard Content */}
-            <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 z-10 flex flex-col justify-start">
+            <main className="flex-1 w-full mx-auto px-6 py-6 z-10 flex flex-col justify-start">
                 {/* Welcome Card */}
-                <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(37,51,97,0.04)] mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-3 sm:p-8 shadow-[0_20px_50px_rgba(37,51,97,0.04)] mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                             Welcome, <span className="bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent">{user?.name || "Participant"}</span>!
                         </h1>
+                        
+                    </div>
+                    <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-2xl text-xs font-bold border border-orange-100 flex items-center gap-2">
+                        {/* <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping"></span>
+                        Active Exam Session */}
                         <p className="text-slate-500 text-sm mt-1 font-medium">
                             Employee Code: <span className="font-bold text-slate-700">{user?.username}</span>
                         </p>
-                    </div>
-                    <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-2xl text-xs font-bold border border-orange-100 flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping"></span>
-                        Active Exam Session
                     </div>
                 </div>
 
