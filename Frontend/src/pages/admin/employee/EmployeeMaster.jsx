@@ -1,11 +1,12 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Navbar from "../../../components/Navbar";
-import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from "../../../api/employeeApi";
+import { getEmployees, createEmployee, updateEmployee, deleteEmployee, importEmployees } from "../../../api/employeeApi";
 import { getDepartments } from "../../../api/departmentApi";
 import { getClients } from "../../../api/clientApi";
 import { getSites } from "../../../api/siteApi";
 import DataTable from "../../../components/DataTable";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
 import { usePermission } from "../../../context/PermissionContext";
 
 // ─── Modal Form Component for Add & Edit Employee ──────────────────────────────
@@ -16,6 +17,7 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
     const [designation, setDesignation] = useState("");
     const [employeeType, setEmployeeType] = useState("Direct");
     const [contractorName, setContractorName] = useState("");
+    const [phoneNo, setPhoneNo] = useState("");
     const [clientId, setClientId] = useState("");
     const [siteId, setSiteId] = useState("");
 
@@ -33,6 +35,7 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             setDesignation(editingRow.designation || "");
             setEmployeeType(editingRow.employee_type || "Direct");
             setContractorName(editingRow.contractor_name || "");
+            setPhoneNo(editingRow.phone_no || "");
             setClientId(editingRow.client_id || "");
             setSiteId(editingRow.site_id || "");
         } else {
@@ -42,6 +45,7 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             setDesignation("");
             setEmployeeType("Direct");
             setContractorName("");
+            setPhoneNo("");
             setClientId("");
             setSiteId("");
         }
@@ -78,6 +82,10 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             toast.error("Contractor Name is required when Employee Type is Contractor");
             return;
         }
+        if (!phoneNo.trim()) {
+            toast.error("Phone Number is required");
+            return;
+        }
         if (!clientId) {
             toast.error("Please select a Client");
             return;
@@ -94,6 +102,7 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             designation: designation.trim(),
             employeeType,
             contractorName: employeeType === "Contractor" ? contractorName.trim() : null,
+            phoneNo: phoneNo.trim(),
             clientId,
             siteId
         });
@@ -207,6 +216,23 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
                                     value={designation}
                                     onChange={(e) => setDesignation(e.target.value)}
                                     placeholder="e.g. Executive Engineer"
+                                    style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
+                                    onFocus={e => e.target.style.borderColor = "#253361"}
+                                    onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                    required
+                                />
+                            </div>
+
+                            {/* Phone Number */}
+                            <div>
+                                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                                    Phone Number <span style={{ color: "#e11d48" }}>*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={phoneNo}
+                                    onChange={(e) => setPhoneNo(e.target.value)}
+                                    placeholder="Enter phone number..."
                                     style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
                                     onFocus={e => e.target.style.borderColor = "#253361"}
                                     onBlur={e => e.target.style.borderColor = "#cbd5e1"}
@@ -343,6 +369,224 @@ export default function EmployeeMaster() {
     const [editingRow, setEditingRow] = useState(null);
 
     const { hasPermission } = usePermission();
+    const fileInputRef = useRef(null);
+
+    const handleExportTemplate = async () => {
+        try {
+            const ExcelJS = await import("exceljs");
+            const workbook = new ExcelJS.Workbook();
+            
+            // Sheet 1: Template
+            const worksheet = workbook.addWorksheet("Template", {
+                views: [{ showGridLines: true }]
+            });
+            
+            // Sheet 2: Lists (Lookup lists for dropdowns)
+            const listsSheet = workbook.addWorksheet("Lists", {
+                views: [{ showGridLines: true }]
+            });
+            // Hide the lists sheet so it doesn't clutter the workbook
+            listsSheet.state = "hidden";
+
+            // Headers for Template
+            const headers = [
+                "Employee Code",
+                "Full Name",
+                "Department",
+                "Designation",
+                "Employee Type",
+                "Contractor Name",
+                "Phone Number",
+                "Client",
+                "Site"
+            ];
+            
+            worksheet.addRow(headers);
+            
+            // Format Template Header Row
+            const headerRow = worksheet.getRow(1);
+            headerRow.height = 24;
+            headerRow.eachCell((cell) => {
+                cell.font = { name: "Segoe UI", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FF253361" } // Dark blue theme
+                };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+            });
+
+            // Populate Lists sheet with values
+            const deptNames = departments.map(d => d.department_name).filter(Boolean);
+            const empTypes = ["Direct", "Contractor"];
+            const clientNames = clients.map(c => c.client_name).filter(Boolean);
+            const siteNames = sites.map(s => s.site_name).filter(Boolean);
+
+            // Find maximum length of list columns to write rows safely
+            const maxListLength = Math.max(deptNames.length, empTypes.length, clientNames.length, siteNames.length);
+            
+            // Add header for list sheet columns
+            listsSheet.addRow(["Departments", "EmployeeTypes", "Clients", "Sites"]);
+            
+            for (let i = 0; i < maxListLength; i++) {
+                listsSheet.addRow([
+                    deptNames[i] || "",
+                    empTypes[i] || "",
+                    clientNames[i] || "",
+                    siteNames[i] || ""
+                ]);
+            }
+
+            // Ranges for validations in Excel notation (1-indexed, starting from row 2)
+            const deptRange = `Lists!$A$2:$A$${deptNames.length + 1}`;
+            const typeRange = `Lists!$B$2:$B$3`;
+            const clientRange = `Lists!$C$2:$C$${clientNames.length + 1}`;
+            const siteRange = `Lists!$D$2:$D$${siteNames.length + 1}`;
+
+
+
+            // Apply data validations to the entire columns (rows 2 to 10000) using ExcelJS dataValidations
+            worksheet.dataValidations.add("C2:C10000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [deptRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select a department from the dropdown list."
+            });
+
+            worksheet.dataValidations.add("E2:E10000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [typeRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select Direct or Contractor."
+            });
+
+            worksheet.dataValidations.add("H2:H10000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [clientRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select a client from the dropdown list."
+            });
+
+            worksheet.dataValidations.add("I2:I10000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [siteRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select a site from the dropdown list."
+            });
+
+            // Adjust column widths
+            worksheet.columns.forEach((column, index) => {
+                const headerText = headers[index];
+                column.width = Math.max(headerText.length + 5, 18);
+            });
+
+            // Write Buffer and trigger download
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = "Employee_Import_Template.xlsx";
+            anchor.click();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Excel template with dropdowns exported successfully!");
+        } catch (err) {
+            console.error("Failed to export Excel template:", err);
+            toast.error("Failed to export Excel template. Please try again.");
+        }
+    };
+
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setLoading(true);
+        const reader = new FileReader();
+
+        reader.onload = async (evt) => {
+            try {
+                const dataBuffer = evt.target.result;
+                const workbook = XLSX.read(dataBuffer, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                if (jsonData.length === 0) {
+                    toast.error("The selected file is empty.");
+                    setLoading(false);
+                    return;
+                }
+
+                const firstRow = jsonData[0];
+                const keys = Object.keys(firstRow);
+
+                const getVal = (row, fieldOptions) => {
+                    const foundKey = keys.find(k => fieldOptions.includes(k.toLowerCase().trim()));
+                    return foundKey ? row[foundKey] : null;
+                };
+
+                const mappedRecords = jsonData.map((row) => {
+                    const empCode = getVal(row, ["employee code", "employee_code", "code", "emp code"]);
+                    const fullName = getVal(row, ["full name", "full_name", "name", "employee name"]);
+                    const departmentName = getVal(row, ["department", "department_name", "dept"]);
+                    const designation = getVal(row, ["designation", "role"]);
+                    const employeeType = getVal(row, ["employee type", "employee_type", "type"]) || "Direct";
+                    const contractorName = getVal(row, ["contractor name", "contractor_name", "contractor"]);
+                    const phoneNo = getVal(row, ["phone number", "phone_no", "phone", "phone no", "phone no."]);
+                    const clientName = getVal(row, ["client", "client_name", "client_id"]);
+                    const siteName = getVal(row, ["site", "site_name", "site_id"]);
+
+                    return {
+                        employeeCode: empCode ? String(empCode).trim() : null,
+                        fullName: fullName ? String(fullName).trim() : null,
+                        departmentName: departmentName ? String(departmentName).trim() : null,
+                        designation: designation ? String(designation).trim() : null,
+                        employeeType: employeeType ? String(employeeType).trim() : "Direct",
+                        contractorName: contractorName ? String(contractorName).trim() : null,
+                        phoneNo: phoneNo ? String(phoneNo).trim() : null,
+                        clientName: clientName ? String(clientName).trim() : null,
+                        siteName: siteName ? String(siteName).trim() : null
+                    };
+                }).filter(r => r.employeeCode);
+
+                if (mappedRecords.length === 0) {
+                    toast.error("No valid records with Employee Code found.");
+                    setLoading(false);
+                    return;
+                }
+
+                const importRes = await importEmployees(mappedRecords);
+                if (importRes.data.success) {
+                    toast.success(importRes.data.message || `Successfully processed ${mappedRecords.length} records.`);
+                    await loadData();
+                } else {
+                    toast.error(importRes.data.message || "Failed to import records.");
+                }
+            } catch (err) {
+                console.error("Error reading/importing Excel:", err);
+                toast.error(err?.response?.data?.message || err.message || "Failed to process import file.");
+            } finally {
+                setLoading(false);
+                if (e.target) e.target.value = "";
+            }
+        };
+
+        reader.onerror = () => {
+            toast.error("Failed to read the file.");
+            setLoading(false);
+        };
+
+        reader.readAsArrayBuffer(file);
+    };
 
     const loadData = async () => {
         setLoading(true);
@@ -448,6 +692,11 @@ export default function EmployeeMaster() {
                 render: (row) => <span style={{ fontWeight: 600, color: "#475569" }}>{row.designation}</span>
             },
             {
+                key: "phone_no",
+                label: "Phone No.",
+                render: (row) => <span style={{ fontWeight: 600, color: "#1e293b" }}>{row.phone_no || "—"}</span>
+            },
+            {
                 key: "employee_type",
                 label: "Employee Type",
                 render: (row) => (
@@ -546,6 +795,15 @@ export default function EmployeeMaster() {
                         {error}
                     </div>
                 )}
+
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleImport} 
+                    style={{ display: "none" }} 
+                    accept=".xlsx, .xls" 
+                />
+
                 <DataTable
                     tableId="employee_master"
                     title="Employee / Participant Master"
@@ -555,19 +813,43 @@ export default function EmployeeMaster() {
                     searchPlaceholder="Search employees, designation, type..."
                     actionButton={
                         hasPermission("employee_master", "write") ? (
-                            <button
-                                onClick={handleOpenAddModal}
-                                style={{
-                                    display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
-                                    borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
-                                    border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
-                                }}
-                                title="Add Employee"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                            </button>
+                            <div style={{ display: "flex", gap: 10 }}>
+                                <button
+                                    onClick={handleExportTemplate}
+                                    style={{
+                                        display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                                        borderRadius: 9, border: "1px solid #cbd5e1", background: "#fff", color: "#253361", cursor: "pointer",
+                                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                                    }}
+                                    title="Export Excel Template"
+                                >
+                                    <i className="fa-solid fa-file-export" style={{ fontSize: 14 }}></i>
+                                </button>
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    style={{
+                                        display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                                        borderRadius: 9, border: "1px solid #cbd5e1", background: "#fff", color: "#253361", cursor: "pointer",
+                                        boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                                    }}
+                                    title="Import Excel File"
+                                >
+                                    <i className="fa-solid fa-file-import" style={{ fontSize: 14 }}></i>
+                                </button>
+                                <button
+                                    onClick={handleOpenAddModal}
+                                    style={{
+                                        display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                                        borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
+                                        border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
+                                    }}
+                                    title="Add Employee"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                </button>
+                            </div>
                         ) : null
                     }
                 />

@@ -3,9 +3,11 @@ const {
     getAllEmployees,
     updateEmployee,
     deleteEmployee,
-    getEmployeeById
+    getEmployeeById,
+    importEmployees
 } = require('../models/employeeModel.js');
 const { createAuditLog } = require('../models/auditLogModel.js');
+const bcrypt = require('bcryptjs');
 
 const addEmployee = async (req, res) => {
     try {
@@ -17,7 +19,8 @@ const addEmployee = async (req, res) => {
             employeeType,
             contractorName,
             clientId,
-            siteId
+            siteId,
+            phoneNo
         } = req.body;
 
         const addedBy = req.user.id;
@@ -41,12 +44,17 @@ const addEmployee = async (req, res) => {
         if (employeeType === 'Contractor' && (!contractorName || !contractorName.trim())) {
             return res.status(400).json({ success: false, message: 'Contractor Name is required for Contractor employee type' });
         }
+        if (!phoneNo || !phoneNo.trim()) {
+            return res.status(400).json({ success: false, message: 'Phone Number is required' });
+        }
         if (!clientId) {
             return res.status(400).json({ success: false, message: 'Client is required' });
         }
         if (!siteId) {
             return res.status(400).json({ success: false, message: 'Site is required' });
         }
+
+        const hashedPassword = await bcrypt.hash(phoneNo.trim(), 10);
 
         const data = {
             employeeCode: employeeCode.trim(),
@@ -55,12 +63,17 @@ const addEmployee = async (req, res) => {
             designation: designation.trim(),
             employeeType,
             contractorName: employeeType === 'Contractor' ? contractorName.trim() : null,
+            phoneNo: phoneNo.trim(),
+            password: hashedPassword,
             clientId: parseInt(clientId, 10),
             siteId: parseInt(siteId, 10)
         };
 
         const result = await createEmployee(data, addedBy);
         const newId = result.insertId;
+
+        // Strip password for log and response
+        const { password, ...safeData } = data;
 
         await createAuditLog(
             addedBy,
@@ -69,13 +82,13 @@ const addEmployee = async (req, res) => {
             'Employee Master',
             'created',
             null,
-            { id: newId, ...data, added_by: addedBy, device_id: deviceId }
+            { id: newId, ...safeData, added_by: addedBy, device_id: deviceId }
         );
 
         res.status(201).json({
             success: true,
             message: 'Employee added successfully',
-            data: { id: newId, ...data, added_by: addedBy }
+            data: { id: newId, ...safeData, added_by: addedBy }
         });
     } catch (error) {
         console.error('Error adding employee:', error);
@@ -117,7 +130,8 @@ const updateEmployeeController = async (req, res) => {
             employeeType,
             contractorName,
             clientId,
-            siteId
+            siteId,
+            phoneNo
         } = req.body;
 
         if (!employeeCode || !employeeCode.trim()) {
@@ -137,6 +151,9 @@ const updateEmployeeController = async (req, res) => {
         }
         if (employeeType === 'Contractor' && (!contractorName || !contractorName.trim())) {
             return res.status(400).json({ success: false, message: 'Contractor Name is required for Contractor employee type' });
+        }
+        if (!phoneNo || !phoneNo.trim()) {
+            return res.status(400).json({ success: false, message: 'Phone Number is required' });
         }
         if (!clientId) {
             return res.status(400).json({ success: false, message: 'Client is required' });
@@ -158,6 +175,7 @@ const updateEmployeeController = async (req, res) => {
             designation: designation.trim(),
             employeeType,
             contractorName: employeeType === 'Contractor' ? contractorName.trim() : null,
+            phoneNo: phoneNo.trim(),
             clientId: parseInt(clientId, 10),
             siteId: parseInt(siteId, 10)
         };
@@ -223,9 +241,56 @@ const deleteEmployeeController = async (req, res) => {
     }
 };
 
+const importEmployeesController = async (req, res) => {
+    try {
+        const records = req.body;
+        const addedBy = req.user.id;
+        const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
+
+        if (!Array.isArray(records) || records.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid records list'
+            });
+        }
+
+        const results = await importEmployees(records, addedBy);
+
+        try {
+            await createAuditLog(
+                addedBy,
+                req.user?.name || req.user?.username || 'Unknown',
+                deviceId,
+                'Employee Master Import',
+                'created',
+                null,
+                {
+                    imported_count: records.length,
+                    imported_at: new Date().toISOString()
+                }
+            );
+        } catch (auditErr) {
+            console.error("Failed to write audit log for employee import:", auditErr);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully processed ${records.length} employee records.`,
+            data: results
+        });
+    } catch (error) {
+        console.error('Error importing employee records:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Internal server error during import'
+        });
+    }
+};
+
 module.exports = {
     addEmployee,
     getAllEmployeesController,
     updateEmployeeController,
-    deleteEmployeeController
+    deleteEmployeeController,
+    importEmployeesController
 };
