@@ -53,38 +53,36 @@ export default function Login() {
     };
 
     return (
-        <div className="h-screen w-screen flex flex-col md:flex-row bg-gradient-to-br from-[#0b1021] via-slate-950 to-[#0d142a] font-sans antialiased text-slate-200 overflow-hidden relative">
+        <div className="h-screen w-screen flex flex-col md:flex-row bg-gradient-to-tr from-slate-50 via-sky-50/30 to-slate-100 font-sans antialiased text-slate-800 overflow-hidden relative">
 
-            {/* Ambient Glows (placed on parent to prevent clipping at 50% width and scrollbar triggers) */}
+            {/* Ambient Glows */}
             {/* Left side glow */}
-            <div className="absolute top-[45%] left-[25%] -translate-x-1/2 -translate-y-1/2 w-[40%] h-[60%] bg-orange-600/15 rounded-full blur-[130px] pointer-events-none z-0" />
+            <div className="absolute top-[45%] left-[25%] -translate-x-1/2 -translate-y-1/2 w-[40%] h-[60%] bg-orange-600/5 rounded-full blur-[130px] pointer-events-none z-0" />
             {/* Right side glows */}
-            <div className="absolute top-[25%] left-[75%] -translate-x-1/2 -translate-y-1/2 w-[40%] h-[50%] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
-            <div className="absolute bottom-[25%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-[35%] h-[45%] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
+            <div className="absolute top-[25%] left-[75%] -translate-x-1/2 -translate-y-1/2 w-[40%] h-[50%] bg-orange-600/5 rounded-full blur-[120px] pointer-events-none z-0" />
+            <div className="absolute bottom-[25%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-[35%] h-[45%] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none z-0" />
 
-            {/* Left Column: Safety360 Showroom (50% width on md and above) */}
-            <div className="hidden md:flex md:w-1/2 h-full relative overflow-hidden select-none bg-transparent flex-col justify-center items-center p-8 z-10">
+            {/* Left Column: Safety360 Hero (50% width on md and above) */}
+            <div className="hidden md:flex md:w-1/2 h-full relative select-none overflow-hidden flex-col justify-start p-12 lg:p-16 z-10">
+                {/* Background Hero Image - Full cover aligned to bottom, shifted down without gaps */}
+                <img
+                    src="/Untitled-2.jpg"
+                    alt="Safety Training Background"
+                    className="absolute -top-20 inset-x-0 w-full h-[calc(100%+80px)] object-cover object-bottom translate-y-20 z-0"
+                />
 
-                {/* Showroom Image container with subtle drop shadow and hover effect - Shifted higher */}
-                <div className="w-full flex justify-center items-center max-h-[70%] z-10 relative -top-16">
-                    <img
-                        src="/Jasmin new (12).png"
-                        alt="Safety360 Store front"
-                        className="w-[95%] h-auto object-contain transition-transform duration-[6000ms] hover:scale-103 ease-out drop-shadow-[0_20px_50px_rgba(37,51,97,0.35)]"
-                    />
-                </div>
+                {/* Subtle Light Overlay for Text Contrast */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/20 to-transparent z-10" />
 
-                {/* Floating Brand Text */}
-                <div className="absolute bottom-4 left-12 z-20 max-w-md">
-                    <h1 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
-                        Empowering Connection,<br />
-                        <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 bg-clip-text text-transparent">
-                            Redefining CRM.
+                {/* Brand Text at the top of the column */}
+                <div className="w-full max-w-md z-20 flex justify-center">
+                    <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight">
+                        Empowering Safety<br />
+                        <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 bg-clip-text text-transparent">
+                            Through Knowledge.
                         </span>
                     </h1>
-                    <p className="mt-3 text-slate-400 text-xs leading-relaxed max-w-sm">
-                        Manage your Safety360 distribution, sales network, agreements, and client relationships in one advanced management platform.
-                    </p>
+                    
                 </div>
             </div>
 
@@ -101,27 +99,27 @@ export default function Login() {
                         <img
                             src={logo}
                             alt="Safety360 Logo"
-                            className="h-16 sm:h-20 w-auto mb-2 drop-shadow-[0_4px_16px_rgba(37,51,97,0.35)] hover:scale-105 transition-transform duration-300"
+                            className="h-16 sm:h-20 w-auto mb-2 drop-shadow-[0_4px_12px_rgba(37,51,97,0.1)] hover:scale-105 transition-transform duration-300"
                         />
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight text-center">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight text-center">
                             Welcome Back
                         </h2>
-                        <p className="text-slate-400 text-xs mt-1 text-center">
-                            Sign in to your CRM dashboard
+                        <p className="text-slate-500 text-xs mt-1 text-center font-medium">
+                            Sign in to your training dashboard
                         </p>
                     </div>
 
-                    {/* Premium Dark Glassmorphic Form Card */}
-                    <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.35)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.55)] hover:border-orange-500/20 transition-all duration-300">
+                    {/* Premium Light Glassmorphic Form Card */}
+                    <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-[0_20px_50px_rgba(37,51,97,0.05)] hover:shadow-[0_25px_60px_rgba(37,51,97,0.1)] hover:border-orange-500/30 transition-all duration-300">
                         <form onSubmit={handleLogin} className="space-y-4">
 
                             {/* Username Field */}
                             <div className="space-y-1.5">
-                                <label htmlFor="username" className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                <label htmlFor="username" className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                     Username
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4.5 h-4.5">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                         </svg>
@@ -134,18 +132,18 @@ export default function Login() {
                                         placeholder="Enter your username"
                                         value={form.username}
                                         onChange={(e) => setForm({ ...form, username: e.target.value })}
-                                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-white text-xs sm:text-sm outline-none transition-all duration-200 placeholder:text-slate-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 focus:bg-slate-900/60"
+                                        className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-xs sm:text-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-orange-600 focus:ring-1 focus:ring-orange-600/50 focus:bg-white"
                                     />
                                 </div>
                             </div>
 
                             {/* Password Field */}
                             <div className="space-y-1.5">
-                                <label htmlFor="password" className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                <label htmlFor="password" className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                     Password
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4.5 h-4.5">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                         </svg>
@@ -158,12 +156,12 @@ export default function Login() {
                                         placeholder="Enter your password"
                                         value={form.password}
                                         onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                        className="w-full pl-11 pr-12 py-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-white text-xs sm:text-sm outline-none transition-all duration-200 placeholder:text-slate-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 focus:bg-slate-900/60"
+                                        className="w-full pl-11 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-xs sm:text-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-orange-600 focus:ring-1 focus:ring-orange-600/50 focus:bg-white"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                         tabIndex={-1}
                                     >
                                         {showPassword ? (
@@ -184,7 +182,7 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-2.5 rounded-xl text-white text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 bg-orange-600 hover:bg-orange-500 shadow-[0_4px_15px_rgba(37,51,97,0.35)] hover:shadow-[0_4px_25px_rgba(37,51,97,0.5)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-75 disabled:cursor-not-allowed flex justify-center items-center gap-2 cursor-pointer"
+                                className="w-full py-2.5 rounded-xl text-white text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 bg-orange-600 hover:bg-orange-500 shadow-[0_4px_12px_rgba(37,51,97,0.12)] hover:shadow-[0_6px_20px_rgba(37,51,97,0.22)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-75 disabled:cursor-not-allowed flex justify-center items-center gap-2 cursor-pointer"
                             >
                                 {loading ? (
                                     <>
@@ -208,14 +206,14 @@ export default function Login() {
                 </div>
 
                 {/* Footer */}
-                <div className="z-10 mt-auto flex flex-col sm:flex-row justify-between items-center gap-2 border-t border-slate-900/60 pt-3 text-[10px] text-slate-500 w-full max-w-md mx-auto">
+                <div className="z-10 mt-auto flex flex-col sm:flex-row justify-between items-center gap-2 border-t border-slate-200 pt-3 text-[10px] text-slate-400 w-full max-w-md mx-auto">
                     <div className="flex items-center gap-1.5">
                         <span>Powered by</span>
                         <img src={jwlogo} alt="Jeenweb" className="h-9 w-auto rounded-sm" />
                     </div>
                     <div className="text-center sm:text-right">
-                        <div>Helpline: <a href="tel:9824466017" className="font-semibold text-slate-400">9824466017</a></div>
-                        <div>Email: <a href="mailto:info@jeenweb.com" className="font-semibold text-slate-400">info@jeenweb.com</a></div>
+                        <div>Helpline: <a href="tel:9824466017" className="font-semibold text-slate-500 hover:text-orange-600 transition-colors">9824466017</a></div>
+                        <div>Email: <a href="mailto:info@jeenweb.com" className="font-semibold text-slate-500 hover:text-orange-600 transition-colors">info@jeenweb.com</a></div>
                     </div>
                 </div>
             </div>
