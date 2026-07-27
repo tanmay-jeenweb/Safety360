@@ -347,7 +347,7 @@ export default function Navbar() {
                                                     <i className="fa-solid fa-tags text-xs"></i>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-semibold leading-snug">Category Master</p>
+                                                    <p className="text-sm font-semibold leading-snug">Module Category Master</p>
                                                 </div>
                                             </button>
                                         )}

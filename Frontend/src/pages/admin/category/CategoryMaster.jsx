@@ -290,7 +290,7 @@ export default function CategoryMaster() {
                 )}
                 <DataTable
                     tableId="category_master"
-                    title="Category Master"
+                    title="Module Category Master"
                     data={categories}
                     columns={columns}
                     loading={loading}

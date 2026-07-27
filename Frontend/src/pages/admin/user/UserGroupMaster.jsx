@@ -17,7 +17,7 @@ const MASTERS = [
   { key: "trainer_master", label: "Trainer Master" },
   { key: "certificate_template_master", label: "Certificate Template Master" },
   { key: "rating_scale_master", label: "Rating Scale Master" },
-  { key: "category_master", label: "Category Master" },
+  { key: "category_master", label: "Module Category Master" },
   { key: "training_module_master", label: "Training Module Master" },
   { key: "department_master", label: "Department Master" },
   { key: "question_bank", label: "Question Bank Master" },
