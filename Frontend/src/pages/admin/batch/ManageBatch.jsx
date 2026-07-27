@@ -42,6 +42,9 @@ export default function ManageBatch() {
     const [isQpModalOpen, setIsQpModalOpen] = useState(false);
     const [selectedQpId, setSelectedQpId] = useState("");
 
+    const [isPostQpModalOpen, setIsPostQpModalOpen] = useState(false);
+    const [selectedPostQpId, setSelectedPostQpId] = useState("");
+
     // Fetch batch details, participants, and question papers
     const fetchData = async () => {
         setLoading(true);
@@ -85,6 +88,15 @@ export default function ManageBatch() {
         );
     }, [batch, questionPapers]);
 
+    // Filter question papers for the active module and post-test type
+    const postTestPapers = useMemo(() => {
+        if (!batch || !questionPapers.length) return [];
+        return questionPapers.filter(qp => 
+            qp.module_id === batch.training_module_id && 
+            qp.exam_type === 'Post'
+        );
+    }, [batch, questionPapers]);
+
     useEffect(() => {
         if (id) {
             fetchData();
@@ -113,6 +125,10 @@ export default function ManageBatch() {
 
     const postTestsSubmittedCount = useMemo(() => {
         return participants.filter(p => p.post_test_score !== null).length;
+    }, [participants]);
+
+    const eligiblePostTestCount = useMemo(() => {
+        return participants.filter(p => Boolean(p.attendance)).length;
     }, [participants]);
 
     // Search query filter for available employees
@@ -239,7 +255,21 @@ export default function ManageBatch() {
             return;
         }
 
-        const confirmAdvance = window.confirm(`Are you sure you want to advance this batch status to "${nextStatusLabel}"?`);
+        // Intercept Training Held -> Posttest Active transition to show the Post-Test Question Paper select modal
+        if (batch.status === "Training Held" && nextStep.value === "Posttest Active") {
+            setSelectedPostQpId(batch.post_test_question_paper_id || "");
+            setIsPostQpModalOpen(true);
+            return;
+        }
+
+        let confirmMessage = `Are you sure you want to advance this batch status to "${nextStatusLabel}"?`;
+        if (batch.status && batch.status.toLowerCase() === "pretest active") {
+            confirmMessage = "Trainees who have not completed the pre-test will not be able to attend/take it anymore. Are you sure you want to proceed?";
+        } else if (batch.status && batch.status.toLowerCase() === "posttest active") {
+            confirmMessage = "Trainees who have not completed the post-test will not be able to attend/take it anymore. Are you sure you want to proceed?";
+        }
+
+        const confirmAdvance = window.confirm(confirmMessage);
         if (!confirmAdvance) return;
 
         await submitStatusAdvance(nextStep.value, nextStatusLabel);
@@ -416,6 +446,124 @@ export default function ManageBatch() {
             )}
 
 
+            {/* Post-Test Question Paper Select Modal */}
+            {isPostQpModalOpen && (
+                <div style={{
+                    position: "fixed", inset: 0, zIndex: 1000,
+                    background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)",
+                    display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center", padding: 16
+                }}>
+                    <div style={{
+                        background: "#fff", borderRadius: 18, width: "95%", maxWidth: 500, margin: "auto",
+                        boxShadow: "0 25px 60px rgba(0,0,0,0.2)", overflow: "hidden"
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: "20px 24px", borderBottom: "1px solid #f1f5f9",
+                            display: "flex", justifyContent: "space-between", alignItems: "center",
+                            background: "linear-gradient(135deg, #1e293b, #0f172a)"
+                        }}>
+                            <h3 style={{ margin: 0, color: "#fff", fontSize: 16, fontWeight: 800 }}>
+                                Select Post-Test Question Paper
+                            </h3>
+                            <button 
+                                onClick={() => setIsPostQpModalOpen(false)}
+                                style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 20 }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div style={{ padding: 24 }}>
+                            <p style={{ margin: "0 0 16px 0", fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
+                                Before activating the Post-test for this batch, you must select a post-test question paper for the module <strong>{batch.module_name}</strong>.
+                            </p>
+
+                            {postTestPapers.length === 0 ? (
+                                <div style={{ 
+                                    padding: 16, borderRadius: 12, background: "#fff1f2", border: "1px solid #fecdd3",
+                                    color: "#be123c", fontSize: 13, display: "flex", flexDirection: "column", gap: 8
+                                }}>
+                                    <span style={{ fontWeight: 700 }}>No Post-Test Question Papers Found</span>
+                                    <span>There are no Post-Test question papers registered for this training module. Please create one in the Question Paper Master first to proceed.</span>
+                                    <button
+                                        onClick={() => navigate("/admin/question-paper/create")}
+                                        style={{
+                                            alignSelf: "flex-start", marginTop: 4, padding: "6px 12px", borderRadius: 6,
+                                            background: "#be123c", color: "#fff", border: "none", fontWeight: 600, fontSize: 12, cursor: "pointer"
+                                        }}
+                                    >
+                                        Create Question Paper
+                                    </button>
+                                </div>
+                            ) : (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                        Choose Paper
+                                    </label>
+                                    <select
+                                        value={selectedPostQpId}
+                                        onChange={(e) => setSelectedPostQpId(e.target.value)}
+                                        style={{ 
+                                            width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                            padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
+                                        }}
+                                    >
+                                        <option value="">Select a Question Paper...</option>
+                                        {postTestPapers.map(qp => (
+                                            <option key={qp.id} value={qp.id}>
+                                                {qp.name} ({qp.questions?.length || 0} Questions)
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{
+                            padding: "16px 24px", borderTop: "1px solid #f1f5f9",
+                            display: "flex", justifyContent: "flex-end", gap: 12, background: "#fafafa"
+                        }}>
+                            <button
+                                onClick={() => setIsPostQpModalOpen(false)}
+                                style={{
+                                    padding: "9px 20px", borderRadius: 8, border: "1.5px solid #cbd5e1",
+                                    color: "#475569", background: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer"
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            {postTestPapers.length > 0 && (
+                                <button
+                                    onClick={async () => {
+                                        if (!selectedPostQpId) {
+                                            toast.error("Please select a question paper");
+                                            return;
+                                        }
+                                        setIsPostQpModalOpen(false);
+                                        await submitStatusAdvance("Posttest Active", "Post-Test Active", {
+                                            postTestQuestionPaperId: Number(selectedPostQpId)
+                                        });
+                                    }}
+                                    disabled={!selectedPostQpId}
+                                    style={{
+                                        padding: "9px 24px", borderRadius: 8, border: "none",
+                                        background: !selectedPostQpId ? "#94a3b8" : "linear-gradient(135deg, #f97316, #ea580c)",
+                                        color: "#fff", fontWeight: 700, fontSize: 13,
+                                        cursor: !selectedPostQpId ? "not-allowed" : "pointer"
+                                    }}
+                                >
+                                    Activate Post-test
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
 
             {/* Main Area */}
             <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
@@ -532,7 +680,7 @@ export default function ManageBatch() {
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Post Tests Submitted</span>
-                        <div className="text-2xl font-black text-slate-900">{postTestsSubmittedCount} / {participants.length}</div>
+                        <div className="text-2xl font-black text-slate-900">{postTestsSubmittedCount} / {eligiblePostTestCount}</div>
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Feedbacks Received</span>
@@ -741,7 +889,7 @@ export default function ManageBatch() {
                                                 <input
                                                     type="checkbox"
                                                     checked={Boolean(part.attendance)}
-                                                    disabled={true}
+                                                    disabled={!batch.status || batch.status.toLowerCase() !== "training held"}
                                                     onChange={() => handleAttendanceChange(part.employee_id, part.attendance)}
                                                     className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                                 />

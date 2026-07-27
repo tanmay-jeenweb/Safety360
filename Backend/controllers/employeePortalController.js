@@ -9,13 +9,13 @@ const getMyTestsController = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Access denied. Employees only.' });
         }
 
-        // Query to find batches where this employee is a participant and the test is active
         const query = `
             SELECT 
                 bp.id AS participant_table_id,
                 bp.batch_id,
                 bp.pre_test_score,
                 bp.post_test_score,
+                bp.attendance,
                 b.status AS batch_status,
                 b.pre_test_question_paper_id,
                 b.post_test_question_paper_id,
@@ -47,8 +47,8 @@ const getMyTestsController = async (req, res) => {
                     venue: row.venue
                 });
             }
-            // Post-Test is active: status is 'Posttest Active', paper is configured, and score is null (not taken yet)
-            if (row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null) {
+            // Post-Test is active: status is 'Posttest Active', paper is configured, and score is null (not taken yet), and attendance is marked present
+            if (row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null && row.attendance === 1) {
                 activeTests.push({
                     batchId: row.batch_id,
                     testType: 'Post',
@@ -101,6 +101,9 @@ const getTestDetailsController = async (req, res) => {
         }
         if (testType === 'Post' && participant.post_test_score !== null) {
             return res.status(400).json({ success: false, message: 'You have already submitted this post-test.' });
+        }
+        if (testType === 'Post' && !participant.attendance) {
+            return res.status(400).json({ success: false, message: 'You cannot attend the post-training exam because you were marked absent.' });
         }
         
         // Fetch batch details and verify status
@@ -202,6 +205,9 @@ const submitTestController = async (req, res) => {
         }
         if (testType === 'Post' && participant.post_test_score !== null) {
             return res.status(400).json({ success: false, message: 'You have already submitted this post-test.' });
+        }
+        if (testType === 'Post' && !participant.attendance) {
+            return res.status(400).json({ success: false, message: 'You cannot submit the post-training exam because you were marked absent.' });
         }
         
         // Fetch batch details and verify status
