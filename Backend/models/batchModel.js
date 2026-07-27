@@ -160,11 +160,106 @@ const getBatchById = async (id) => {
     return rows[0] || null;
 };
 
+const createBatchParticipantsTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS batch_participants (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            batch_id INT NOT NULL,
+            employee_id INT NOT NULL,
+            attendance TINYINT(1) DEFAULT 0,
+            pre_test_score INT DEFAULT NULL,
+            post_test_score INT DEFAULT NULL,
+            final_score INT DEFAULT NULL,
+            band_badge VARCHAR(50) DEFAULT 'UNTESTED',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE,
+            FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_batch_employee (batch_id, employee_id)
+        )
+    `;
+    await db.execute(query);
+    console.log("Batch participants table ready");
+};
+
+// ─── Batch Participants CRUD ────────────────────────────────────────────────
+const getParticipantsByBatchId = async (batchId) => {
+    const query = `
+        SELECT 
+            bp.id,
+            bp.batch_id,
+            bp.employee_id,
+            bp.attendance,
+            bp.pre_test_score,
+            bp.post_test_score,
+            bp.final_score,
+            bp.band_badge,
+            e.employee_code,
+            e.full_name,
+            e.employee_type,
+            e.contractor_name
+        FROM batch_participants bp
+        INNER JOIN employees e ON bp.employee_id = e.id
+        WHERE bp.batch_id = ?
+        ORDER BY e.full_name ASC
+    `;
+    const [results] = await db.execute(query, [batchId]);
+    return results;
+};
+
+const addParticipantToBatch = async (batchId, employeeId) => {
+    const query = `
+        INSERT INTO batch_participants (batch_id, employee_id)
+        VALUES (?, ?)
+    `;
+    const [result] = await db.execute(query, [batchId, employeeId]);
+    return result;
+};
+
+const removeParticipantFromBatch = async (batchId, employeeId) => {
+    const query = `
+        DELETE FROM batch_participants
+        WHERE batch_id = ? AND employee_id = ?
+    `;
+    const [result] = await db.execute(query, [batchId, employeeId]);
+    return result;
+};
+
+const updateParticipantDetails = async (batchId, employeeId, data) => {
+    const query = `
+        UPDATE batch_participants
+        SET 
+            attendance = COALESCE(?, attendance),
+            pre_test_score = COALESCE(?, pre_test_score),
+            post_test_score = COALESCE(?, post_test_score),
+            final_score = COALESCE(?, final_score),
+            band_badge = COALESCE(?, band_badge)
+        WHERE batch_id = ? AND employee_id = ?
+    `;
+    const params = [
+        data.attendance !== undefined ? (data.attendance ? 1 : 0) : null,
+        data.preTestScore !== undefined ? data.preTestScore : null,
+        data.postTestScore !== undefined ? data.postTestScore : null,
+        data.finalScore !== undefined ? data.finalScore : null,
+        data.bandBadge !== undefined ? data.bandBadge : null,
+        batchId,
+        employeeId
+    ];
+    const [result] = await db.execute(query, params);
+    return result;
+};
+
 module.exports = {
     createBatchesTable,
     createBatch,
     getAllBatches,
     updateBatch,
     deleteBatch,
-    getBatchById
+    getBatchById,
+    createBatchParticipantsTable,
+    getParticipantsByBatchId,
+    addParticipantToBatch,
+    removeParticipantFromBatch,
+    updateParticipantDetails
 };
+
