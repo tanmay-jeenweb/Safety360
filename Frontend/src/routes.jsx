@@ -120,6 +120,7 @@ export default function AppRoutes() {
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="read" />}>
                 <Route path="/admin/question-paper" element={<QuestionPaperMaster />} />
             </Route>
+
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>
                 <Route path="/admin/employees" element={<EmployeeMaster />} />
             </Route>
