@@ -526,8 +526,11 @@ export default function EmployeeMaster() {
                     return;
                 }
 
-                const firstRow = jsonData[0];
-                const keys = Object.keys(firstRow);
+                const keysSet = new Set();
+                jsonData.forEach(row => {
+                    Object.keys(row).forEach(k => keysSet.add(k));
+                });
+                const keys = Array.from(keysSet);
 
                 const getVal = (row, fieldOptions) => {
                     const foundKey = keys.find(k => fieldOptions.includes(k.toLowerCase().trim()));
