@@ -24,7 +24,7 @@ const addCategory = async (req, res) => {
             addedBy,
             req.user?.name || req.user?.username || 'Unknown',
             deviceId,
-            'Category Master',
+            'Module Category Master',
             'created',
             null,
             {
@@ -91,7 +91,7 @@ const updateCategoryController = async (req, res) => {
             req.user?.id,
             req.user?.name || req.user?.username || 'Unknown',
             deviceId,
-            'Category Master',
+            'Module Category Master',
             'updated',
             beforeData,
             afterData
@@ -129,7 +129,7 @@ const deleteCategoryController = async (req, res) => {
             req.user?.id,
             req.user?.name || req.user?.username || 'Unknown',
             deviceId,
-            'Category Master',
+            'Module Category Master',
             'deleted',
             beforeData,
             null
