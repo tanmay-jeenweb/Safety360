@@ -410,7 +410,7 @@ export default function Navbar() {
                                                     <i className="fa-solid fa-user-group text-xs"></i>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-semibold leading-snug">Employee Master</p>
+                                                    <p className="text-sm font-semibold leading-snug">Employee / Participant Master</p>
                                                 </div>
                                             </button>
                                         )}

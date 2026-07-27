@@ -3,7 +3,11 @@ const {
     getAllBatches,
     updateBatch,
     deleteBatch,
-    getBatchById
+    getBatchById,
+    getParticipantsByBatchId,
+    addParticipantToBatch,
+    removeParticipantFromBatch,
+    updateParticipantDetails
 } = require('../models/batchModel.js');
 const { createAuditLog } = require('../models/auditLogModel.js');
 
@@ -157,9 +161,169 @@ const deleteBatchController = async (req, res) => {
     }
 };
 
+const getBatchByIdController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const batch = await getBatchById(id);
+        if (!batch) {
+            return res.status(404).json({ success: false, message: 'Batch not found' });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Batch retrieved successfully',
+            data: batch
+        });
+    } catch (error) {
+        console.error('Error retrieving batch details:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const getBatchParticipantsController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const participants = await getParticipantsByBatchId(id);
+        res.status(200).json({
+            success: true,
+            message: 'Batch participants retrieved successfully',
+            data: participants
+        });
+    } catch (error) {
+        console.error('Error retrieving batch participants:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const addBatchParticipantController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { employeeId, employeeIds } = req.body;
+        const addedBy = req.user.id;
+        const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
+
+        const batch = await getBatchById(id);
+        if (!batch) {
+            return res.status(404).json({ success: false, message: 'Batch not found' });
+        }
+
+        if (batch.status !== 'Draft') {
+            return res.status(400).json({ success: false, message: 'Participants can only be added when the batch is in Draft status' });
+        }
+
+        const idsToAdd = employeeIds || (employeeId ? [employeeId] : []);
+        if (idsToAdd.length === 0) {
+            return res.status(400).json({ success: false, message: 'Employee ID(s) required' });
+        }
+
+        const participants = await getParticipantsByBatchId(id);
+        if (participants.length + idsToAdd.length > batch.batch_size) {
+            return res.status(400).json({ success: false, message: `Adding these participants exceeds the batch size limit of ${batch.batch_size}` });
+        }
+
+        for (const empId of idsToAdd) {
+            try {
+                await addParticipantToBatch(id, empId);
+            } catch (err) {
+                if (err.code !== 'ER_DUP_ENTRY') {
+                    throw err;
+                }
+            }
+        }
+
+        const updatedParticipants = await getParticipantsByBatchId(id);
+
+        await createAuditLog(
+            addedBy,
+            req.user?.name || req.user?.username || 'Unknown',
+            deviceId,
+            'Batch Master',
+            'updated',
+            batch,
+            { ...batch, action: 'add_participants', employeeIds: idsToAdd }
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Participants added successfully',
+            data: updatedParticipants
+        });
+    } catch (error) {
+        console.error('Error adding batch participant:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const removeBatchParticipantController = async (req, res) => {
+    try {
+        const { id, employeeId } = req.params;
+        const addedBy = req.user.id;
+        const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
+
+        const batch = await getBatchById(id);
+        if (!batch) {
+            return res.status(404).json({ success: false, message: 'Batch not found' });
+        }
+
+        if (batch.status !== 'Draft') {
+            return res.status(400).json({ success: false, message: 'Participants can only be removed when the batch is in Draft status' });
+        }
+
+        await removeParticipantFromBatch(id, employeeId);
+        const updatedParticipants = await getParticipantsByBatchId(id);
+
+        await createAuditLog(
+            addedBy,
+            req.user?.name || req.user?.username || 'Unknown',
+            deviceId,
+            'Batch Master',
+            'updated',
+            batch,
+            { ...batch, action: 'remove_participant', employeeId }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Participant removed successfully',
+            data: updatedParticipants
+        });
+    } catch (error) {
+        console.error('Error removing batch participant:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const updateBatchParticipantController = async (req, res) => {
+    try {
+        const { id, employeeId } = req.params;
+        const { attendance, preTestScore, postTestScore, finalScore, bandBadge } = req.body;
+
+        const batch = await getBatchById(id);
+        if (!batch) {
+            return res.status(404).json({ success: false, message: 'Batch not found' });
+        }
+
+        await updateParticipantDetails(id, employeeId, { attendance, preTestScore, postTestScore, finalScore, bandBadge });
+        const updatedParticipants = await getParticipantsByBatchId(id);
+
+        res.status(200).json({
+            success: true,
+            message: 'Participant updated successfully',
+            data: updatedParticipants
+        });
+    } catch (error) {
+        console.error('Error updating batch participant:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     addBatch,
     getAllBatchesController,
     updateBatchController,
-    deleteBatchController
+    deleteBatchController,
+    getBatchByIdController,
+    getBatchParticipantsController,
+    addBatchParticipantController,
+    removeBatchParticipantController,
+    updateBatchParticipantController
 };
