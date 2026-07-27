@@ -11,6 +11,7 @@ import {
 } from "../../../api/batchApi";
 import { getEmployees } from "../../../api/employeeApi";
 import { getTrainingModuleById } from "../../../api/trainingModuleApi";
+import { getQuestionPapers } from "../../../api/questionPaperApi";
 import toast from "react-hot-toast";
 
 const STATUS_STEPS = [
@@ -30,6 +31,7 @@ export default function ManageBatch() {
     const [participants, setParticipants] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [trainingModule, setTrainingModule] = useState(null);
+    const [questionPapers, setQuestionPapers] = useState([]);
 
     const [loading, setLoading] = useState(true);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
@@ -37,7 +39,10 @@ export default function ManageBatch() {
     const [submitting, setSubmitting] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    // Fetch batch details and participants
+    const [isQpModalOpen, setIsQpModalOpen] = useState(false);
+    const [selectedQpId, setSelectedQpId] = useState("");
+
+    // Fetch batch details, participants, and question papers
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -59,6 +64,10 @@ export default function ManageBatch() {
             const empRes = await getEmployees();
             setEmployees(empRes.data.data || []);
 
+            // Fetch question papers
+            const qpRes = await getQuestionPapers();
+            setQuestionPapers(qpRes.data.data || []);
+
         } catch (err) {
             console.error("Error loading batch details:", err);
             toast.error("Failed to load batch details");
@@ -66,6 +75,15 @@ export default function ManageBatch() {
             setLoading(false);
         }
     };
+
+    // Filter question papers for the active module and pre-test type
+    const preTestPapers = useMemo(() => {
+        if (!batch || !questionPapers.length) return [];
+        return questionPapers.filter(qp => 
+            qp.module_id === batch.training_module_id && 
+            qp.exam_type === 'Pre'
+        );
+    }, [batch, questionPapers]);
 
     useEffect(() => {
         if (id) {
@@ -157,6 +175,36 @@ export default function ManageBatch() {
         }
     };
 
+    // Helper to submit status advance
+    const submitStatusAdvance = async (nextStatus, nextStatusLabel, additionalPayload = {}) => {
+        setSubmitting(true);
+        try {
+            const payload = {
+                clientId: batch.client_id,
+                siteId: batch.site_id,
+                trainingModuleId: batch.training_module_id,
+                trainerId: batch.trainer_id,
+                scheduledDate: batch.scheduled_date ? new Date(batch.scheduled_date).toISOString().split('T')[0] : "",
+                venue: batch.venue,
+                batchSize: batch.batch_size,
+                status: nextStatus,
+                ...additionalPayload
+            };
+
+            await updateBatch(batch.id, payload);
+            toast.success(`Batch advanced to: ${nextStatusLabel}`);
+
+            // Reload batch details
+            const batchRes = await getBatchById(id);
+            setBatch(batchRes.data.data);
+        } catch (err) {
+            console.error("Error advancing status:", err);
+            toast.error(err?.response?.data?.message || "Failed to update batch status");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     // Advance Status
     const handleAdvanceStatus = async () => {
         if (!batch) return;
@@ -176,35 +224,17 @@ export default function ManageBatch() {
             return;
         }
 
+        // Intercept Draft -> Pretest transition to show the Question Paper select modal
+        if (batch.status === "Draft" && nextStep.value === "Pretest Active") {
+            setSelectedQpId(batch.pre_test_question_paper_id || "");
+            setIsQpModalOpen(true);
+            return;
+        }
+
         const confirmAdvance = window.confirm(`Are you sure you want to advance this batch status to "${nextStatusLabel}"?`);
         if (!confirmAdvance) return;
 
-        setSubmitting(true);
-        try {
-            // Setup payload for standard batch update endpoint
-            const payload = {
-                clientId: batch.client_id,
-                siteId: batch.site_id,
-                trainingModuleId: batch.training_module_id,
-                trainerId: batch.trainer_id,
-                scheduledDate: batch.scheduled_date ? new Date(batch.scheduled_date).toISOString().split('T')[0] : "",
-                venue: batch.venue,
-                batchSize: batch.batch_size,
-                status: nextStep.value
-            };
-
-            await updateBatch(batch.id, payload);
-            toast.success(`Batch advanced to: ${nextStatusLabel}`);
-
-            // Reload batch details
-            const batchRes = await getBatchById(id);
-            setBatch(batchRes.data.data);
-        } catch (err) {
-            console.error("Error advancing status:", err);
-            toast.error(err?.response?.data?.message || "Failed to update batch status");
-        } finally {
-            setSubmitting(false);
-        }
+        await submitStatusAdvance(nextStep.value, nextStatusLabel);
     };
 
     // Helper to format date
@@ -259,6 +289,123 @@ export default function ManageBatch() {
     return (
         <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-800">
             <Navbar />
+
+            {/* Question Paper Select Modal */}
+            {isQpModalOpen && (
+                <div style={{
+                    position: "fixed", inset: 0, zIndex: 1000,
+                    background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)",
+                    display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center", padding: 16
+                }}>
+                    <div style={{
+                        background: "#fff", borderRadius: 18, width: "95%", maxWidth: 500, margin: "auto",
+                        boxShadow: "0 25px 60px rgba(0,0,0,0.2)", overflow: "hidden"
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            padding: "20px 24px", borderBottom: "1px solid #f1f5f9",
+                            display: "flex", justifyContent: "space-between", alignItems: "center",
+                            background: "linear-gradient(135deg, #1e293b, #0f172a)"
+                        }}>
+                            <h3 style={{ margin: 0, color: "#fff", fontSize: 16, fontWeight: 800 }}>
+                                Select Pre-Test Question Paper
+                            </h3>
+                            <button 
+                                onClick={() => setIsQpModalOpen(false)}
+                                style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 20 }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div style={{ padding: 24 }}>
+                            <p style={{ margin: "0 0 16px 0", fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
+                                Before activating the Pre-test for this batch, you must select a pre-test question paper for the module <strong>{batch.module_name}</strong>.
+                            </p>
+
+                            {preTestPapers.length === 0 ? (
+                                <div style={{ 
+                                    padding: 16, borderRadius: 12, background: "#fff1f2", border: "1px solid #fecdd3",
+                                    color: "#be123c", fontSize: 13, display: "flex", flexDirection: "column", gap: 8
+                                }}>
+                                    <span style={{ fontWeight: 700 }}>No Pre-Test Question Papers Found</span>
+                                    <span>There are no Pre-Test question papers registered for this training module. Please create one in the Question Paper Master first to proceed.</span>
+                                    <button
+                                        onClick={() => navigate("/admin/question-paper/create")}
+                                        style={{
+                                            alignSelf: "flex-start", marginTop: 4, padding: "6px 12px", borderRadius: 6,
+                                            background: "#be123c", color: "#fff", border: "none", fontWeight: 600, fontSize: 12, cursor: "pointer"
+                                        }}
+                                    >
+                                        Create Question Paper
+                                    </button>
+                                </div>
+                            ) : (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                    <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                        Choose Paper
+                                    </label>
+                                    <select
+                                        value={selectedQpId}
+                                        onChange={(e) => setSelectedQpId(e.target.value)}
+                                        style={{ 
+                                            width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                            padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
+                                        }}
+                                    >
+                                        <option value="">Select a Question Paper...</option>
+                                        {preTestPapers.map(qp => (
+                                            <option key={qp.id} value={qp.id}>
+                                                {qp.name} ({qp.questions?.length || 0} Questions)
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{
+                            padding: "16px 24px", borderTop: "1px solid #f1f5f9",
+                            display: "flex", justifyContent: "flex-end", gap: 12, background: "#fafafa"
+                        }}>
+                            <button
+                                onClick={() => setIsQpModalOpen(false)}
+                                style={{
+                                    padding: "9px 20px", borderRadius: 8, border: "1.5px solid #cbd5e1",
+                                    color: "#475569", background: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer"
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            {preTestPapers.length > 0 && (
+                                <button
+                                    onClick={async () => {
+                                        if (!selectedQpId) {
+                                            toast.error("Please select a question paper");
+                                            return;
+                                        }
+                                        setIsQpModalOpen(false);
+                                        await submitStatusAdvance("Pretest Active", "Pre-Test Active", {
+                                            preTestQuestionPaperId: Number(selectedQpId)
+                                        });
+                                    }}
+                                    disabled={!selectedQpId}
+                                    style={{
+                                        padding: "9px 24px", borderRadius: 8, border: "none",
+                                        background: !selectedQpId ? "#94a3b8" : "linear-gradient(135deg, #f97316, #ea580c)",
+                                        color: "#fff", fontWeight: 700, fontSize: 13,
+                                        cursor: !selectedQpId ? "not-allowed" : "pointer"
+                                    }}
+                                >
+                                    Activate Pre-test
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
 
 
@@ -424,6 +571,12 @@ export default function ManageBatch() {
                             <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Test Configs</span>
                             <span className="font-bold text-slate-800 text-sm">
                                 {trainingModule ? `${trainingModule.pre_test_qs} Pre / ${trainingModule.post_test_qs} Post Qs` : '—'}
+                            </span>
+                        </div>
+                        <div className="border-b border-slate-100 pb-2">
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre-Test Paper</span>
+                            <span className="font-bold text-slate-800 text-sm">
+                                {batch.pre_test_question_paper_name || '—'}
                             </span>
                         </div>
                     </div>
