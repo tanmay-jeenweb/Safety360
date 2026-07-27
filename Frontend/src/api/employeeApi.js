@@ -15,3 +15,7 @@ export const updateEmployee = async (id, data) => {
 export const deleteEmployee = async (id) => {
     return apiClient.delete(`/employees/delete/${id}`);
 };
+
+export const importEmployees = async (records) => {
+    return apiClient.post("/employees/import", records);
+};

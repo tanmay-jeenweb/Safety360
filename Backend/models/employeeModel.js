@@ -18,6 +18,8 @@ const createEmployeesTable = async () => {
             designation VARCHAR(150) NOT NULL,
             employee_type ENUM('Direct', 'Contractor') NOT NULL DEFAULT 'Direct',
             contractor_name VARCHAR(150) DEFAULT NULL,
+            phone_no VARCHAR(20) NOT NULL,
+            password VARCHAR(255) NOT NULL,
             client_id INT NOT NULL,
             site_id INT NOT NULL,
             added_by INT NOT NULL,
@@ -30,7 +32,20 @@ const createEmployeesTable = async () => {
         )
     `;
 
-    await db.execute(query);
+    try {
+        await db.execute(query);
+    } catch (err) {
+        console.log("Employees table creation failed/skipped (probably exists), running schema alter queries...");
+    }
+
+    // Alter table to add phone_no and password if they do not exist
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN phone_no VARCHAR(20) NOT NULL AFTER contractor_name");
+    } catch (e1) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN password VARCHAR(255) NOT NULL AFTER phone_no");
+    } catch (e2) {}
+
     console.log("Employees table ready");
 };
 
@@ -44,10 +59,12 @@ const createEmployee = async (data, addedBy) => {
             designation,
             employee_type,
             contractor_name,
+            phone_no,
+            password,
             client_id,
             site_id,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
@@ -57,6 +74,8 @@ const createEmployee = async (data, addedBy) => {
         data.designation,
         data.employeeType || 'Direct',
         data.employeeType === 'Contractor' ? (data.contractorName || null) : null,
+        data.phoneNo,
+        data.password,
         data.clientId,
         data.siteId,
         addedBy
@@ -77,6 +96,7 @@ const getAllEmployees = async () => {
             e.designation,
             e.employee_type,
             e.contractor_name,
+            e.phone_no,
             e.client_id,
             COALESCE(c.client_name, 'Unknown') AS client_name,
             e.site_id,
@@ -105,6 +125,7 @@ const updateEmployee = async (id, data) => {
             designation = ?,
             employee_type = ?,
             contractor_name = ?,
+            phone_no = ?,
             client_id = ?,
             site_id = ?
         WHERE id = ?
@@ -117,6 +138,7 @@ const updateEmployee = async (id, data) => {
         data.designation,
         data.employeeType || 'Direct',
         data.employeeType === 'Contractor' ? (data.contractorName || null) : null,
+        data.phoneNo,
         data.clientId,
         data.siteId,
         id
@@ -143,6 +165,7 @@ const getEmployeeById = async (id) => {
             e.designation,
             e.employee_type,
             e.contractor_name,
+            e.phone_no,
             e.client_id,
             COALESCE(c.client_name, 'Unknown') AS client_name,
             e.site_id,
@@ -162,11 +185,139 @@ const getEmployeeById = async (id) => {
     return rows[0] || null;
 };
 
+const importEmployees = async (records, addedBy) => {
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+    try {
+        const [depts] = await connection.execute("SELECT id, LOWER(TRIM(department_name)) AS name FROM departments");
+        const [clients] = await connection.execute("SELECT id, LOWER(TRIM(client_name)) AS name FROM clients");
+        const [sites] = await connection.execute("SELECT id, client_id, LOWER(TRIM(site_name)) AS name FROM sites");
+        const [existing] = await connection.execute("SELECT id, LOWER(TRIM(employee_code)) AS code FROM employees");
+
+        const deptMap = new Map(depts.map(d => [d.name, d.id]));
+        const clientMap = new Map(clients.map(c => [c.name, c.id]));
+        const siteMap = new Map(sites.map(s => [`${s.client_id}_${s.name}`, s.id]));
+        const employeeMap = new Map(existing.map(e => [e.code, e.id]));
+
+        const results = [];
+        const bcrypt = require('bcryptjs');
+
+        for (const record of records) {
+            const code = String(record.employeeCode || '').trim();
+            const fullName = String(record.fullName || '').trim();
+            const deptName = String(record.departmentName || '').trim().toLowerCase();
+            const designation = String(record.designation || '').trim();
+            const employeeType = String(record.employeeType || 'Direct').trim();
+            const contractorName = record.contractorName ? String(record.contractorName).trim() : null;
+            const phoneNo = String(record.phoneNo || '').trim();
+            const clientName = String(record.clientName || '').trim().toLowerCase();
+            const siteName = String(record.siteName || '').trim().toLowerCase();
+
+            if (!code || !fullName || !deptName || !designation || !phoneNo || !clientName || !siteName) {
+                throw new Error(`Row with code '${code || 'Unknown'}' is missing required fields (Code, Name, Dept, Designation, Phone, Client, Site).`);
+            }
+
+            if (employeeType !== 'Direct' && employeeType !== 'Contractor') {
+                throw new Error(`Employee '${code}': Employee Type must be 'Direct' or 'Contractor'.`);
+            }
+
+            if (employeeType === 'Contractor' && !contractorName) {
+                throw new Error(`Employee '${code}': Contractor Name is required when type is Contractor.`);
+            }
+
+            const departmentId = deptMap.get(deptName);
+            if (!departmentId) {
+                throw new Error(`Employee '${code}': Department '${record.departmentName}' not found in master list.`);
+            }
+
+            const clientId = clientMap.get(clientName);
+            if (!clientId) {
+                throw new Error(`Employee '${code}': Client '${record.clientName}' not found in master list.`);
+            }
+
+            const siteId = siteMap.get(`${clientId}_${siteName}`);
+            if (!siteId) {
+                throw new Error(`Employee '${code}': Site '${record.siteName}' not found or not mapped under client '${record.clientName}'.`);
+            }
+
+            const lowerCode = code.toLowerCase();
+            const existingId = employeeMap.get(lowerCode);
+
+            if (existingId) {
+                const updateQuery = `
+                    UPDATE employees SET
+                        full_name = ?,
+                        department_id = ?,
+                        designation = ?,
+                        employee_type = ?,
+                        contractor_name = ?,
+                        phone_no = ?,
+                        client_id = ?,
+                        site_id = ?
+                    WHERE id = ?
+                `;
+                await connection.execute(updateQuery, [
+                    fullName,
+                    departmentId,
+                    designation,
+                    employeeType,
+                    employeeType === 'Contractor' ? contractorName : null,
+                    phoneNo,
+                    clientId,
+                    siteId,
+                    existingId
+                ]);
+                results.push({ id: existingId, employeeCode: code, action: 'updated' });
+            } else {
+                const hashedPassword = await bcrypt.hash(phoneNo, 10);
+                const insertQuery = `
+                    INSERT INTO employees (
+                        employee_code,
+                        full_name,
+                        department_id,
+                        designation,
+                        employee_type,
+                        contractor_name,
+                        phone_no,
+                        password,
+                        client_id,
+                        site_id,
+                        added_by
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                await connection.execute(insertQuery, [
+                    code,
+                    fullName,
+                    departmentId,
+                    designation,
+                    employeeType,
+                    employeeType === 'Contractor' ? contractorName : null,
+                    phoneNo,
+                    hashedPassword,
+                    clientId,
+                    siteId,
+                    addedBy
+                ]);
+                results.push({ employeeCode: code, action: 'created' });
+            }
+        }
+
+        await connection.commit();
+        return results;
+    } catch (err) {
+        await connection.rollback();
+        throw err;
+    } finally {
+        connection.release();
+    }
+};
+
 module.exports = {
     createEmployeesTable,
     createEmployee,
     getAllEmployees,
     updateEmployee,
     deleteEmployee,
-    getEmployeeById
+    getEmployeeById,
+    importEmployees
 };
