@@ -13,13 +13,18 @@ const { createAuditLog } = require('../models/auditLogModel.js');
 
 const addBatch = async (req, res) => {
     try {
-        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status } = req.body;
+        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status, preTestQuestionPaperId, postTestQuestionPaperId } = req.body;
         const addedBy = req.user.id;
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
 
         // Validation - all fields are mandatory
         if (!clientId || !siteId || !trainingModuleId || !trainerId || !scheduledDate || !venue || !batchSize) {
             return res.status(400).json({ success: false, message: 'All fields are mandatory' });
+        }
+
+        // Specific pretest status activation validation
+        if (status === 'Pretest Active' && !preTestQuestionPaperId) {
+            return res.status(400).json({ success: false, message: 'A pre-test question paper must be selected to activate the pre-test' });
         }
 
         const result = await createBatch({
@@ -30,7 +35,9 @@ const addBatch = async (req, res) => {
             scheduledDate,
             venue,
             batchSize,
-            status: status || 'Draft'
+            status: status || 'Draft',
+            preTestQuestionPaperId: preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null,
+            postTestQuestionPaperId: postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null
         }, addedBy);
 
         const newId = result.insertId;
@@ -80,7 +87,7 @@ const getAllBatchesController = async (req, res) => {
 const updateBatchController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status } = req.body;
+        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status, preTestQuestionPaperId, postTestQuestionPaperId } = req.body;
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
 
         // Validation - all fields are mandatory
@@ -93,6 +100,14 @@ const updateBatchController = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Batch not found' });
         }
 
+        // Specific pretest status activation validation
+        if (status === 'Pretest Active') {
+            const paperIdToCheck = preTestQuestionPaperId !== undefined ? preTestQuestionPaperId : beforeData.pre_test_question_paper_id;
+            if (!paperIdToCheck) {
+                return res.status(400).json({ success: false, message: 'A pre-test question paper must be selected to activate the pre-test' });
+            }
+        }
+
         await updateBatch(id, {
             clientId,
             siteId,
@@ -101,7 +116,9 @@ const updateBatchController = async (req, res) => {
             scheduledDate,
             venue,
             batchSize,
-            status
+            status,
+            preTestQuestionPaperId: preTestQuestionPaperId !== undefined ? (preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null) : beforeData.pre_test_question_paper_id,
+            postTestQuestionPaperId: postTestQuestionPaperId !== undefined ? (postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null) : beforeData.post_test_question_paper_id
         });
 
         const afterData = await getBatchById(id);

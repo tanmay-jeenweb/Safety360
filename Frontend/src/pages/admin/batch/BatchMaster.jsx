@@ -65,7 +65,7 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
 
     if (!isOpen) return null;
 
-    const handleSubmit = (targetStatus) => {
+    const handleSubmit = () => {
         if (!clientId || !siteId || !trainingModuleId || !trainerId || !scheduledDate || !venue || !batchSize) {
             toast.error("All fields are mandatory");
             return;
@@ -79,12 +79,9 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
             scheduledDate,
             venue,
             batchSize: Number(batchSize),
-            status: targetStatus
+            status: editingRow ? editingRow.status : "Draft"
         });
     };
-
-    // Show draft save button if we are NOT editing a batch that is already 'Pretest Active'
-    const showDraftButton = !editingRow || editingRow.status !== 'Pretest Active';
 
     return (
         <div style={{
@@ -240,6 +237,7 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
                                 style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b" }}
                             />
                         </div>
+
                     </div>
                 </div>
 
@@ -259,32 +257,19 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
                     >
                         Cancel
                     </button>
-                    {showDraftButton && (
-                        <button
-                            type="button"
-                            onClick={() => handleSubmit("Draft")}
-                            disabled={saving}
-                            style={{
-                                padding: "9px 20px", borderRadius: 8, border: "1.5px solid #cbd5e1",
-                                color: "#253361", background: "#f0f3fa", fontWeight: 600, fontSize: 13, cursor: "pointer"
-                            }}
-                        >
-                            Save as Draft
-                        </button>
-                    )}
                     <button
                         type="button"
-                        onClick={() => handleSubmit("Pretest Active")}
+                        onClick={handleSubmit}
                         disabled={saving}
                         style={{
                             padding: "9px 24px", borderRadius: 8, border: "none",
-                            background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)", // same brand theme color
+                            background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
                             color: "#fff", fontWeight: 700, fontSize: 13,
                             cursor: saving ? "not-allowed" : "pointer",
                             boxShadow: saving ? "none" : "0 2px 8px rgba(37,51,97,0.35)"
                         }}
                     >
-                        {saving ? "Saving…" : "Submit & Activate Pretest"}
+                        {saving ? "Saving…" : "Save"}
                     </button>
                 </div>
             </div>

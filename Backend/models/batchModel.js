@@ -13,6 +13,8 @@ const createBatchesTable = async () => {
             venue VARCHAR(255) NOT NULL,
             batch_size INT NOT NULL,
             status VARCHAR(50) NOT NULL DEFAULT 'Draft',
+            pre_test_question_paper_id INT DEFAULT NULL,
+            post_test_question_paper_id INT DEFAULT NULL,
             added_by INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -20,11 +22,54 @@ const createBatchesTable = async () => {
             FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE RESTRICT,
             FOREIGN KEY (training_module_id) REFERENCES training_modules(id) ON DELETE RESTRICT,
             FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE RESTRICT,
+            FOREIGN KEY (pre_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL,
+            FOREIGN KEY (post_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL,
             FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE RESTRICT
         )
     `;
 
     await db.execute(query);
+
+    const columnsToEnsure = [
+        {
+            name: 'pre_test_question_paper_id',
+            query: 'ALTER TABLE batches ADD COLUMN pre_test_question_paper_id INT DEFAULT NULL'
+        },
+        {
+            name: 'post_test_question_paper_id',
+            query: 'ALTER TABLE batches ADD COLUMN post_test_question_paper_id INT DEFAULT NULL'
+        }
+    ];
+
+    for (const column of columnsToEnsure) {
+        const [rows] = await db.execute(`SHOW COLUMNS FROM batches LIKE '${column.name}'`);
+        if (rows.length === 0) {
+            await db.execute(column.query);
+        }
+    }
+
+    try {
+        const [preFk] = await db.execute(`
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_NAME = 'batches' AND COLUMN_NAME = 'pre_test_question_paper_id' AND REFERENCED_TABLE_NAME = 'question_papers'
+        `);
+        if (preFk.length === 0) {
+            await db.execute(`ALTER TABLE batches ADD CONSTRAINT fk_pre_test_qp FOREIGN KEY (pre_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL`);
+        }
+        
+        const [postFk] = await db.execute(`
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_NAME = 'batches' AND COLUMN_NAME = 'post_test_question_paper_id' AND REFERENCED_TABLE_NAME = 'question_papers'
+        `);
+        if (postFk.length === 0) {
+            await db.execute(`ALTER TABLE batches ADD CONSTRAINT fk_post_test_qp FOREIGN KEY (post_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL`);
+        }
+    } catch (e) {
+        console.warn("Could not add foreign key constraints for question papers:", e.message);
+    }
+
     console.log("Batches table ready");
 };
 
@@ -40,8 +85,10 @@ const createBatch = async (data, addedBy) => {
             venue,
             batch_size,
             status,
+            pre_test_question_paper_id,
+            post_test_question_paper_id,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
@@ -53,6 +100,8 @@ const createBatch = async (data, addedBy) => {
         data.venue,
         data.batchSize,
         data.status || 'Draft',
+        data.preTestQuestionPaperId || null,
+        data.postTestQuestionPaperId || null,
         addedBy
     ];
 
@@ -76,6 +125,10 @@ const getAllBatches = async () => {
             b.venue,
             b.batch_size,
             b.status,
+            b.pre_test_question_paper_id,
+            b.post_test_question_paper_id,
+            qp_pre.name AS pre_test_question_paper_name,
+            qp_post.name AS post_test_question_paper_name,
             b.added_by,
             COALESCE(u.name, 'Unknown') AS added_by_name,
             b.created_at,
@@ -85,6 +138,8 @@ const getAllBatches = async () => {
         LEFT JOIN sites s ON b.site_id = s.id
         LEFT JOIN training_modules tm ON b.training_module_id = tm.id
         LEFT JOIN trainers t ON b.trainer_id = t.id
+        LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
+        LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
         LEFT JOIN users u ON b.added_by = u.id
         ORDER BY b.created_at DESC
     `;
@@ -102,7 +157,9 @@ const updateBatch = async (id, data) => {
             scheduled_date = ?,
             venue = ?,
             batch_size = ?,
-            status = ?
+            status = ?,
+            pre_test_question_paper_id = ?,
+            post_test_question_paper_id = ?
         WHERE id = ?
     `;
 
@@ -115,6 +172,8 @@ const updateBatch = async (id, data) => {
         data.venue,
         data.batchSize,
         data.status,
+        data.preTestQuestionPaperId !== undefined ? data.preTestQuestionPaperId : null,
+        data.postTestQuestionPaperId !== undefined ? data.postTestQuestionPaperId : null,
         id
     ];
 
@@ -144,6 +203,10 @@ const getBatchById = async (id) => {
             b.venue,
             b.batch_size,
             b.status,
+            b.pre_test_question_paper_id,
+            b.post_test_question_paper_id,
+            qp_pre.name AS pre_test_question_paper_name,
+            qp_post.name AS post_test_question_paper_name,
             b.added_by,
             COALESCE(u.name, 'Unknown') AS added_by_name,
             b.created_at,
@@ -153,6 +216,8 @@ const getBatchById = async (id) => {
         LEFT JOIN sites s ON b.site_id = s.id
         LEFT JOIN training_modules tm ON b.training_module_id = tm.id
         LEFT JOIN trainers t ON b.trainer_id = t.id
+        LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
+        LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
         LEFT JOIN users u ON b.added_by = u.id
         WHERE b.id = ?
     `;
