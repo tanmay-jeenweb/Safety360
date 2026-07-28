@@ -10,6 +10,7 @@ export default function EmployeeDashboard() {
     const [activeTrainings, setActiveTrainings] = useState([]);
     const [trainingHistory, setTrainingHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -92,7 +93,7 @@ export default function EmployeeDashboard() {
             <div className="absolute bottom-[10%] right-[10%] w-[35%] h-[40%] bg-amber-500/5 rounded-full blur-[130px] pointer-events-none z-0" />
 
             {/* Premium Navbar */}
-            <header className="w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/80 px-6 py-4 flex items-center justify-between z-10 sticky top-0 shadow-[0_2px_15px_rgba(0,0,0,0.02)]">
+            <header className="w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/80 px-6 py-4 flex items-center justify-between z-30 sticky top-0 shadow-[0_2px_15px_rgba(0,0,0,0.02)]">
                 <div className="flex items-center gap-3">
                     <img src="/Gravity Logo.png" alt="Safety360 Logo" className="h-10 w-auto" />
                     <span className="text-lg font-extrabold text-slate-900 tracking-tight">
@@ -100,17 +101,56 @@ export default function EmployeeDashboard() {
                     </span>
                 </div>
                 {user && (
-                    <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Participant</p>
-                            <p className="text-sm font-extrabold text-slate-800">{user.name}</p>
-                        </div>
+                    <div className="relative">
+                        {/* Trigger button */}
                         <button
-                            onClick={handleLogout}
-                            className="bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm hover:shadow"
+                            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                            className="flex items-center gap-3 bg-white/80 hover:bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 text-left cursor-pointer transition-all duration-200 select-none"
                         >
-                            Log Out
+                            {/* Avatar Initials */}
+                            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-extrabold text-sm uppercase shrink-0">
+                                {user.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2) : "P"}
+                            </div>
+
+                            <div className="hidden sm:block">
+                                {/* <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Participant</p> */}
+                                <p className="text-md font-extrabold text-slate-800 leading-none">{user.name}</p>
+                            </div>
+
+                            {/* Chevron Down Icon */}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
                         </button>
+
+                        {/* Dropdown Menu */}
+                        {userDropdownOpen && (
+                            <>
+                                {/* Overlay/Backdrop to close dropdown when clicking outside */}
+                                <div
+                                    className="fixed inset-0 z-40 cursor-default"
+                                    onClick={() => setUserDropdownOpen(false)}
+                                />
+                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                                    <div className="px-4 py-2 border-b border-slate-100 sm:hidden">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Participant</p>
+                                        <p className="text-xs font-extrabold text-slate-800 truncate">{user.name}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setUserDropdownOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                                        </svg>
+                                        Log Out
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </header>
@@ -152,7 +192,7 @@ export default function EmployeeDashboard() {
                                 </div>
                                 <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 2.24a.75.75 0 0 1-1.077 0L6.47 5.784a.75.75 0 1 1 1.06-1.06l1.222 1.22 3.72-3.72a.75.75 0 1 1 1.06 1.06L9.28 6.079Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
                                     </svg>
                                 </div>
                             </div>
@@ -180,7 +220,7 @@ export default function EmployeeDashboard() {
                                 </div>
                                 <div className="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.969 5.969 0 0 1-5.384-3.51M9.75 8.25c0-1.8 1.5-3 3-3s3 1.2 3 3-1.2 3-3 3-3-1.2-3-3Zm-1.25-2.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0ZM3 18.72a9.094 9.094 0 0 1 3.741-.479 3 3 0 0 1-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 0 12 21c2.17 0 4.207-.576 5.963-1.584A6.062 6.062 0 0 0 18 18.72m-12 0a5.969 5.969 0 0 0 5.384-3.51M9.75 8.25c0-1.8-1.5-3-3-3s-3 1.2-3 3 1.2 3 3 3 3-1.2 3-3Zm-1.25-2.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                                     </svg>
                                 </div>
                             </div>
@@ -188,14 +228,14 @@ export default function EmployeeDashboard() {
 
                         {/* Side by Side layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            
+
                             {/* Left Column: Active Training (2/3 width) */}
                             <div className="lg:col-span-2 space-y-6">
                                 <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 mb-2">
-                                    <span className="relative flex h-2.5 w-2.5">
+                                    {/* <span className="relative flex h-2.5 w-2.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-50"></span>
-                                    </span>
+                                    </span> */}
                                     Active Trainings
                                 </h2>
 
@@ -284,7 +324,7 @@ export default function EmployeeDashboard() {
                                                 {training.pendingTests && training.pendingTests.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {training.pendingTests.map((t) => (
-                                                            <div 
+                                                            <div
                                                                 key={t.type}
                                                                 className="flex items-center justify-between bg-orange-50/40 border border-orange-200/50 rounded-2xl p-4 gap-3"
                                                             >
@@ -310,11 +350,11 @@ export default function EmployeeDashboard() {
                                                     </div>
                                                 ) : (
                                                     <div className="text-center py-3 bg-slate-50/50 rounded-2xl text-[10px] text-slate-400 font-bold tracking-wider uppercase border border-dashed border-slate-200">
-                                                        {training.status === "Draft" 
+                                                        {training.status === "Draft"
                                                             ? "Waiting for trainer to start Pre-test"
                                                             : training.status === "Training Held"
-                                                            ? "Training Held. Waiting for Post-test activation"
-                                                            : "No immediate evaluation actions"}
+                                                                ? "Training Held. Waiting for Post-test activation"
+                                                                : "No immediate evaluation actions"}
                                                     </div>
                                                 )}
                                             </div>
@@ -349,15 +389,15 @@ export default function EmployeeDashboard() {
                                         {trainingHistory.map((history) => {
                                             const isPassed = history.bandBadge === "PASSED";
                                             const isFailed = history.bandBadge === "FAILED";
-                                            
+
                                             // Timeline node decoration
                                             let nodeBg = "bg-slate-200 text-slate-400";
                                             if (isPassed) nodeBg = "bg-emerald-100 text-emerald-600 ring-4 ring-emerald-50";
                                             else if (isFailed) nodeBg = "bg-red-100 text-red-600 ring-4 ring-red-50";
 
                                             return (
-                                                <div 
-                                                    key={history.batchId} 
+                                                <div
+                                                    key={history.batchId}
                                                     className="relative border-l-2 border-slate-200/70 ml-3 pl-6 pb-6 last:pb-2 last:border-none"
                                                 >
                                                     {/* Timeline Node Badge */}
@@ -383,7 +423,7 @@ export default function EmployeeDashboard() {
                                                         <h4 className="text-sm font-extrabold text-slate-900 leading-snug mt-0.5">
                                                             {history.moduleName}
                                                         </h4>
-                                                        
+
                                                         <div className="space-y-1.5 text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-100 font-medium">
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Trainer</span>
@@ -405,13 +445,12 @@ export default function EmployeeDashboard() {
                                                             </p>
                                                             <p className="flex justify-between items-center pt-1">
                                                                 <span className="text-slate-400">Status</span>
-                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${
-                                                                    isPassed 
-                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                                                                        : isFailed 
-                                                                        ? "bg-red-50 text-red-700 border-red-100" 
-                                                                        : "bg-slate-50 text-slate-500 border-slate-100"
-                                                                }`}>
+                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${isPassed
+                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                        : isFailed
+                                                                            ? "bg-red-50 text-red-700 border-red-100"
+                                                                            : "bg-slate-50 text-slate-500 border-slate-100"
+                                                                    }`}>
                                                                     {history.bandBadge || "UNTESTED"}
                                                                 </span>
                                                             </p>
