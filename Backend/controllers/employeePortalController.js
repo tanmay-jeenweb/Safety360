@@ -296,8 +296,137 @@ const submitTestController = async (req, res) => {
     }
 };
 
+const getMyDashboardController = async (req, res) => {
+    try {
+        const employeeId = req.user.id;
+        
+        if (req.user.role !== 'employee') {
+            return res.status(403).json({ success: false, message: 'Access denied. Employees only.' });
+        }
+
+        const query = `
+            SELECT 
+                bp.id AS participant_table_id,
+                bp.batch_id,
+                bp.pre_test_score,
+                bp.post_test_score,
+                bp.attendance,
+                bp.final_score,
+                bp.band_badge,
+                b.status AS batch_status,
+                b.pre_test_question_paper_id,
+                b.post_test_question_paper_id,
+                b.scheduled_date,
+                b.venue,
+                tm.module_name,
+                t.trainer_name
+            FROM batch_participants bp
+            INNER JOIN batches b ON bp.batch_id = b.id
+            INNER JOIN training_modules tm ON b.training_module_id = tm.id
+            INNER JOIN trainers t ON b.trainer_id = t.id
+            WHERE bp.employee_id = ?
+            ORDER BY b.scheduled_date DESC
+        `;
+        
+        const [rows] = await db.execute(query, [employeeId]);
+        
+        let pendingTestsCount = 0;
+        let completedCoursesCount = 0;
+        let activeBatchesCount = 0;
+        
+        const activeTrainings = [];
+        const trainingHistory = [];
+        const activeTests = [];
+        
+        for (const row of rows) {
+            const isPendingPreTest = row.batch_status === 'Pretest Active' && row.pre_test_question_paper_id && row.pre_test_score === null;
+            const isPendingPostTest = row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null && row.attendance === 1;
+            
+            if (isPendingPreTest) {
+                pendingTestsCount++;
+                activeTests.push({
+                    batchId: row.batch_id,
+                    testType: 'Pre',
+                    questionPaperId: row.pre_test_question_paper_id,
+                    moduleName: row.module_name,
+                    trainerName: row.trainer_name,
+                    scheduledDate: row.scheduled_date,
+                    venue: row.venue
+                });
+            }
+            if (isPendingPostTest) {
+                pendingTestsCount++;
+                activeTests.push({
+                    batchId: row.batch_id,
+                    testType: 'Post',
+                    questionPaperId: row.post_test_question_paper_id,
+                    moduleName: row.module_name,
+                    trainerName: row.trainer_name,
+                    scheduledDate: row.scheduled_date,
+                    venue: row.venue
+                });
+            }
+            
+            if (row.post_test_score !== null) {
+                completedCoursesCount++;
+            }
+            
+            if (row.batch_status !== 'Closed') {
+                activeBatchesCount++;
+                activeTrainings.push({
+                    batchId: row.batch_id,
+                    moduleName: row.module_name,
+                    trainerName: row.trainer_name,
+                    scheduledDate: row.scheduled_date,
+                    venue: row.venue,
+                    status: row.batch_status,
+                    preTestScore: row.pre_test_score,
+                    postTestScore: row.post_test_score,
+                    attendance: row.attendance,
+                    pendingTests: [
+                        ...(isPendingPreTest ? [{ type: 'Pre', paperId: row.pre_test_question_paper_id }] : []),
+                        ...(isPendingPostTest ? [{ type: 'Post', paperId: row.post_test_question_paper_id }] : [])
+                    ]
+                });
+            } else {
+                trainingHistory.push({
+                    batchId: row.batch_id,
+                    moduleName: row.module_name,
+                    trainerName: row.trainer_name,
+                    scheduledDate: row.scheduled_date,
+                    venue: row.venue,
+                    status: row.batch_status,
+                    preTestScore: row.pre_test_score,
+                    postTestScore: row.post_test_score,
+                    attendance: row.attendance,
+                    finalScore: row.final_score,
+                    bandBadge: row.band_badge
+                });
+            }
+        }
+        
+        return res.status(200).json({
+            success: true,
+            data: {
+                summary: {
+                    pendingTestsCount,
+                    completedCoursesCount,
+                    activeBatchesCount
+                },
+                activeTrainings,
+                trainingHistory,
+                activeTests
+            }
+        });
+    } catch (error) {
+        console.error('Error getting employee dashboard data:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     getMyTestsController,
     getTestDetailsController,
-    submitTestController
+    submitTestController,
+    getMyDashboardController
 };

@@ -9,7 +9,8 @@ const {
 const {
     getMyTestsController,
     getTestDetailsController,
-    submitTestController
+    submitTestController,
+    getMyDashboardController
 } = require('../controllers/employeePortalController.js');
 const { verifyToken, verifyPermission } = require('../middleware/authMiddleware.js');
 
@@ -17,6 +18,7 @@ const router = express.Router();
 
 // Employee Portal routes
 router.get('/my-tests', verifyToken, getMyTestsController);
+router.get('/my-dashboard', verifyToken, getMyDashboardController);
 router.get('/test-details/:batchId/:testType', verifyToken, getTestDetailsController);
 router.post('/submit-test', verifyToken, submitTestController);
 
