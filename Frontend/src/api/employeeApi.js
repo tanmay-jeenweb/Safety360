@@ -24,6 +24,10 @@ export const getMyActiveTests = async () => {
     return apiClient.get("/employees/my-tests");
 };
 
+export const getMyDashboardData = async () => {
+    return apiClient.get("/employees/my-dashboard");
+};
+
 export const getTestDetails = async (batchId, testType) => {
     return apiClient.get(`/employees/test-details/${batchId}/${testType}`);
 };
