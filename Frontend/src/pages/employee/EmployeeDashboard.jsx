@@ -152,7 +152,7 @@ export default function EmployeeDashboard() {
                                 </div>
                                 <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 2.24a.75.75 0 0 1-1.077 0L6.47 5.784a.75.75 0 1 1 1.06-1.06l1.222 1.22 3.72-3.72a.75.75 0 1 1 1.06 1.06L9.28 6.079Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
                                     </svg>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@ export default function EmployeeDashboard() {
                                 </div>
                                 <div className="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.969 5.969 0 0 1-5.384-3.51M9.75 8.25c0-1.8 1.5-3 3-3s3 1.2 3 3-1.2 3-3 3-3-1.2-3-3Zm-1.25-2.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0ZM3 18.72a9.094 9.094 0 0 1 3.741-.479 3 3 0 0 1-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 0 12 21c2.17 0 4.207-.576 5.963-1.584A6.062 6.062 0 0 0 18 18.72m-12 0a5.969 5.969 0 0 0 5.384-3.51M9.75 8.25c0-1.8-1.5-3-3-3s-3 1.2-3 3 1.2 3 3 3 3-1.2 3-3Zm-1.25-2.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                                     </svg>
                                 </div>
                             </div>
@@ -192,10 +192,10 @@ export default function EmployeeDashboard() {
                             {/* Left Column: Active Training (2/3 width) */}
                             <div className="lg:col-span-2 space-y-6">
                                 <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 mb-2">
-                                    <span className="relative flex h-2.5 w-2.5">
+                                    {/* <span className="relative flex h-2.5 w-2.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-50"></span>
-                                    </span>
+                                    </span> */}
                                     Active Trainings
                                 </h2>
 
