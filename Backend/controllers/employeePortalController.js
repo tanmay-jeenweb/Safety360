@@ -1,4 +1,5 @@
 const db = require('../config/db.js');
+const bcrypt = require('bcryptjs');
 const { getQuestionPaperById } = require('../models/questionPaperModel.js');
 
 const getMyTestsController = async (req, res) => {
@@ -424,9 +425,53 @@ const getMyDashboardController = async (req, res) => {
     }
 };
 
+const changePasswordController = async (req, res) => {
+    try {
+        const employeeId = req.user.id;
+        const { oldPassword, newPassword } = req.body;
+
+        if (req.user.role !== 'employee') {
+            return res.status(403).json({ success: false, message: 'Access denied. Employees only.' });
+        }
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Old password and new password are required' });
+        }
+
+        // Fetch employee
+        const [rows] = await db.execute("SELECT password FROM employees WHERE id = ?", [employeeId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Employee not found' });
+        }
+
+        const employee = rows[0];
+
+        // Compare old password
+        const isMatch = await bcrypt.compare(oldPassword, employee.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Invalid current password' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password and set is_first_login to 0
+        await db.execute(
+            "UPDATE employees SET password = ?, is_first_login = 0 WHERE id = ?",
+            [hashedPassword, employeeId]
+        );
+
+        return res.status(200).json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     getMyTestsController,
     getTestDetailsController,
     submitTestController,
-    getMyDashboardController
+    getMyDashboardController,
+    changePasswordController
 };

@@ -10,7 +10,8 @@ const {
     getMyTestsController,
     getTestDetailsController,
     submitTestController,
-    getMyDashboardController
+    getMyDashboardController,
+    changePasswordController
 } = require('../controllers/employeePortalController.js');
 const { verifyToken, verifyPermission } = require('../middleware/authMiddleware.js');
 
@@ -21,6 +22,7 @@ router.get('/my-tests', verifyToken, getMyTestsController);
 router.get('/my-dashboard', verifyToken, getMyDashboardController);
 router.get('/test-details/:batchId/:testType', verifyToken, getTestDetailsController);
 router.post('/submit-test', verifyToken, submitTestController);
+router.post('/change-password', verifyToken, changePasswordController);
 
 router.post('/add', verifyToken, verifyPermission('employee_master', 'write'), addEmployee);
 router.post('/import', verifyToken, verifyPermission('employee_master', 'write'), importEmployeesController);

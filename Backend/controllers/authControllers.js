@@ -78,7 +78,8 @@ const login = async (req, res) => {
                     name: user.full_name,
                     username: user.employee_code,
                     client_id: user.client_id,
-                    site_id: user.site_id
+                    site_id: user.site_id,
+                    is_first_login: user.is_first_login
                 },
                 process.env.JWT_SECRET,
                 { expiresIn: "1d" }
@@ -94,7 +95,8 @@ const login = async (req, res) => {
                     username: user.employee_code,
                     role: "employee",
                     client_id: user.client_id,
-                    site_id: user.site_id
+                    site_id: user.site_id,
+                    is_first_login: user.is_first_login
                 }
             });
         }

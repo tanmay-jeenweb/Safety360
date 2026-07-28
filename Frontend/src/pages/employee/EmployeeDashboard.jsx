@@ -1,16 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyDashboardData } from "../../api/employeeApi";
+import { getMyDashboardData, changeEmployeePassword } from "../../api/employeeApi";
 import toast from "react-hot-toast";
 
 export default function EmployeeDashboard() {
     const navigate = useNavigate();
+    const dropdownRef = useRef(null);
+
     const [user, setUser] = useState(null);
     const [summary, setSummary] = useState({ pendingTestsCount: 0, completedCoursesCount: 0, activeBatchesCount: 0 });
     const [activeTrainings, setActiveTrainings] = useState([]);
     const [trainingHistory, setTrainingHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+    // Profile Dropdown state
+    const [showDropdown, setShowDropdown] = useState(false);
+
+    // Change Password Modal state
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [modalConfig, setModalConfig] = useState({ isForced: false });
+    const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    const [passwordLoading, setPasswordLoading] = useState(false);
 
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -19,6 +29,12 @@ export default function EmployeeDashboard() {
             return;
         }
         setUser(storedUser);
+
+        // Force password change if is_first_login is true (or 1)
+        if (storedUser.is_first_login === 1 || storedUser.is_first_login === true) {
+            setModalConfig({ isForced: true });
+            setShowPasswordModal(true);
+        }
 
         const fetchDashboardData = async () => {
             try {
@@ -42,6 +58,19 @@ export default function EmployeeDashboard() {
         fetchDashboardData();
     }, [navigate]);
 
+    // Handle clicks outside of dropdown to close it
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -51,7 +80,62 @@ export default function EmployeeDashboard() {
     };
 
     const handleStartTest = (batchId, testType) => {
+        if (user?.is_first_login === 1 || user?.is_first_login === true) {
+            toast.error("Please change your password first.");
+            return;
+        }
         navigate(`/employee/test/${batchId}/${testType}`);
+    };
+
+    const handlePasswordChangeSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!passwordForm.oldPassword) {
+            toast.error("Current password is required.");
+            return;
+        }
+        if (passwordForm.newPassword.length < 4) {
+            toast.error("New password must be at least 4 characters.");
+            return;
+        }
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast.error("New passwords do not match.");
+            return;
+        }
+
+        setPasswordLoading(true);
+        try {
+            const res = await changeEmployeePassword({
+                oldPassword: passwordForm.oldPassword,
+                newPassword: passwordForm.newPassword
+            });
+
+            if (res.data.success) {
+                toast.success("Password changed successfully!");
+                
+                // Update local storage and user state
+                const updatedUser = { ...user, is_first_login: 0 };
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+                setUser(updatedUser);
+
+                // Clear form and close modal
+                setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                setShowPasswordModal(false);
+                setModalConfig({ isForced: false });
+            } else {
+                toast.error(res.data.message || "Failed to update password.");
+            }
+        } catch (err) {
+            console.error("Error changing password:", err);
+            toast.error(err.response?.data?.message || "Invalid current password.");
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
+    const getInitials = (name) => {
+        if (!name) return "EE";
+        return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
     };
 
     const getStatusBadgeClass = (status) => {
@@ -101,55 +185,59 @@ export default function EmployeeDashboard() {
                     </span>
                 </div>
                 {user && (
-                    <div className="relative">
-                        {/* Trigger button */}
-                        <button
-                            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                            className="flex items-center gap-3 bg-white/80 hover:bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 text-left cursor-pointer transition-all duration-200 select-none"
+                    <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+                        {/* Profile Clickable Area */}
+                        <div 
+                            onClick={() => setShowDropdown(!showDropdown)}
+                            className="flex items-center gap-3 hover:bg-slate-100/60 p-2 rounded-2xl cursor-pointer transition-all duration-200 select-none"
                         >
-                            {/* Avatar Initials */}
-                            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-extrabold text-sm uppercase shrink-0">
-                                {user.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2) : "P"}
+                            {/* Avatar */}
+                            <div className="w-9 h-9 rounded-xl bg-orange-600/10 text-orange-600 font-extrabold text-xs flex items-center justify-center border border-orange-200/40">
+                                {getInitials(user.name)}
                             </div>
-
-                            <div className="hidden sm:block">
-                                {/* <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Participant</p> */}
-                                <p className="text-md font-extrabold text-slate-800 leading-none">{user.name}</p>
+                            <div className="text-right hidden sm:block">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Participant</p>
+                                <p className="text-xs font-black text-slate-800">{user.name}</p>
                             </div>
-
-                            {/* Chevron Down Icon */}
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`}>
+                                <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.19l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
                             </svg>
-                        </button>
+                        </div>
 
                         {/* Dropdown Menu */}
-                        {userDropdownOpen && (
-                            <>
-                                {/* Overlay/Backdrop to close dropdown when clicking outside */}
-                                <div
-                                    className="fixed inset-0 z-40 cursor-default"
-                                    onClick={() => setUserDropdownOpen(false)}
-                                />
-                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                                    <div className="px-4 py-2 border-b border-slate-100 sm:hidden">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Participant</p>
-                                        <p className="text-xs font-extrabold text-slate-800 truncate">{user.name}</p>
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            setUserDropdownOpen(false);
-                                            handleLogout();
-                                        }}
-                                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-2 cursor-pointer"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-                                        </svg>
-                                        Log Out
-                                    </button>
+                        {showDropdown && (
+                            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-slate-200/80 rounded-2xl shadow-xl py-2 z-50 origin-top-right transition-all duration-300">
+                                <div className="px-4 py-2 border-b border-slate-100 mb-1">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Logged in as</p>
+                                    <p className="text-xs font-black text-slate-800 truncate">{user.username}</p>
                                 </div>
-                            </>
+                                
+                                <button
+                                    onClick={() => {
+                                        setModalConfig({ isForced: false });
+                                        setShowPasswordModal(true);
+                                        setShowDropdown(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer border-none"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                                    </svg>
+                                    Change Password
+                                </button>
+                                
+                                <div className="h-px bg-slate-100 my-1"></div>
+                                
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50/50 flex items-center gap-2 transition-colors cursor-pointer border-none"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                                    </svg>
+                                    Log Out
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}
@@ -192,7 +280,7 @@ export default function EmployeeDashboard() {
                                 </div>
                                 <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 2.24a.75.75 0 0 1-1.077 0L6.47 5.784a.75.75 0 1 1 1.06-1.06l1.222 1.22 3.72-3.72a.75.75 0 1 1 1.06 1.06L9.28 6.079Z" />
                                     </svg>
                                 </div>
                             </div>
@@ -220,7 +308,7 @@ export default function EmployeeDashboard() {
                                 </div>
                                 <div className="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.969 5.969 0 0 1-5.384-3.51M9.75 8.25c0-1.8 1.5-3 3-3s3 1.2 3 3-1.2 3-3 3-3-1.2-3-3Zm-1.25-2.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0ZM3 18.72a9.094 9.094 0 0 1 3.741-.479 3 3 0 0 1-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 0 12 21c2.17 0 4.207-.576 5.963-1.584A6.062 6.062 0 0 0 18 18.72m-12 0a5.969 5.969 0 0 0 5.384-3.51M9.75 8.25c0-1.8-1.5-3-3-3s-3 1.2-3 3 1.2 3 3 3 3-1.2 3-3Zm-1.25-2.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0Z" />
                                     </svg>
                                 </div>
                             </div>
@@ -228,14 +316,14 @@ export default function EmployeeDashboard() {
 
                         {/* Side by Side layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+                            
                             {/* Left Column: Active Training (2/3 width) */}
                             <div className="lg:col-span-2 space-y-6">
                                 <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 mb-2">
-                                    {/* <span className="relative flex h-2.5 w-2.5">
+                                    <span className="relative flex h-2.5 w-2.5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-50"></span>
-                                    </span> */}
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
+                                    </span>
                                     Active Trainings
                                 </h2>
 
@@ -324,7 +412,7 @@ export default function EmployeeDashboard() {
                                                 {training.pendingTests && training.pendingTests.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {training.pendingTests.map((t) => (
-                                                            <div
+                                                            <div 
                                                                 key={t.type}
                                                                 className="flex items-center justify-between bg-orange-50/40 border border-orange-200/50 rounded-2xl p-4 gap-3"
                                                             >
@@ -350,11 +438,11 @@ export default function EmployeeDashboard() {
                                                     </div>
                                                 ) : (
                                                     <div className="text-center py-3 bg-slate-50/50 rounded-2xl text-[10px] text-slate-400 font-bold tracking-wider uppercase border border-dashed border-slate-200">
-                                                        {training.status === "Draft"
+                                                        {training.status === "Draft" 
                                                             ? "Waiting for trainer to start Pre-test"
                                                             : training.status === "Training Held"
-                                                                ? "Training Held. Waiting for Post-test activation"
-                                                                : "No immediate evaluation actions"}
+                                                            ? "Training Held. Waiting for Post-test activation"
+                                                            : "No immediate evaluation actions"}
                                                     </div>
                                                 )}
                                             </div>
@@ -389,15 +477,15 @@ export default function EmployeeDashboard() {
                                         {trainingHistory.map((history) => {
                                             const isPassed = history.bandBadge === "PASSED";
                                             const isFailed = history.bandBadge === "FAILED";
-
+                                            
                                             // Timeline node decoration
                                             let nodeBg = "bg-slate-200 text-slate-400";
                                             if (isPassed) nodeBg = "bg-emerald-100 text-emerald-600 ring-4 ring-emerald-50";
                                             else if (isFailed) nodeBg = "bg-red-100 text-red-600 ring-4 ring-red-50";
 
                                             return (
-                                                <div
-                                                    key={history.batchId}
+                                                <div 
+                                                    key={history.batchId} 
                                                     className="relative border-l-2 border-slate-200/70 ml-3 pl-6 pb-6 last:pb-2 last:border-none"
                                                 >
                                                     {/* Timeline Node Badge */}
@@ -423,7 +511,7 @@ export default function EmployeeDashboard() {
                                                         <h4 className="text-sm font-extrabold text-slate-900 leading-snug mt-0.5">
                                                             {history.moduleName}
                                                         </h4>
-
+                                                        
                                                         <div className="space-y-1.5 text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-100 font-medium">
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Trainer</span>
@@ -445,12 +533,13 @@ export default function EmployeeDashboard() {
                                                             </p>
                                                             <p className="flex justify-between items-center pt-1">
                                                                 <span className="text-slate-400">Status</span>
-                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${isPassed
-                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                                                        : isFailed
-                                                                            ? "bg-red-50 text-red-700 border-red-100"
-                                                                            : "bg-slate-50 text-slate-500 border-slate-100"
-                                                                    }`}>
+                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${
+                                                                    isPassed 
+                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
+                                                                        : isFailed 
+                                                                        ? "bg-red-50 text-red-700 border-red-100" 
+                                                                        : "bg-slate-50 text-slate-500 border-slate-100"
+                                                                }`}>
                                                                     {history.bandBadge || "UNTESTED"}
                                                                 </span>
                                                             </p>
@@ -467,6 +556,102 @@ export default function EmployeeDashboard() {
                     </>
                 )}
             </main>
+
+            {/* Change Password Modal */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                    <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md shadow-2xl p-6 sm:p-8 animate-fade-in relative">
+                        
+                        {/* Close button - only visible if NOT forced */}
+                        {!modalConfig.isForced && (
+                            <button 
+                                onClick={() => {
+                                    setShowPasswordModal(false);
+                                    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                                }}
+                                className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer border-none bg-transparent"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900">Change Password</h3>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    {modalConfig.isForced 
+                                        ? "For security, you must update your password to continue." 
+                                        : "Update your training portal password."}
+                                </p>
+                            </div>
+                        </div>
+
+                        {modalConfig.isForced && (
+                            <div className="mb-6 bg-orange-50 text-orange-850 p-4 rounded-2xl border border-orange-100/60 flex items-start gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 shrink-0 mt-0.5 text-orange-600">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                </svg>
+                                <p className="text-[11px] font-bold leading-relaxed">
+                                    This is your first login. Please choose a strong password to replace your default credential.
+                                </p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Current Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={passwordForm.oldPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
+                                    placeholder="Enter current password"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">New Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={passwordForm.newPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
+                                    placeholder="Minimum 4 characters"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Confirm New Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={passwordForm.confirmPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
+                                    placeholder="Confirm new password"
+                                />
+                            </div>
+
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={passwordLoading}
+                                    className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:hover:translate-y-0 border-none"
+                                >
+                                    {passwordLoading ? "Updating Password..." : "Update Password"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
