@@ -12,6 +12,9 @@ import {
 import { getEmployees } from "../../../api/employeeApi";
 import { getTrainingModuleById } from "../../../api/trainingModuleApi";
 import { getQuestionPapers } from "../../../api/questionPaperApi";
+import { getDepartments } from "../../../api/departmentApi";
+import { getClients } from "../../../api/clientApi";
+import { getSites } from "../../../api/siteApi";
 import toast from "react-hot-toast";
 
 const STATUS_STEPS = [
@@ -32,6 +35,13 @@ export default function ManageBatch() {
     const [employees, setEmployees] = useState([]);
     const [trainingModule, setTrainingModule] = useState(null);
     const [questionPapers, setQuestionPapers] = useState([]);
+    const [departments, setDepartments] = useState([]);
+    const [clients, setClients] = useState([]);
+    const [sites, setSites] = useState([]);
+
+    const [selectedDeptId, setSelectedDeptId] = useState("");
+    const [selectedClientId, setSelectedClientId] = useState("");
+    const [selectedSiteId, setSelectedSiteId] = useState("");
 
     const [loading, setLoading] = useState(true);
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
@@ -71,6 +81,16 @@ export default function ManageBatch() {
             const qpRes = await getQuestionPapers();
             setQuestionPapers(qpRes.data.data || []);
 
+            // Fetch lookup data for filtering
+            const [deptRes, clientRes, siteRes] = await Promise.all([
+                getDepartments(),
+                getClients(),
+                getSites()
+            ]);
+            setDepartments(deptRes.data.data || []);
+            setClients(clientRes.data.data || []);
+            setSites(siteRes.data.data || []);
+
         } catch (err) {
             console.error("Error loading batch details:", err);
             toast.error("Failed to load batch details");
@@ -103,6 +123,13 @@ export default function ManageBatch() {
         }
     }, [id]);
 
+    useEffect(() => {
+        if (batch) {
+            setSelectedClientId(batch.client_id || "");
+            setSelectedSiteId(batch.site_id || "");
+        }
+    }, [batch]);
+
     // Active step calculation
     const currentStepIndex = useMemo(() => {
         if (!batch) return 0;
@@ -110,14 +137,28 @@ export default function ManageBatch() {
         return idx !== -1 ? idx : 0;
     }, [batch]);
 
-    // Filter employees: same client organization, and not already registered in this batch
+    // Filter employees: same client organization (or selected client), not already registered, and match selected site & department
     const availableEmployees = useMemo(() => {
-        if (!batch || !employees.length) return [];
-        return employees.filter(emp =>
-            emp.client_id === batch.client_id &&
-            !participants.some(part => part.employee_id === emp.id)
-        );
-    }, [batch, employees, participants]);
+        if (!employees.length) return [];
+        return employees.filter(emp => {
+            const isAlreadyRegistered = participants.some(part => part.employee_id === emp.id);
+            if (isAlreadyRegistered) return false;
+
+            if (selectedClientId && emp.client_id !== Number(selectedClientId)) {
+                return false;
+            }
+
+            if (selectedSiteId && emp.site_id !== Number(selectedSiteId)) {
+                return false;
+            }
+
+            if (selectedDeptId && emp.department_id !== Number(selectedDeptId)) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [employees, participants, selectedClientId, selectedSiteId, selectedDeptId]);
 
     const preTestsSubmittedCount = useMemo(() => {
         return participants.filter(p => p.pre_test_score !== null).length;
@@ -746,75 +787,125 @@ export default function ManageBatch() {
                             <h3 className="font-extrabold text-slate-900 text-xs tracking-wider uppercase">Add Participant Manually</h3>
                         </div>
 
-                        <form onSubmit={handleAddParticipant} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                            <div className="space-y-2 relative md:col-span-2">
-                                <label className="block text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Search & Select Employees</label>
-
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Type name or code..."
-                                        value={searchQuery}
+                        <div className="space-y-4">
+                            {/* Filters Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Filter by Client</label>
+                                    <select
+                                        value={selectedClientId}
                                         onChange={(e) => {
-                                            setSearchQuery(e.target.value);
-                                            setDropdownOpen(true);
+                                            setSelectedClientId(e.target.value);
+                                            setSelectedSiteId("");
                                         }}
-                                        onFocus={() => setDropdownOpen(true)}
-                                        onBlur={() => {
-                                            // Close dropdown with a slight delay so clicks can register
-                                            setTimeout(() => setDropdownOpen(false), 200);
-                                        }}
-                                        className="w-full border border-slate-200 rounded-xl pl-3 pr-10 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-white"
-                                    />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none text-slate-400">
-                                        <i className="fa-solid fa-chevron-down text-[10px]"></i>
-                                    </div>
+                                        className="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white cursor-pointer"
+                                    >
+                                        <option value="">All Clients</option>
+                                        {clients.map(c => (
+                                            <option key={c.id} value={c.id}>{c.client_name}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
-                                {/* Dropdown Menu */}
-                                {dropdownOpen && (
-                                    <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto border border-slate-200 rounded-xl shadow-lg bg-white z-50 divide-y divide-slate-50">
-                                        {filteredAvailableEmployees.filter(emp => !selectedEmployeeIds.includes(emp.id)).length === 0 ? (
-                                            <div className="text-xs text-slate-400 text-center py-4 font-semibold">
-                                                No matching employees found.
-                                            </div>
-                                        ) : (
-                                            filteredAvailableEmployees
-                                                .filter(emp => !selectedEmployeeIds.includes(emp.id))
-                                                .map(emp => (
-                                                    <div
-                                                        key={emp.id}
-                                                        onMouseDown={(e) => {
-                                                            // Prevent input blur before click registers
-                                                            e.preventDefault();
-                                                            setSelectedEmployeeIds(prev => [...prev, emp.id]);
-                                                            setSearchQuery("");
-                                                        }}
-                                                        className="flex flex-col p-2.5 hover:bg-slate-50 cursor-pointer transition-colors text-xs font-semibold text-slate-700"
-                                                    >
-                                                        <span>{emp.full_name}</span>
-                                                        <span className="text-[10px] text-slate-400 font-mono mt-0.5">{emp.employee_code} ({emp.employee_type})</span>
-                                                    </div>
-                                                ))
-                                        )}
-                                    </div>
-                                )}
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Filter by Site</label>
+                                    <select
+                                        value={selectedSiteId}
+                                        onChange={(e) => setSelectedSiteId(e.target.value)}
+                                        className="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white cursor-pointer"
+                                    >
+                                        <option value="">All Sites</option>
+                                        {sites
+                                            .filter(s => !selectedClientId || String(s.client_id) === String(selectedClientId))
+                                            .map(s => (
+                                                <option key={s.id} value={s.id}>{s.site_name}</option>
+                                            ))
+                                        }
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Filter by Department</label>
+                                    <select
+                                        value={selectedDeptId}
+                                        onChange={(e) => setSelectedDeptId(e.target.value)}
+                                        className="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white cursor-pointer"
+                                    >
+                                        <option value="">All Departments</option>
+                                        {departments.map(d => (
+                                            <option key={d.id} value={d.id}>{d.department_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={submitting || selectedEmployeeIds.length === 0}
-                                className="w-full py-2.5 px-4 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer text-center text-white disabled:opacity-50 disabled:cursor-not-allowed h-[38px] flex items-center justify-center"
-                                style={{
-                                    background: selectedEmployeeIds.length > 0 ? "linear-gradient(135deg, #f97316, #ea580c)" : "#94a3b8"
-                                }}
-                            >
-                                Add Participants ({selectedEmployeeIds.length})
-                            </button>
+                            {/* Search & Add Action Row */}
+                            <form onSubmit={handleAddParticipant} className="flex flex-col sm:flex-row gap-3 items-end sm:items-center justify-between">
+                                <div className="flex-1 space-y-1 relative w-full">
+                                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Search & Select Employees</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Type name or code to filter search..."
+                                            value={searchQuery}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                setDropdownOpen(true);
+                                            }}
+                                            onFocus={() => setDropdownOpen(true)}
+                                            onBlur={() => {
+                                                setTimeout(() => setDropdownOpen(false), 200);
+                                            }}
+                                            className="w-full border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white"
+                                        />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-slate-400">
+                                            <i className="fa-solid fa-chevron-down text-[10px]"></i>
+                                        </div>
+                                    </div>
+
+                                    {dropdownOpen && (
+                                        <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto border border-slate-200 rounded-xl shadow-lg bg-white z-50 divide-y divide-slate-50">
+                                            {filteredAvailableEmployees.filter(emp => !selectedEmployeeIds.includes(emp.id)).length === 0 ? (
+                                                <div className="text-xs text-slate-400 text-center py-4 font-semibold">
+                                                    No matching employees found.
+                                                </div>
+                                            ) : (
+                                                filteredAvailableEmployees
+                                                    .filter(emp => !selectedEmployeeIds.includes(emp.id))
+                                                    .map(emp => (
+                                                        <div
+                                                            key={emp.id}
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                setSelectedEmployeeIds(prev => [...prev, emp.id]);
+                                                                setSearchQuery("");
+                                                            }}
+                                                            className="flex flex-col p-2.5 hover:bg-slate-50 cursor-pointer transition-colors text-xs font-semibold text-slate-700"
+                                                        >
+                                                            <span>{emp.full_name}</span>
+                                                            <span className="text-[10px] text-slate-400 font-mono mt-0.5">{emp.employee_code} ({emp.employee_type})</span>
+                                                        </div>
+                                                    ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={submitting || selectedEmployeeIds.length === 0}
+                                    className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer text-center text-white disabled:opacity-50 disabled:cursor-not-allowed shrink-0 sm:self-end h-[34px]"
+                                    style={{
+                                        background: selectedEmployeeIds.length > 0 ? "linear-gradient(135deg, #253361, #1a2446)" : "#94a3b8"
+                                    }}
+                                >
+                                    Add ({selectedEmployeeIds.length})
+                                </button>
+                            </form>
 
                             {/* Selected Employees list (badges) */}
                             {selectedEmployeeIds.length > 0 && (
-                                <div className="space-y-1.5 md:col-span-3">
+                                <div className="space-y-1.5">
                                     <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Selected ({selectedEmployeeIds.length})</div>
                                     <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 border border-slate-100 rounded-xl bg-slate-50/50">
                                         {selectedEmployeeIds.map(empId => {
@@ -841,7 +932,7 @@ export default function ManageBatch() {
                                     </div>
                                 </div>
                             )}
-                        </form>
+                        </div>
                     </div>
                 )}
 
