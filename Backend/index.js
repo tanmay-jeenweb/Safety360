@@ -48,10 +48,12 @@ const app = express();
 
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://crm.jasminmobile.com",
-    "http://crm.jasminmobile.com",
-    "https://www.crm.jasminmobile.com",
-    "http://www.crm.jasminmobile.com",
+    "https://thesafety360.com",
+    "http://thesafety360.com",
+    "https://www.thesafety360.com",
+    "http://www.thesafety360.com",
+    "https://training.thesafety360.com",
+    "http://training.thesafety360.com",
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
