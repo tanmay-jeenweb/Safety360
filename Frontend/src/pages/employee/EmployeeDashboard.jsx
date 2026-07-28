@@ -10,6 +10,7 @@ export default function EmployeeDashboard() {
     const [activeTrainings, setActiveTrainings] = useState([]);
     const [trainingHistory, setTrainingHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -92,7 +93,7 @@ export default function EmployeeDashboard() {
             <div className="absolute bottom-[10%] right-[10%] w-[35%] h-[40%] bg-amber-500/5 rounded-full blur-[130px] pointer-events-none z-0" />
 
             {/* Premium Navbar */}
-            <header className="w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/80 px-6 py-4 flex items-center justify-between z-10 sticky top-0 shadow-[0_2px_15px_rgba(0,0,0,0.02)]">
+            <header className="w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/80 px-6 py-4 flex items-center justify-between z-30 sticky top-0 shadow-[0_2px_15px_rgba(0,0,0,0.02)]">
                 <div className="flex items-center gap-3">
                     <img src="/Gravity Logo.png" alt="Safety360 Logo" className="h-10 w-auto" />
                     <span className="text-lg font-extrabold text-slate-900 tracking-tight">
@@ -100,17 +101,56 @@ export default function EmployeeDashboard() {
                     </span>
                 </div>
                 {user && (
-                    <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Participant</p>
-                            <p className="text-sm font-extrabold text-slate-800">{user.name}</p>
-                        </div>
+                    <div className="relative">
+                        {/* Trigger button */}
                         <button
-                            onClick={handleLogout}
-                            className="bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm hover:shadow"
+                            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                            className="flex items-center gap-3 bg-white/80 hover:bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 text-left cursor-pointer transition-all duration-200 select-none"
                         >
-                            Log Out
+                            {/* Avatar Initials */}
+                            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-extrabold text-sm uppercase shrink-0">
+                                {user.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2) : "P"}
+                            </div>
+
+                            <div className="hidden sm:block">
+                                {/* <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Participant</p> */}
+                                <p className="text-md font-extrabold text-slate-800 leading-none">{user.name}</p>
+                            </div>
+
+                            {/* Chevron Down Icon */}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
                         </button>
+
+                        {/* Dropdown Menu */}
+                        {userDropdownOpen && (
+                            <>
+                                {/* Overlay/Backdrop to close dropdown when clicking outside */}
+                                <div
+                                    className="fixed inset-0 z-40 cursor-default"
+                                    onClick={() => setUserDropdownOpen(false)}
+                                />
+                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                                    <div className="px-4 py-2 border-b border-slate-100 sm:hidden">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Participant</p>
+                                        <p className="text-xs font-extrabold text-slate-800 truncate">{user.name}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setUserDropdownOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                                        </svg>
+                                        Log Out
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </header>
@@ -188,7 +228,7 @@ export default function EmployeeDashboard() {
 
                         {/* Side by Side layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            
+
                             {/* Left Column: Active Training (2/3 width) */}
                             <div className="lg:col-span-2 space-y-6">
                                 <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2 mb-2">
@@ -284,7 +324,7 @@ export default function EmployeeDashboard() {
                                                 {training.pendingTests && training.pendingTests.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {training.pendingTests.map((t) => (
-                                                            <div 
+                                                            <div
                                                                 key={t.type}
                                                                 className="flex items-center justify-between bg-orange-50/40 border border-orange-200/50 rounded-2xl p-4 gap-3"
                                                             >
@@ -310,11 +350,11 @@ export default function EmployeeDashboard() {
                                                     </div>
                                                 ) : (
                                                     <div className="text-center py-3 bg-slate-50/50 rounded-2xl text-[10px] text-slate-400 font-bold tracking-wider uppercase border border-dashed border-slate-200">
-                                                        {training.status === "Draft" 
+                                                        {training.status === "Draft"
                                                             ? "Waiting for trainer to start Pre-test"
                                                             : training.status === "Training Held"
-                                                            ? "Training Held. Waiting for Post-test activation"
-                                                            : "No immediate evaluation actions"}
+                                                                ? "Training Held. Waiting for Post-test activation"
+                                                                : "No immediate evaluation actions"}
                                                     </div>
                                                 )}
                                             </div>
@@ -349,15 +389,15 @@ export default function EmployeeDashboard() {
                                         {trainingHistory.map((history) => {
                                             const isPassed = history.bandBadge === "PASSED";
                                             const isFailed = history.bandBadge === "FAILED";
-                                            
+
                                             // Timeline node decoration
                                             let nodeBg = "bg-slate-200 text-slate-400";
                                             if (isPassed) nodeBg = "bg-emerald-100 text-emerald-600 ring-4 ring-emerald-50";
                                             else if (isFailed) nodeBg = "bg-red-100 text-red-600 ring-4 ring-red-50";
 
                                             return (
-                                                <div 
-                                                    key={history.batchId} 
+                                                <div
+                                                    key={history.batchId}
                                                     className="relative border-l-2 border-slate-200/70 ml-3 pl-6 pb-6 last:pb-2 last:border-none"
                                                 >
                                                     {/* Timeline Node Badge */}
@@ -383,7 +423,7 @@ export default function EmployeeDashboard() {
                                                         <h4 className="text-sm font-extrabold text-slate-900 leading-snug mt-0.5">
                                                             {history.moduleName}
                                                         </h4>
-                                                        
+
                                                         <div className="space-y-1.5 text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-100 font-medium">
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Trainer</span>
@@ -405,13 +445,12 @@ export default function EmployeeDashboard() {
                                                             </p>
                                                             <p className="flex justify-between items-center pt-1">
                                                                 <span className="text-slate-400">Status</span>
-                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${
-                                                                    isPassed 
-                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                                                                        : isFailed 
-                                                                        ? "bg-red-50 text-red-700 border-red-100" 
-                                                                        : "bg-slate-50 text-slate-500 border-slate-100"
-                                                                }`}>
+                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${isPassed
+                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                        : isFailed
+                                                                            ? "bg-red-50 text-red-700 border-red-100"
+                                                                            : "bg-slate-50 text-slate-500 border-slate-100"
+                                                                    }`}>
                                                                     {history.bandBadge || "UNTESTED"}
                                                                 </span>
                                                             </p>
