@@ -28,6 +28,10 @@ export const getMyDashboardData = async () => {
     return apiClient.get("/employees/my-dashboard");
 };
 
+export const changeEmployeePassword = async (data) => {
+    return apiClient.post("/employees/change-password", data);
+};
+
 export const getTestDetails = async (batchId, testType) => {
     return apiClient.get(`/employees/test-details/${batchId}/${testType}`);
 };

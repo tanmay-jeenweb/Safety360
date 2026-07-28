@@ -20,6 +20,7 @@ const createEmployeesTable = async () => {
             contractor_name VARCHAR(150) DEFAULT NULL,
             phone_no VARCHAR(20) NOT NULL,
             password VARCHAR(255) NOT NULL,
+            is_first_login TINYINT(1) DEFAULT 1,
             client_id INT NOT NULL,
             site_id INT NOT NULL,
             added_by INT NOT NULL,
@@ -45,6 +46,9 @@ const createEmployeesTable = async () => {
     try {
         await db.execute("ALTER TABLE employees ADD COLUMN password VARCHAR(255) NOT NULL AFTER phone_no");
     } catch (e2) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN is_first_login TINYINT(1) DEFAULT 1 AFTER password");
+    } catch (e3) {}
 
     console.log("Employees table ready");
 };
