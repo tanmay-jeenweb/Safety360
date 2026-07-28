@@ -2,13 +2,6 @@ const db = require('../config/db.js');
 
 // ─── Table creation ──────────────────────────────────────────────────────────
 const createEmployeesTable = async () => {
-    // Drop existing table to ensure schema migration runs correctly in dev mode
-    try {
-        await db.execute("DROP TABLE IF EXISTS employees");
-    } catch (err) {
-        console.error("Error dropping old employees table:", err);
-    }
-
     const query = `
         CREATE TABLE IF NOT EXISTS employees (
             id INT AUTO_INCREMENT PRIMARY KEY,
