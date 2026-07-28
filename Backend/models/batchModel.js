@@ -70,6 +70,12 @@ const createBatchesTable = async () => {
         console.warn("Could not add foreign key constraints for question papers:", e.message);
     }
 
+    try {
+        await db.execute("UPDATE batches SET status = 'Closed' WHERE status = 'Feedback'");
+    } catch (e) {
+        console.warn("Could not update legacy Feedback status to Closed:", e.message);
+    }
+
     console.log("Batches table ready");
 };
 

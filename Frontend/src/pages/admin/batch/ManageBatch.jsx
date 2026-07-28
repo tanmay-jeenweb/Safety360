@@ -22,7 +22,6 @@ const STATUS_STEPS = [
     { label: "Pre-Test Active", value: "Pretest Active" },
     { label: "Training Held", value: "Training Held" },
     { label: "Post-Test Active", value: "Posttest Active" },
-    { label: "Feedback Pending", value: "Feedback" },
     { label: "Batch Closed", value: "Closed" }
 ];
 
@@ -133,7 +132,11 @@ export default function ManageBatch() {
     // Active step calculation
     const currentStepIndex = useMemo(() => {
         if (!batch) return 0;
-        const idx = STATUS_STEPS.findIndex(s => s.value.toLowerCase() === batch.status.toLowerCase());
+        let statusVal = batch.status;
+        if (statusVal && statusVal.toLowerCase() === "feedback") {
+            statusVal = "Closed";
+        }
+        const idx = STATUS_STEPS.findIndex(s => s.value.toLowerCase() === statusVal.toLowerCase());
         return idx !== -1 ? idx : 0;
     }, [batch]);
 
@@ -710,7 +713,7 @@ export default function ManageBatch() {
                 </div>
 
                 {/* Metric Summary Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Trainees Loaded</span>
                         <div className="text-2xl font-black text-slate-900">{participants.length} / {batch.batch_size}</div>
@@ -722,10 +725,6 @@ export default function ManageBatch() {
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Post Tests Submitted</span>
                         <div className="text-2xl font-black text-slate-900">{postTestsSubmittedCount} / {eligiblePostTestCount}</div>
-                    </div>
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Feedbacks Received</span>
-                        <div className="text-2xl font-black text-slate-900">0 / {participants.length}</div>
                     </div>
                 </div>
 
