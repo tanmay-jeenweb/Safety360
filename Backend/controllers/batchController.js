@@ -13,7 +13,7 @@ const { createAuditLog } = require('../models/auditLogModel.js');
 
 const addBatch = async (req, res) => {
     try {
-        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status, preTestQuestionPaperId, postTestQuestionPaperId } = req.body;
+        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status, preTestQuestionPaperId, postTestQuestionPaperId, preTestWeightage } = req.body;
         const addedBy = req.user.id;
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
 
@@ -37,7 +37,8 @@ const addBatch = async (req, res) => {
             batchSize,
             status: status || 'Draft',
             preTestQuestionPaperId: preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null,
-            postTestQuestionPaperId: postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null
+            postTestQuestionPaperId: postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null,
+            preTestWeightage: preTestWeightage !== undefined ? parseInt(preTestWeightage, 10) : 0
         }, addedBy);
 
         const newId = result.insertId;
@@ -87,7 +88,7 @@ const getAllBatchesController = async (req, res) => {
 const updateBatchController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status, preTestQuestionPaperId, postTestQuestionPaperId } = req.body;
+        const { clientId, siteId, trainingModuleId, trainerId, scheduledDate, venue, batchSize, status, preTestQuestionPaperId, postTestQuestionPaperId, preTestWeightage } = req.body;
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
 
         // Validation - all fields are mandatory
@@ -118,7 +119,8 @@ const updateBatchController = async (req, res) => {
             batchSize,
             status,
             preTestQuestionPaperId: preTestQuestionPaperId !== undefined ? (preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null) : beforeData.pre_test_question_paper_id,
-            postTestQuestionPaperId: postTestQuestionPaperId !== undefined ? (postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null) : beforeData.post_test_question_paper_id
+            postTestQuestionPaperId: postTestQuestionPaperId !== undefined ? (postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null) : beforeData.post_test_question_paper_id,
+            preTestWeightage: preTestWeightage !== undefined ? parseInt(preTestWeightage, 10) : beforeData.pre_test_weightage
         });
 
         const afterData = await getBatchById(id);

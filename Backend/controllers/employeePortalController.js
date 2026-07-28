@@ -213,9 +213,13 @@ const submitTestController = async (req, res) => {
         
         // Fetch batch details and verify status
         const [batchRows] = await db.execute(
-            `SELECT b.*, tm.module_name, tm.passing_marks 
+            `SELECT b.*, tm.module_name, tm.passing_marks,
+                    JSON_LENGTH(qp_pre.questions) AS pre_total_questions,
+                    JSON_LENGTH(qp_post.questions) AS post_total_questions
              FROM batches b
              INNER JOIN training_modules tm ON b.training_module_id = tm.id
+             LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
+             LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
              WHERE b.id = ?`,
             [batchId]
         );
@@ -271,10 +275,21 @@ const submitTestController = async (req, res) => {
             `;
             await db.execute(updateQuery, [correctCount, batchId, employeeId]);
         } else {
-            // Post test is the final evaluation
-            finalScore = correctCount;
-            // Decide band badge based on passing marks
-            const passed = correctCount >= batchObj.passing_marks;
+            // Post test is the final evaluation. Combined score formulation:
+            const preScore = participant.pre_test_score !== null ? participant.pre_test_score : 0;
+            const preTotal = batchObj.pre_total_questions || 0;
+            const postTotal = detailedQuestions.length; // post-test total questions
+            const preWeightage = batchObj.pre_test_weightage !== null && batchObj.pre_test_weightage !== undefined ? batchObj.pre_test_weightage : 0;
+            const postWeightage = 100 - preWeightage;
+
+            const preTestPercentage = preTotal > 0 ? (preScore / preTotal) * 100 : 0;
+            const postTestPercentage = postTotal > 0 ? (correctCount / postTotal) * 100 : 0;
+
+            const finalScorePercentage = Math.round((preTestPercentage * preWeightage / 100) + (postTestPercentage * postWeightage / 100));
+            finalScore = finalScorePercentage;
+
+            // Decide band badge based on passing marks (which is a percentage)
+            const passed = finalScorePercentage >= batchObj.passing_marks;
             bandBadge = passed ? 'PASSED' : 'FAILED';
             
             updateQuery = `
@@ -317,6 +332,8 @@ const getMyDashboardController = async (req, res) => {
                 b.status AS batch_status,
                 b.pre_test_question_paper_id,
                 b.post_test_question_paper_id,
+                JSON_LENGTH(qp_pre.questions) AS pre_total_questions,
+                JSON_LENGTH(qp_post.questions) AS post_total_questions,
                 b.scheduled_date,
                 b.venue,
                 tm.module_name,
@@ -325,6 +342,8 @@ const getMyDashboardController = async (req, res) => {
             INNER JOIN batches b ON bp.batch_id = b.id
             INNER JOIN training_modules tm ON b.training_module_id = tm.id
             INNER JOIN trainers t ON b.trainer_id = t.id
+            LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
+            LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
             WHERE bp.employee_id = ?
             ORDER BY b.scheduled_date DESC
         `;
@@ -383,6 +402,8 @@ const getMyDashboardController = async (req, res) => {
                     status: row.batch_status,
                     preTestScore: row.pre_test_score,
                     postTestScore: row.post_test_score,
+                    preTotalQuestions: row.pre_total_questions,
+                    postTotalQuestions: row.post_total_questions,
                     attendance: row.attendance,
                     pendingTests: [
                         ...(isPendingPreTest ? [{ type: 'Pre', paperId: row.pre_test_question_paper_id }] : []),
@@ -399,6 +420,8 @@ const getMyDashboardController = async (req, res) => {
                     status: row.batch_status,
                     preTestScore: row.pre_test_score,
                     postTestScore: row.post_test_score,
+                    preTotalQuestions: row.pre_total_questions,
+                    postTotalQuestions: row.post_total_questions,
                     attendance: row.attendance,
                     finalScore: row.final_score,
                     bandBadge: row.band_badge

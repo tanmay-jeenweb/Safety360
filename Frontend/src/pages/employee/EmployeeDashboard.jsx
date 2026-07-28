@@ -399,7 +399,7 @@ export default function EmployeeDashboard() {
                                                 <div className="flex items-center gap-4 bg-slate-50/55 p-3 rounded-2xl text-xs font-semibold text-slate-500 mb-4 border border-slate-100">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? "bg-emerald-500" : "bg-slate-300"}`}></span>
-                                                        <span>Pre-Test: <strong className="text-slate-700">{training.preTestScore !== null ? `${training.preTestScore} Marks` : "Not Taken"}</strong></span>
+                                                        <span>Pre-Test: <strong className="text-slate-700">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}% (${training.preTestScore}/${training.preTotalQuestions})` : "Not Taken"}</strong></span>
                                                     </div>
                                                     <div className="w-px h-4 bg-slate-200"></div>
                                                     <div className="flex items-center gap-1.5">
@@ -519,11 +519,11 @@ export default function EmployeeDashboard() {
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Pre-Test Score</span>
-                                                                <span className="text-slate-700 font-bold">{history.preTestScore !== null ? `${history.preTestScore} Marks` : "-"}</span>
+                                                                <span className="text-slate-700 font-bold">{history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}% (${history.preTestScore}/${history.preTotalQuestions})` : "-"}</span>
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Post-Test Score</span>
-                                                                <span className="text-slate-700 font-bold">{history.postTestScore !== null ? `${history.postTestScore} Marks` : "-"}</span>
+                                                                <span className="text-slate-700 font-bold">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}% (${history.postTestScore}/${history.postTotalQuestions})` : "-"}</span>
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Attendance</span>
