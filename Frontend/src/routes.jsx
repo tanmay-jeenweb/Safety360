@@ -23,6 +23,10 @@ import QuestionBankMaster from "./pages/admin/questions/QuestionBankMaster";
 import CreateQuestion from "./pages/admin/questions/CreateQuestion";
 import QuestionPaperMaster from "./pages/admin/questions/QuestionPaperMaster";
 import CreateQuestionPaper from "./pages/admin/questions/CreateQuestionPaper";
+import FeedbackQuestionBankMaster from "./pages/admin/feedback/FeedbackQuestionBankMaster";
+import CreateFeedbackQuestion from "./pages/admin/feedback/CreateFeedbackQuestion";
+import FeedbackPaperMaster from "./pages/admin/feedback/FeedbackPaperMaster";
+import CreateFeedbackPaper from "./pages/admin/feedback/CreateFeedbackPaper";
 import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
 import BatchMaster from "./pages/admin/batch/BatchMaster";
 import ManageBatch from "./pages/admin/batch/ManageBatch";
@@ -128,6 +132,30 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="read" />}>
                 <Route path="/admin/question-paper" element={<QuestionPaperMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="feedback_question_bank" requiredAction="read" />}>
+                <Route path="/admin/feedback-question-bank" element={<FeedbackQuestionBankMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="feedback_question_bank" requiredAction="write" />}>
+                <Route path="/admin/feedback-question-bank/create" element={<CreateFeedbackQuestion />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="feedback_question_bank" requiredAction="update" />}>
+                <Route path="/admin/feedback-question-bank/edit/:id" element={<CreateFeedbackQuestion />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="feedback_papers" requiredAction="read" />}>
+                <Route path="/admin/feedback-paper" element={<FeedbackPaperMaster />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="feedback_papers" strokeWidth={2} requiredAction="write" />}>
+                <Route path="/admin/feedback-paper/create" element={<CreateFeedbackPaper />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="feedback_papers" requiredAction="update" />}>
+                <Route path="/admin/feedback-paper/edit/:id" element={<CreateFeedbackPaper />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_master" requiredAction="read" />}>

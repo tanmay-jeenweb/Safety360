@@ -24,6 +24,8 @@ const questionBankRoutes = require("./routes/questionBankRoutes.js");
 const questionPaperRoutes = require("./routes/questionPaperRoutes.js");
 const employeeRoutes = require("./routes/employeeRoutes.js");
 const batchRoutes = require("./routes/batchRoutes.js");
+const feedbackQuestionBankRoutes = require("./routes/feedbackQuestionBankRoutes.js");
+const feedbackPaperRoutes = require("./routes/feedbackPaperRoutes.js");
 
 // Model Initializations
 const { initUserModel } = require("./models/userModel.js");
@@ -43,6 +45,8 @@ const { createQuestionBankTable } = require("./models/questionBankModel.js");
 const { createQuestionPaperTable } = require("./models/questionPaperModel.js");
 const { createEmployeesTable } = require("./models/employeeModel.js");
 const { createBatchesTable, createBatchParticipantsTable, createPostTestAttemptsTable } = require("./models/batchModel.js");
+const { createFeedbackQuestionBankTable } = require("./models/feedbackQuestionBankModel.js");
+const { createFeedbackPapersTable } = require("./models/feedbackPaperModel.js");
 
 const app = express();
 
@@ -97,6 +101,8 @@ app.use(["/api/question-bank", "/question-bank"], questionBankRoutes);
 app.use(["/api/question-paper", "/question-paper"], questionPaperRoutes);
 app.use(["/api/employees", "/employees"], employeeRoutes);
 app.use(["/api/batches", "/batches"], batchRoutes);
+app.use(["/api/feedback-question-bank", "/feedback-question-bank"], feedbackQuestionBankRoutes);
+app.use(["/api/feedback-papers", "/feedback-papers"], feedbackPaperRoutes);
 
 // Global 404 handler
 app.use((req, res) => {
@@ -135,6 +141,8 @@ const startServer = async () => {
         await createBatchesTable();
         await createBatchParticipantsTable();
         await createPostTestAttemptsTable();
+        await createFeedbackQuestionBankTable();
+        await createFeedbackPapersTable();
 
         console.log("All database tables are initialized and ready.");
 
