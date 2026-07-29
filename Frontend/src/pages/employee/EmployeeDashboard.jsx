@@ -396,7 +396,7 @@ export default function EmployeeDashboard() {
                                                 </div>
 
                                                 {/* Training Progress Scores Details */}
-                                                <div className="flex items-center gap-4 bg-slate-50/55 p-3 rounded-2xl text-xs font-semibold text-slate-500 mb-4 border border-slate-100">
+                                                <div className="flex flex-wrap items-center gap-4 bg-slate-50/55 p-3 rounded-2xl text-xs font-semibold text-slate-500 mb-4 border border-slate-100">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? "bg-emerald-500" : "bg-slate-300"}`}></span>
                                                         <span>Pre-Test: <strong className="text-slate-700">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}% (${training.preTestScore}/${training.preTotalQuestions})` : "Not Taken"}</strong></span>
@@ -406,6 +406,15 @@ export default function EmployeeDashboard() {
                                                         <span className={`w-2 h-2 rounded-full ${training.attendance ? "bg-emerald-500" : "bg-slate-300"}`}></span>
                                                         <span>Attendance: <strong className="text-slate-700">{training.attendance ? "Present" : "Absent / Pending"}</strong></span>
                                                     </div>
+                                                    {training.postTestScore !== null && (
+                                                         <>
+                                                             <div className="w-px h-4 bg-slate-200"></div>
+                                                             <div className="flex items-center gap-1.5">
+                                                                 <span className={`w-2 h-2 rounded-full ${training.bandBadge === 'PASSED' ? "bg-emerald-500" : "bg-red-500"}`}></span>
+                                                                 <span>Post-Test {training.bandBadge === 'PASSED' ? "(Passed)" : "(Failed)"}: <strong className="text-slate-700">{Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}% ({training.postTestScore}/{training.postTotalQuestions}) {training.postTestAttemptsCount > 0 ? `(${training.postTestAttemptsCount} attempt${training.postTestAttemptsCount > 1 ? 's' : ''})` : ""}</strong></span>
+                                                             </div>
+                                                         </>
+                                                     )}
                                                 </div>
 
                                                 {/* Pending Test Call-to-action */}
@@ -523,7 +532,11 @@ export default function EmployeeDashboard() {
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Post-Test Score</span>
-                                                                <span className="text-slate-700 font-bold">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}% (${history.postTestScore}/${history.postTotalQuestions})` : "-"}</span>
+                                                                <span className="text-slate-700 font-bold">
+                                                                    {history.postTestScore !== null 
+                                                                        ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}% (${history.postTestScore}/${history.postTotalQuestions})${history.postTestAttemptsCount > 0 ? ` (${history.postTestAttemptsCount} attempt${history.postTestAttemptsCount > 1 ? 's' : ''})` : ""}` 
+                                                                        : "-"}
+                                                                </span>
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Attendance</span>

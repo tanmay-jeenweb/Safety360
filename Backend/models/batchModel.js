@@ -264,6 +264,27 @@ const createBatchParticipantsTable = async () => {
     console.log("Batch participants table ready");
 };
 
+const createPostTestAttemptsTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS post_test_attempts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            batch_id INT NOT NULL,
+            employee_id INT NOT NULL,
+            attempt_number INT NOT NULL,
+            score INT NOT NULL,
+            total_questions INT NOT NULL,
+            passing_marks INT NOT NULL,
+            percentage DECIMAL(5,2) NOT NULL,
+            status VARCHAR(50) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE,
+            FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+        )
+    `;
+    await db.execute(query);
+    console.log("Post test attempts table ready");
+};
+
 // ─── Batch Participants CRUD ────────────────────────────────────────────────
 const getParticipantsByBatchId = async (batchId) => {
     const query = `
@@ -279,7 +300,8 @@ const getParticipantsByBatchId = async (batchId) => {
             e.employee_code,
             e.full_name,
             e.employee_type,
-            e.contractor_name
+            e.contractor_name,
+            (SELECT COUNT(*) FROM post_test_attempts pta WHERE pta.batch_id = bp.batch_id AND pta.employee_id = bp.employee_id) AS post_test_attempts_count
         FROM batch_participants bp
         INNER JOIN employees e ON bp.employee_id = e.id
         WHERE bp.batch_id = ?
@@ -342,6 +364,7 @@ module.exports = {
     getParticipantsByBatchId,
     addParticipantToBatch,
     removeParticipantFromBatch,
-    updateParticipantDetails
+    updateParticipantDetails,
+    createPostTestAttemptsTable
 };
 

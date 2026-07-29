@@ -17,6 +17,7 @@ const getMyTestsController = async (req, res) => {
                 bp.pre_test_score,
                 bp.post_test_score,
                 bp.attendance,
+                bp.band_badge,
                 b.status AS batch_status,
                 b.pre_test_question_paper_id,
                 b.post_test_question_paper_id,
@@ -48,8 +49,8 @@ const getMyTestsController = async (req, res) => {
                     venue: row.venue
                 });
             }
-            // Post-Test is active: status is 'Posttest Active', paper is configured, and score is null (not taken yet), and attendance is marked present
-            if (row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null && row.attendance === 1) {
+            // Post-Test is active: status is 'Posttest Active', paper is configured, and score is null (not taken yet) OR failed (re-attempt), and attendance is marked present
+            if (row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && (row.post_test_score === null || row.band_badge === 'FAILED') && row.attendance === 1) {
                 activeTests.push({
                     batchId: row.batch_id,
                     testType: 'Post',
@@ -100,8 +101,8 @@ const getTestDetailsController = async (req, res) => {
         if (testType === 'Pre' && participant.pre_test_score !== null) {
             return res.status(400).json({ success: false, message: 'You have already submitted this pre-test.' });
         }
-        if (testType === 'Post' && participant.post_test_score !== null) {
-            return res.status(400).json({ success: false, message: 'You have already submitted this post-test.' });
+        if (testType === 'Post' && participant.post_test_score !== null && participant.band_badge === 'PASSED') {
+            return res.status(400).json({ success: false, message: 'You have already passed this post-test.' });
         }
         if (testType === 'Post' && !participant.attendance) {
             return res.status(400).json({ success: false, message: 'You cannot attend the post-training exam because you were marked absent.' });
@@ -204,8 +205,8 @@ const submitTestController = async (req, res) => {
         if (testType === 'Pre' && participant.pre_test_score !== null) {
             return res.status(400).json({ success: false, message: 'You have already submitted this pre-test.' });
         }
-        if (testType === 'Post' && participant.post_test_score !== null) {
-            return res.status(400).json({ success: false, message: 'You have already submitted this post-test.' });
+        if (testType === 'Post' && participant.post_test_score !== null && participant.band_badge === 'PASSED') {
+            return res.status(400).json({ success: false, message: 'You have already passed this post-test.' });
         }
         if (testType === 'Post' && !participant.attendance) {
             return res.status(400).json({ success: false, message: 'You cannot submit the post-training exam because you were marked absent.' });
@@ -283,6 +284,19 @@ const submitTestController = async (req, res) => {
             const passed = percentage >= batchObj.passing_marks;
             bandBadge = passed ? 'PASSED' : 'FAILED';
             
+            // Record attempt in post_test_attempts table
+            const [countRows] = await db.execute(
+                "SELECT COUNT(*) AS attempt_count FROM post_test_attempts WHERE batch_id = ? AND employee_id = ?",
+                [batchId, employeeId]
+            );
+            const attemptNumber = countRows[0].attempt_count + 1;
+            
+            await db.execute(
+                `INSERT INTO post_test_attempts (batch_id, employee_id, attempt_number, score, total_questions, passing_marks, percentage, status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [batchId, employeeId, attemptNumber, correctCount, totalQs, batchObj.passing_marks, percentage, bandBadge]
+            );
+            
             updateQuery = `
                 UPDATE batch_participants 
                 SET post_test_score = ?, final_score = ?, band_badge = ?
@@ -328,7 +342,8 @@ const getMyDashboardController = async (req, res) => {
                 b.scheduled_date,
                 b.venue,
                 tm.module_name,
-                t.trainer_name
+                t.trainer_name,
+                (SELECT COUNT(*) FROM post_test_attempts pta WHERE pta.batch_id = bp.batch_id AND pta.employee_id = bp.employee_id) AS post_test_attempts_count
             FROM batch_participants bp
             INNER JOIN batches b ON bp.batch_id = b.id
             INNER JOIN training_modules tm ON b.training_module_id = tm.id
@@ -351,7 +366,7 @@ const getMyDashboardController = async (req, res) => {
         
         for (const row of rows) {
             const isPendingPreTest = row.batch_status === 'Pretest Active' && row.pre_test_question_paper_id && row.pre_test_score === null;
-            const isPendingPostTest = row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null && row.attendance === 1;
+            const isPendingPostTest = row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && (row.post_test_score === null || row.band_badge === 'FAILED') && row.attendance === 1;
             
             if (isPendingPreTest) {
                 pendingTestsCount++;
@@ -378,7 +393,7 @@ const getMyDashboardController = async (req, res) => {
                 });
             }
             
-            if (row.post_test_score !== null) {
+            if (row.post_test_score !== null && row.band_badge === 'PASSED') {
                 completedCoursesCount++;
             }
             
@@ -396,6 +411,8 @@ const getMyDashboardController = async (req, res) => {
                     preTotalQuestions: row.pre_total_questions,
                     postTotalQuestions: row.post_total_questions,
                     attendance: row.attendance,
+                    bandBadge: row.band_badge,
+                    postTestAttemptsCount: row.post_test_attempts_count || 0,
                     pendingTests: [
                         ...(isPendingPreTest ? [{ type: 'Pre', paperId: row.pre_test_question_paper_id }] : []),
                         ...(isPendingPostTest ? [{ type: 'Post', paperId: row.post_test_question_paper_id }] : [])
@@ -415,7 +432,8 @@ const getMyDashboardController = async (req, res) => {
                     postTotalQuestions: row.post_total_questions,
                     attendance: row.attendance,
                     finalScore: row.final_score,
-                    bandBadge: row.band_badge
+                    bandBadge: row.band_badge,
+                    postTestAttemptsCount: row.post_test_attempts_count || 0
                 });
             }
         }

@@ -991,23 +991,27 @@ export default function ManageBatch() {
                                                 />
                                             </td>
                                             <td className="py-4 px-6 text-center font-bold text-slate-700">{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
-                                            <td className="py-4 px-6 text-center font-bold text-slate-700">{part.post_test_score !== null ? part.post_test_score : "—"}</td>
-                                            <td className="py-4 px-6 text-center font-bold text-slate-700">
+                                            <td className="py-4 px-6 text-center">
                                                 {part.post_test_score !== null ? (
-                                                    (() => {
-                                                        const totalQs = trainingModule?.post_test_qs || 1;
-                                                        const pct = (part.post_test_score / totalQs) * 100;
-                                                        const passing = trainingModule?.passing_marks || 0;
-                                                        return pct >= passing ? (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
-                                                                Pass
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
-                                                                Fail
-                                                            </span>
-                                                        );
-                                                    })()
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="font-bold text-slate-700">{part.post_test_score}</span>
+                                                        {part.post_test_attempts_count > 0 && (
+                                                            <span className="text-[10px] text-slate-400 font-normal">({part.post_test_attempts_count} attempt{part.post_test_attempts_count > 1 ? 's' : ''})</span>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="font-bold text-slate-700">—</span>
+                                                )}
+                                            </td>
+                                            <td className="py-4 px-6 text-center font-bold text-slate-700">
+                                                {part.band_badge === 'PASSED' ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                                                        Pass
+                                                    </span>
+                                                ) : part.band_badge === 'FAILED' ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
+                                                        Fail
+                                                    </span>
                                                 ) : (
                                                     <span className="text-slate-400 font-medium">—</span>
                                                 )}
