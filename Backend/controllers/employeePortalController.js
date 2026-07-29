@@ -275,21 +275,12 @@ const submitTestController = async (req, res) => {
             `;
             await db.execute(updateQuery, [correctCount, batchId, employeeId]);
         } else {
-            // Post test is the final evaluation. Combined score formulation:
-            const preScore = participant.pre_test_score !== null ? participant.pre_test_score : 0;
-            const preTotal = batchObj.pre_total_questions || 0;
-            const postTotal = detailedQuestions.length; // post-test total questions
-            const preWeightage = batchObj.pre_test_weightage !== null && batchObj.pre_test_weightage !== undefined ? batchObj.pre_test_weightage : 0;
-            const postWeightage = 100 - preWeightage;
-
-            const preTestPercentage = preTotal > 0 ? (preScore / preTotal) * 100 : 0;
-            const postTestPercentage = postTotal > 0 ? (correctCount / postTotal) * 100 : 0;
-
-            const finalScorePercentage = Math.round((preTestPercentage * preWeightage / 100) + (postTestPercentage * postWeightage / 100));
-            finalScore = finalScorePercentage;
-
-            // Decide band badge based on passing marks (which is a percentage)
-            const passed = finalScorePercentage >= batchObj.passing_marks;
+            // Post test is the final evaluation
+            finalScore = correctCount;
+            // Decide band badge based on passing marks percentage
+            const totalQs = detailedQuestions.length || 1;
+            const percentage = (correctCount / totalQs) * 100;
+            const passed = percentage >= batchObj.passing_marks;
             bandBadge = passed ? 'PASSED' : 'FAILED';
             
             updateQuery = `
