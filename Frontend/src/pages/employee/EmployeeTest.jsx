@@ -15,6 +15,9 @@ export default function EmployeeTest() {
     const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [feedbackAnswers, setFeedbackAnswers] = useState({}); // { [questionId]: value }
+
     useEffect(() => {
         const fetchDetails = async () => {
             try {
@@ -69,11 +72,23 @@ export default function EmployeeTest() {
 
         setSubmitting(true);
         try {
-            const res = await submitTest({
+            const payload = {
                 batchId: parseInt(batchId, 10),
                 testType,
                 answers
-            });
+            };
+
+            if (testType === 'Post' && testInfo?.feedbackPaper && !testInfo?.feedbackSubmitted) {
+                payload.feedback = {
+                    paperId: testInfo.feedbackPaper.id,
+                    responses: Object.keys(feedbackAnswers).map(qid => ({
+                        questionId: parseInt(qid, 10),
+                        answer: String(feedbackAnswers[qid])
+                    }))
+                };
+            }
+
+            const res = await submitTest(payload);
 
             if (res.data.success) {
                 setSubmitted(true);
@@ -149,6 +164,121 @@ export default function EmployeeTest() {
     const currentQuestion = questions[currentIndex];
     const selectedAnswer = answers[currentQuestion.id];
     const isLastQuestion = currentIndex === questions.length - 1;
+
+    if (showFeedback && testInfo?.feedbackPaper) {
+        const paper = testInfo.feedbackPaper;
+        const qList = paper.questions || [];
+
+        const handleSelectFeedbackOption = (questionId, value) => {
+            setFeedbackAnswers(prev => ({
+                ...prev,
+                [questionId]: value
+            }));
+        };
+
+        const handleFeedbackSubmit = () => {
+            // Verify all rating questions are answered
+            const unanswered = qList.filter(q => q.question_type === 'Rating' && !feedbackAnswers[q.id]);
+            if (unanswered.length > 0) {
+                toast.error("Please answer all rating feedback questions.");
+                return;
+            }
+            handleSubmit();
+        };
+
+        return (
+            <div className="min-h-screen w-full bg-gradient-to-tr from-slate-50 via-orange-50/20 to-slate-100 flex flex-col relative overflow-hidden font-sans antialiased text-slate-800">
+                {/* Glows */}
+                <div className="absolute top-[10%] left-[10%] w-[35%] h-[40%] bg-orange-600/5 rounded-full blur-[130px] pointer-events-none z-0" />
+                <div className="absolute bottom-[10%] right-[10%] w-[35%] h-[40%] bg-amber-500/5 rounded-full blur-[130px] pointer-events-none z-0" />
+
+                {/* Header */}
+                <header className="w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/80 px-6 py-4 flex items-center justify-between z-10 sticky top-0 shadow-[0_2px_15px_rgba(0,0,0,0.02)]">
+                    <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Training Evaluation Feedback</span>
+                        <h2 className="text-sm sm:text-base font-extrabold text-slate-800 tracking-tight">
+                            {paper.name}
+                        </h2>
+                    </div>
+                </header>
+
+                {/* Main Feedback area */}
+                <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-10 z-10 flex flex-col justify-start">
+                    <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(37,51,97,0.04)] mb-6 space-y-6">
+                        <div>
+                            <h1 className="text-xl font-extrabold text-slate-900 leading-tight mb-2">Training Feedback Form</h1>
+                            <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                                Please share your honest ratings and feedback below to complete your evaluation.
+                            </p>
+                        </div>
+
+                        <div className="space-y-6 border-t border-slate-100 pt-6">
+                            {qList.map((q, idx) => {
+                                const answerVal = feedbackAnswers[q.id];
+                                return (
+                                    <div key={q.id} className="space-y-2">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Question {idx + 1}</span>
+                                        <label className="text-sm font-bold text-slate-800 block leading-snug">
+                                            {q.question_text}
+                                            {q.question_type === 'Rating' && <span className="text-orange-600 ml-1">*</span>}
+                                        </label>
+
+                                        {q.question_type === 'Rating' ? (
+                                            <div className="flex items-center gap-2 mt-2">
+                                                {[1, 2, 3, 4, 5].map((val) => {
+                                                    const isSelected = answerVal === val;
+                                                    return (
+                                                        <button
+                                                            key={val}
+                                                            type="button"
+                                                            onClick={() => handleSelectFeedbackOption(q.id, val)}
+                                                            className={`w-11 h-11 rounded-2xl border text-sm font-black transition-all flex items-center justify-center cursor-pointer ${
+                                                                isSelected
+                                                                    ? "bg-orange-600 border-orange-600 text-white shadow-md shadow-orange-500/20"
+                                                                    : "bg-slate-50/50 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                                                            }`}
+                                                        >
+                                                            {val}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <textarea
+                                                rows="3"
+                                                value={answerVal || ""}
+                                                onChange={(e) => handleSelectFeedbackOption(q.id, e.target.value)}
+                                                className="w-full border border-slate-200 rounded-2xl p-3.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-slate-50/20 focus:bg-white transition-all mt-1"
+                                                placeholder="Write your response here..."
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 border-t border-slate-100 pt-6">
+                            <button
+                                type="button"
+                                onClick={() => setShowFeedback(false)}
+                                className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
+                            >
+                                Back to Exam
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleFeedbackSubmit}
+                                disabled={submitting}
+                                className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-75 flex items-center gap-1.5"
+                            >
+                                {submitting ? "Submitting Exam..." : "Submit Exam & Feedback"}
+                            </button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen w-full bg-gradient-to-tr from-slate-50 via-orange-50/20 to-slate-100 flex flex-col relative overflow-hidden font-sans antialiased text-slate-800">
@@ -234,11 +364,17 @@ export default function EmployeeTest() {
 
                         {isLastQuestion ? (
                             <button
-                                onClick={handleSubmit}
+                                onClick={() => {
+                                    if (testType === 'Post' && testInfo?.feedbackPaper && !testInfo?.feedbackSubmitted) {
+                                        setShowFeedback(true);
+                                    } else {
+                                        handleSubmit();
+                                    }
+                                }}
                                 disabled={submitting}
                                 className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-1.5"
                             >
-                                {submitting ? "Submitting..." : "Submit Exam"}
+                                {submitting ? "Submitting..." : (testType === 'Post' && testInfo?.feedbackPaper && !testInfo?.feedbackSubmitted ? "Proceed to Feedback" : "Submit Exam")}
                             </button>
                         ) : (
                             <button

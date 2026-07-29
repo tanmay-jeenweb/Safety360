@@ -12,6 +12,7 @@ import {
 import { getEmployees } from "../../../api/employeeApi";
 import { getTrainingModuleById } from "../../../api/trainingModuleApi";
 import { getQuestionPapers } from "../../../api/questionPaperApi";
+import { getFeedbackPapers } from "../../../api/feedbackPaperApi";
 import { getDepartments } from "../../../api/departmentApi";
 import { getClients } from "../../../api/clientApi";
 import { getSites } from "../../../api/siteApi";
@@ -54,6 +55,9 @@ export default function ManageBatch() {
     const [isPostQpModalOpen, setIsPostQpModalOpen] = useState(false);
     const [selectedPostQpId, setSelectedPostQpId] = useState("");
 
+    const [feedbackPapers, setFeedbackPapers] = useState([]);
+    const [selectedFeedbackPaperId, setSelectedFeedbackPaperId] = useState("");
+
     // Fetch batch details, participants, and question papers
     const fetchData = async () => {
         setLoading(true);
@@ -79,6 +83,10 @@ export default function ManageBatch() {
             // Fetch question papers
             const qpRes = await getQuestionPapers();
             setQuestionPapers(qpRes.data.data || []);
+
+            // Fetch feedback papers
+            const fpRes = await getFeedbackPapers();
+            setFeedbackPapers(fpRes.data.data || []);
 
             // Fetch lookup data for filtering
             const [deptRes, clientRes, siteRes] = await Promise.all([
@@ -126,6 +134,8 @@ export default function ManageBatch() {
         if (batch) {
             setSelectedClientId(batch.client_id || "");
             setSelectedSiteId(batch.site_id || "");
+            setSelectedPostQpId(batch.post_test_question_paper_id || "");
+            setSelectedFeedbackPaperId(batch.feedback_paper_id || "");
         }
     }, [batch]);
 
@@ -544,25 +554,48 @@ export default function ManageBatch() {
                                     </button>
                                 </div>
                             ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
-                                        Choose Paper
-                                    </label>
-                                    <select
-                                        value={selectedPostQpId}
-                                        onChange={(e) => setSelectedPostQpId(e.target.value)}
-                                        style={{ 
-                                            width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
-                                            padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
-                                        }}
-                                    >
-                                        <option value="">Select a Question Paper...</option>
-                                        {postTestPapers.map(qp => (
-                                            <option key={qp.id} value={qp.id}>
-                                                {qp.name} ({qp.questions?.length || 0} Questions)
-                                            </option>
-                                        ))}
-                                    </select>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                            Choose Paper
+                                        </label>
+                                        <select
+                                            value={selectedPostQpId}
+                                            onChange={(e) => setSelectedPostQpId(e.target.value)}
+                                            style={{ 
+                                                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                                padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
+                                            }}
+                                        >
+                                            <option value="">Select a Question Paper...</option>
+                                            {postTestPapers.map(qp => (
+                                                <option key={qp.id} value={qp.id}>
+                                                    {qp.name} ({qp.questions?.length || 0} Questions)
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                            Choose Feedback Form (Optional)
+                                        </label>
+                                        <select
+                                            value={selectedFeedbackPaperId}
+                                            onChange={(e) => setSelectedFeedbackPaperId(e.target.value)}
+                                            style={{ 
+                                                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                                padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
+                                            }}
+                                        >
+                                            <option value="">No Feedback Form</option>
+                                            {feedbackPapers.map(fp => (
+                                                <option key={fp.id} value={fp.id}>
+                                                    {fp.name} ({fp.questions?.length || 0} Questions)
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -590,7 +623,8 @@ export default function ManageBatch() {
                                         }
                                         setIsPostQpModalOpen(false);
                                         await submitStatusAdvance("Posttest Active", "Post-Test Active", {
-                                            postTestQuestionPaperId: Number(selectedPostQpId)
+                                            postTestQuestionPaperId: Number(selectedPostQpId),
+                                            feedbackPaperId: selectedFeedbackPaperId ? Number(selectedFeedbackPaperId) : null
                                         });
                                     }}
                                     disabled={!selectedPostQpId}
@@ -775,6 +809,18 @@ export default function ManageBatch() {
                             <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre-Test Paper</span>
                             <span className="font-bold text-slate-800 text-sm">
                                 {batch.pre_test_question_paper_name || '—'}
+                            </span>
+                        </div>
+                        <div className="border-b border-slate-100 pb-2">
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Post-Test Paper</span>
+                            <span className="font-bold text-slate-800 text-sm">
+                                {batch.post_test_question_paper_name || '—'}
+                            </span>
+                        </div>
+                        <div className="border-b border-slate-100 pb-2">
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Feedback Paper</span>
+                            <span className="font-bold text-slate-800 text-sm">
+                                {batch.feedback_paper_name || '—'}
                             </span>
                         </div>
                     </div>
