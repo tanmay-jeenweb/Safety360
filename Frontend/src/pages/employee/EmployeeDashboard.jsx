@@ -399,7 +399,7 @@ export default function EmployeeDashboard() {
                                                 <div className="flex items-center gap-4 bg-slate-50/55 p-3 rounded-2xl text-xs font-semibold text-slate-500 mb-4 border border-slate-100">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? "bg-emerald-500" : "bg-slate-300"}`}></span>
-                                                        <span>Pre-Test: <strong className="text-slate-700">{training.preTestScore !== null ? `${training.preTestScore} Marks` : "Not Taken"}</strong></span>
+                                                        <span>Pre-Test: <strong className="text-slate-700">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}% (${training.preTestScore}/${training.preTotalQuestions})` : "Not Taken"}</strong></span>
                                                     </div>
                                                     <div className="w-px h-4 bg-slate-200"></div>
                                                     <div className="flex items-center gap-1.5">
@@ -519,11 +519,11 @@ export default function EmployeeDashboard() {
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Pre-Test Score</span>
-                                                                <span className="text-slate-700 font-bold">{history.preTestScore !== null ? `${history.preTestScore} Marks` : "-"}</span>
+                                                                <span className="text-slate-700 font-bold">{history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}% (${history.preTestScore}/${history.preTotalQuestions})` : "-"}</span>
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Post-Test Score</span>
-                                                                <span className="text-slate-700 font-bold">{history.postTestScore !== null ? `${history.postTestScore} Marks` : "-"}</span>
+                                                                <span className="text-slate-700 font-bold">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}% (${history.postTestScore}/${history.postTotalQuestions})` : "-"}</span>
                                                             </p>
                                                             <p className="flex justify-between items-center">
                                                                 <span className="text-slate-400">Attendance</span>
@@ -593,16 +593,6 @@ export default function EmployeeDashboard() {
                             </div>
                         </div>
 
-                        {modalConfig.isForced && (
-                            <div className="mb-6 bg-orange-50 text-orange-850 p-4 rounded-2xl border border-orange-100/60 flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 shrink-0 mt-0.5 text-orange-600">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                                </svg>
-                                <p className="text-[11px] font-bold leading-relaxed">
-                                    This is your first login. Please choose a strong password to replace your default credential.
-                                </p>
-                            </div>
-                        )}
 
                         <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
                             <div>

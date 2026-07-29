@@ -15,6 +15,7 @@ const createBatchesTable = async () => {
             status VARCHAR(50) NOT NULL DEFAULT 'Draft',
             pre_test_question_paper_id INT DEFAULT NULL,
             post_test_question_paper_id INT DEFAULT NULL,
+            pre_test_weightage INT DEFAULT 0,
             added_by INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -38,6 +39,10 @@ const createBatchesTable = async () => {
         {
             name: 'post_test_question_paper_id',
             query: 'ALTER TABLE batches ADD COLUMN post_test_question_paper_id INT DEFAULT NULL'
+        },
+        {
+            name: 'pre_test_weightage',
+            query: 'ALTER TABLE batches ADD COLUMN pre_test_weightage INT DEFAULT 0'
         }
     ];
 
@@ -93,8 +98,9 @@ const createBatch = async (data, addedBy) => {
             status,
             pre_test_question_paper_id,
             post_test_question_paper_id,
+            pre_test_weightage,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
@@ -108,6 +114,7 @@ const createBatch = async (data, addedBy) => {
         data.status || 'Draft',
         data.preTestQuestionPaperId || null,
         data.postTestQuestionPaperId || null,
+        data.preTestWeightage !== undefined ? data.preTestWeightage : 0,
         addedBy
     ];
 
@@ -135,6 +142,7 @@ const getAllBatches = async () => {
             b.post_test_question_paper_id,
             qp_pre.name AS pre_test_question_paper_name,
             qp_post.name AS post_test_question_paper_name,
+            b.pre_test_weightage,
             b.added_by,
             COALESCE(u.name, 'Unknown') AS added_by_name,
             b.created_at,
@@ -165,7 +173,8 @@ const updateBatch = async (id, data) => {
             batch_size = ?,
             status = ?,
             pre_test_question_paper_id = ?,
-            post_test_question_paper_id = ?
+            post_test_question_paper_id = ?,
+            pre_test_weightage = ?
         WHERE id = ?
     `;
 
@@ -180,6 +189,7 @@ const updateBatch = async (id, data) => {
         data.status,
         data.preTestQuestionPaperId !== undefined ? data.preTestQuestionPaperId : null,
         data.postTestQuestionPaperId !== undefined ? data.postTestQuestionPaperId : null,
+        data.preTestWeightage !== undefined ? data.preTestWeightage : 0,
         id
     ];
 
@@ -213,6 +223,7 @@ const getBatchById = async (id) => {
             b.post_test_question_paper_id,
             qp_pre.name AS pre_test_question_paper_name,
             qp_post.name AS post_test_question_paper_name,
+            b.pre_test_weightage,
             b.added_by,
             COALESCE(u.name, 'Unknown') AS added_by_name,
             b.created_at,

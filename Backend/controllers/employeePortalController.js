@@ -213,9 +213,13 @@ const submitTestController = async (req, res) => {
         
         // Fetch batch details and verify status
         const [batchRows] = await db.execute(
-            `SELECT b.*, tm.module_name, tm.passing_marks 
+            `SELECT b.*, tm.module_name, tm.passing_marks,
+                    JSON_LENGTH(qp_pre.questions) AS pre_total_questions,
+                    JSON_LENGTH(qp_post.questions) AS post_total_questions
              FROM batches b
              INNER JOIN training_modules tm ON b.training_module_id = tm.id
+             LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
+             LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
              WHERE b.id = ?`,
             [batchId]
         );
@@ -319,6 +323,8 @@ const getMyDashboardController = async (req, res) => {
                 b.status AS batch_status,
                 b.pre_test_question_paper_id,
                 b.post_test_question_paper_id,
+                JSON_LENGTH(qp_pre.questions) AS pre_total_questions,
+                JSON_LENGTH(qp_post.questions) AS post_total_questions,
                 b.scheduled_date,
                 b.venue,
                 tm.module_name,
@@ -327,6 +333,8 @@ const getMyDashboardController = async (req, res) => {
             INNER JOIN batches b ON bp.batch_id = b.id
             INNER JOIN training_modules tm ON b.training_module_id = tm.id
             INNER JOIN trainers t ON b.trainer_id = t.id
+            LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
+            LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
             WHERE bp.employee_id = ?
             ORDER BY b.scheduled_date DESC
         `;
@@ -385,6 +393,8 @@ const getMyDashboardController = async (req, res) => {
                     status: row.batch_status,
                     preTestScore: row.pre_test_score,
                     postTestScore: row.post_test_score,
+                    preTotalQuestions: row.pre_total_questions,
+                    postTotalQuestions: row.post_total_questions,
                     attendance: row.attendance,
                     pendingTests: [
                         ...(isPendingPreTest ? [{ type: 'Pre', paperId: row.pre_test_question_paper_id }] : []),
@@ -401,6 +411,8 @@ const getMyDashboardController = async (req, res) => {
                     status: row.batch_status,
                     preTestScore: row.pre_test_score,
                     postTestScore: row.post_test_score,
+                    preTotalQuestions: row.pre_total_questions,
+                    postTotalQuestions: row.post_total_questions,
                     attendance: row.attendance,
                     finalScore: row.final_score,
                     bandBadge: row.band_badge

@@ -50,6 +50,7 @@ export default function ManageBatch() {
 
     const [isQpModalOpen, setIsQpModalOpen] = useState(false);
     const [selectedQpId, setSelectedQpId] = useState("");
+    const [preTestWeightageVal, setPreTestWeightageVal] = useState(30);
 
     const [isPostQpModalOpen, setIsPostQpModalOpen] = useState(false);
     const [selectedPostQpId, setSelectedPostQpId] = useState("");
@@ -424,25 +425,50 @@ export default function ManageBatch() {
                                     </button>
                                 </div>
                             ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
-                                        Choose Paper
-                                    </label>
-                                    <select
-                                        value={selectedQpId}
-                                        onChange={(e) => setSelectedQpId(e.target.value)}
-                                        style={{ 
-                                            width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
-                                            padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
-                                        }}
-                                    >
-                                        <option value="">Select a Question Paper...</option>
-                                        {preTestPapers.map(qp => (
-                                            <option key={qp.id} value={qp.id}>
-                                                {qp.name} ({qp.questions?.length || 0} Questions)
-                                            </option>
-                                        ))}
-                                    </select>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                            Choose Paper
+                                        </label>
+                                        <select
+                                            value={selectedQpId}
+                                            onChange={(e) => setSelectedQpId(e.target.value)}
+                                            style={{ 
+                                                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                                padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
+                                            }}
+                                        >
+                                            <option value="">Select a Question Paper...</option>
+                                            {preTestPapers.map(qp => (
+                                                <option key={qp.id} value={qp.id}>
+                                                    {qp.name} ({qp.questions?.length || 0} Questions)
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                            Pre-Test Weightage (%)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={preTestWeightageVal}
+                                            onChange={(e) => {
+                                                const val = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+                                                setPreTestWeightageVal(val);
+                                            }}
+                                            style={{ 
+                                                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                                padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
+                                            }}
+                                        />
+                                        <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
+                                            Post-Test Weightage will be: <strong>{100 - preTestWeightageVal}%</strong>
+                                        </span>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -470,7 +496,8 @@ export default function ManageBatch() {
                                         }
                                         setIsQpModalOpen(false);
                                         await submitStatusAdvance("Pretest Active", "Pre-Test Active", {
-                                            preTestQuestionPaperId: Number(selectedQpId)
+                                            preTestQuestionPaperId: Number(selectedQpId),
+                                            preTestWeightage: Number(preTestWeightageVal)
                                         });
                                     }}
                                     disabled={!selectedQpId}
@@ -775,6 +802,12 @@ export default function ManageBatch() {
                                 {batch.pre_test_question_paper_name || '—'}
                             </span>
                         </div>
+                        <div className="border-b border-slate-100 pb-2">
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre/Post Weightage</span>
+                            <span className="font-bold text-slate-800 text-sm">
+                                {batch.pre_test_weightage !== undefined && batch.pre_test_weightage !== null ? `${batch.pre_test_weightage}% Pre / ${100 - batch.pre_test_weightage}% Post` : '—'}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -964,8 +997,13 @@ export default function ManageBatch() {
                                             No participants registered in this batch.
                                         </td>
                                     </tr>
-                                ) : (
-                                    participants.map(part => (
+                                ) : (() => {
+                                    const preQp = questionPapers.find(q => q.id === batch?.pre_test_question_paper_id);
+                                    const preTotal = preQp?.questions?.length || 0;
+                                    const postQp = questionPapers.find(q => q.id === batch?.post_test_question_paper_id);
+                                    const postTotal = postQp?.questions?.length || 0;
+
+                                    return participants.map(part => (
                                         <tr key={part.id} className="hover:bg-slate-50/50 transition-colors text-sm">
                                             <td className="py-4 px-6 font-mono text-slate-500 font-semibold text-xs">{part.employee_code}</td>
                                             <td className="py-4 px-6">
@@ -1020,7 +1058,7 @@ export default function ManageBatch() {
                                             </td>
                                         </tr>
                                     ))
-                                )}
+                                })()}
                             </tbody>
                         </table>
                     </div>
