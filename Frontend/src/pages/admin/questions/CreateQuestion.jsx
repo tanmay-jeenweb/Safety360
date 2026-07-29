@@ -169,29 +169,25 @@ export default function CreateQuestion() {
     };
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter',sans-serif" }}>
+        <div className="flex flex-col min-h-screen bg-[#f8fafc] font-sans">
             <Navbar />
 
-            <main style={{ flex: 1, padding: "32px 30px", width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+            <main className="flex-1 py-8 px-[30px] w-full mx-auto box-border">
                 {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", justifySpaceBetween: "space-between", justifyContent: "space-between", marginBottom: 24 }}>
+                <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#1e293b" }}>
+                        <h1 className="m-0 text-[24px] font-bold text-[#1e293b]">
                             {isEditMode ? "Edit Question" : "Create New Question"}
                         </h1>
-                        <p style={{ margin: "4px 0 0", fontSize: 14, color: "#64748b" }}>
+                        <p className="mt-1 text-[14px] text-[#64748b]">
                             {isEditMode ? "Modify question settings and options below" : "Fill out the fields to add a new question to the Question Bank"}
                         </p>
                     </div>
                     <button
                         onClick={() => navigate("/admin/question-bank")}
-                        style={{
-                            padding: "9px 18px", borderRadius: 9, border: "1.5px solid #cbd5e1",
-                            background: "#fff", color: "#475569", fontWeight: 600, fontSize: 13, cursor: "pointer",
-                            display: "flex", alignItems: "center", gap: 6
-                        }}
+                        className="py-[9px] px-[18px] rounded-[9px] border-[1.5px] border-[#cbd5e1] bg-white text-[#475569] font-semibold text-[13px] cursor-pointer flex items-center gap-1.5"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 16, height: 16 }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-[16px] h-[16px]">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                         </svg>
                         Back to List
@@ -199,33 +195,33 @@ export default function CreateQuestion() {
                 </div>
 
                 {error && (
-                    <div style={{ background: "#fff1f2", border: "1px solid #fecdd3", color: "#be123c", padding: "12px 16px", borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500 }}>
+                    <div className="bg-[#fff1f2] border border-[#fecdd3] text-[#be123c] py-3 px-4 rounded-[10px] mb-5 text-[14px] font-medium">
                         {error}
                     </div>
                 )}
 
                 {loading ? (
-                    <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>Loading question details...</div>
+                    <div className="text-center p-10 text-[#64748b]">Loading question details...</div>
                 ) : (
-                    <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.06)", overflow: "hidden", border: "1px solid #e2e8f0" }}>
-                        <div style={{ padding: "28px" }}>
+                    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden border border-[#e2e8f0]">
+                        <div className="p-7">
                             
                             {/* Section 1: Question Meta */}
-                            <div style={{ marginBottom: 28 }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                            <div className="mb-7">
+                                <h3 className="m-0 mb-4 text-[15px] font-bold text-[#253361] uppercase tracking-[0.05em] border-b-[1.5px] border-[#f1f5f9] pb-2">
                                     1. Configuration
                                 </h3>
 
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                <div className="grid grid-cols-2 gap-5">
                                     {/* Module Association */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                            Module Association <span style={{ color: "#e11d48" }}>*</span>
+                                        <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
+                                            Module Association <span className="text-[#e11d48]">*</span>
                                         </label>
                                         <select
                                             value={moduleId}
                                             onChange={(e) => setModuleId(e.target.value)}
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" }}
+                                            className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] bg-white focus:border-[#253361] transition-colors duration-200"
                                             required
                                         >
                                             <option value="">Select Training Module...</option>
@@ -239,13 +235,13 @@ export default function CreateQuestion() {
 
                                     {/* Language */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                            Language <span style={{ color: "#e11d48" }}>*</span>
+                                        <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
+                                            Language <span className="text-[#e11d48]">*</span>
                                         </label>
                                         <select
                                             value={language}
                                             onChange={(e) => setLanguage(e.target.value)}
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" }}
+                                            className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] bg-white focus:border-[#253361] transition-colors duration-200"
                                             required
                                         >
                                             <option value="English">English</option>
@@ -256,19 +252,19 @@ export default function CreateQuestion() {
                             </div>
 
                             {/* Section 2: Question details */}
-                            <div style={{ marginBottom: 28 }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                            <div className="mb-7">
+                                <h3 className="m-0 mb-4 text-[15px] font-bold text-[#253361] uppercase tracking-[0.05em] border-b-[1.5px] border-[#f1f5f9] pb-2">
                                     2. Question & Type
                                 </h3>
 
-                                <div style={{ marginBottom: 20 }}>
-                                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                        Question Type <span style={{ color: "#e11d48" }}>*</span>
+                                <div className="mb-5">
+                                    <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
+                                        Question Type <span className="text-[#e11d48]">*</span>
                                     </label>
                                     <select
                                         value={questionType}
                                         onChange={(e) => handleQuestionTypeChange(e.target.value)}
-                                        style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" }}
+                                        className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] bg-white focus:border-[#253361] transition-colors duration-200"
                                         required
                                     >
                                         <option value="MCQ">MCQ</option>
@@ -276,16 +272,16 @@ export default function CreateQuestion() {
                                     </select>
                                 </div>
 
-                                <div style={{ marginBottom: 20 }}>
-                                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                        Question Text <span style={{ color: "#e11d48" }}>*</span>
+                                <div className="mb-5">
+                                    <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
+                                        Question Text <span className="text-[#e11d48]">*</span>
                                     </label>
                                     <textarea
                                         rows={4}
                                         value={questionText}
                                         onChange={(e) => setQuestionText(e.target.value)}
                                         placeholder="Enter the question text here..."
-                                        style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", resize: "vertical" }}
+                                        className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] resize-y focus:border-[#253361] transition-colors duration-200"
                                         required
                                     />
                                 </div>
@@ -293,33 +289,29 @@ export default function CreateQuestion() {
 
                             {/* Section 3: Options & Answer */}
                             <div>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                                <h3 className="m-0 mb-4 text-[15px] font-bold text-[#253361] uppercase tracking-[0.05em] border-b-[1.5px] border-[#f1f5f9] pb-2">
                                     3. Options & Correct Answer
                                 </h3>
 
                                 {questionType === "MCQ" ? (
-                                    <div style={{ marginBottom: 24, background: "#f8fafc", padding: "20px 24px", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                                            <span style={{ fontSize: 13, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                    <div className="mb-6 bg-[#f8fafc] py-5 px-6 rounded-xl border border-[#e2e8f0]">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <span className="text-[13px] font-bold text-[#475569] uppercase tracking-[0.05em]">
                                                 MCQ Options (Min 2 Compulsory)
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={handleAddOption}
-                                                style={{
-                                                    background: "linear-gradient(135deg, #253361, #1a2446)", color: "#fff", border: "none",
-                                                    borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700,
-                                                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(37,51,97,0.25)"
-                                                }}
+                                                className="bg-gradient-to-br from-[#253361] to-[#1a2446] text-white border-none rounded-lg py-[7px] px-3.5 text-[12px] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_2px_8px_rgba(37,51,97,0.25)]"
                                             >
                                                 <i className="fa-solid fa-plus text-xs"></i> Add Option
                                             </button>
                                         </div>
 
-                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                        <div className="flex flex-col gap-3">
                                             {options.map((opt, idx) => (
-                                                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                                    <span style={{ fontSize: 13, fontWeight: 700, color: "#64748b", width: 80 }}>
+                                                <div key={idx} className="flex items-center gap-3">
+                                                    <span className="text-[13px] font-bold text-[#64748b] w-20">
                                                         Option {idx + 1} {idx < 2 ? "*" : ""}
                                                     </span>
                                                     <input
@@ -327,18 +319,14 @@ export default function CreateQuestion() {
                                                         value={opt}
                                                         onChange={(e) => handleOptionChange(idx, e.target.value)}
                                                         placeholder={`Option ${idx + 1} text...`}
-                                                        style={{ flex: 1, boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 8, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
+                                                        className="flex-1 box-border border-[1.5px] border-[#cbd5e1] rounded-lg py-2.5 px-3 text-[14px] outline-none text-[#1e293b] focus:border-[#253361] transition-colors duration-200"
                                                         required={idx < 2}
                                                     />
                                                     {idx >= 2 && (
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveOption(idx)}
-                                                            style={{
-                                                                background: "#fee2e2", color: "#dc2626", border: "none",
-                                                                borderRadius: 8, width: 38, height: 38, cursor: "pointer",
-                                                                display: "flex", alignItems: "center", justifyContent: "center"
-                                                            }}
+                                                            className="bg-[#fee2e2] text-[#dc2626] border-none rounded-lg w-[38px] h-[38px] cursor-pointer flex items-center justify-center hover:bg-[#fca5a5] transition-colors duration-150"
                                                             title="Remove Option"
                                                         >
                                                             <i className="fa-solid fa-trash-can text-sm"></i>
@@ -349,15 +337,15 @@ export default function CreateQuestion() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div style={{ marginBottom: 24, background: "#f8fafc", padding: "16px 20px", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                                        <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>
+                                    <div className="mb-6 bg-[#f8fafc] py-4 px-5 rounded-xl border border-[#e2e8f0]">
+                                        <span className="block text-[13px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-3">
                                             True / False Choices
                                         </span>
-                                        <div style={{ display: "flex", gap: 16 }}>
-                                            <div style={{ padding: "10px 20px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 14, fontWeight: 700, color: "#334155" }}>
+                                        <div className="flex gap-4">
+                                            <div className="py-2.5 px-5 bg-white border border-[#cbd5e1] rounded-lg text-[14px] font-bold text-[#334155]">
                                                 True
                                             </div>
-                                            <div style={{ padding: "10px 20px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 14, fontWeight: 700, color: "#334155" }}>
+                                            <div className="py-2.5 px-5 bg-white border border-[#cbd5e1] rounded-lg text-[14px] font-bold text-[#334155]">
                                                 False
                                             </div>
                                         </div>
@@ -365,13 +353,13 @@ export default function CreateQuestion() {
                                 )}
 
                                 <div>
-                                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                        Correct Answer <span style={{ color: "#e11d48" }}>*</span>
+                                    <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
+                                        Correct Answer <span className="text-[#e11d48]">*</span>
                                     </label>
                                     <select
                                         value={correctAnswer}
                                         onChange={(e) => setCorrectAnswer(e.target.value)}
-                                        style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" }}
+                                        className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] bg-white focus:border-[#253361] transition-colors duration-200"
                                         required
                                     >
                                         <option value="">Select Correct Answer...</option>
@@ -393,26 +381,18 @@ export default function CreateQuestion() {
                         </div>
 
                         {/* Footer Action Buttons */}
-                        <div style={{ padding: "20px 28px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "flex-end", gap: 16, background: "#fafafa" }}>
+                        <div className="py-5 px-7 border-t border-[#f1f5f9] flex justify-end gap-4 bg-[#fafafa]">
                             <button
                                 type="button"
                                 onClick={() => navigate("/admin/question-bank")}
-                                style={{
-                                    padding: "10px 20px", borderRadius: 9, border: "1.5px solid #cbd5e1",
-                                    background: "#fff", color: "#475569", fontSize: 14, fontWeight: 600, cursor: "pointer"
-                                }}
+                                className="py-2.5 px-5 rounded-[9px] border-[1.5px] border-[#cbd5e1] bg-white text-[#475569] text-[14px] font-semibold cursor-pointer hover:bg-[#f8fafc] transition-colors duration-150"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={saving}
-                                style={{
-                                    padding: "10px 24px", borderRadius: 9, border: "none",
-                                    background: saving ? "#94a3b8" : "linear-gradient(135deg, #253361, #1a2446)", color: "#fff",
-                                    fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1,
-                                    boxShadow: saving ? "none" : "0 3px 10px rgba(37,51,97,0.3)"
-                                }}
+                                className={`py-2.5 px-6 rounded-[9px] border-none text-white text-[14px] font-bold transition-all duration-200 ${saving ? "bg-[#94a3b8] cursor-not-allowed opacity-70 shadow-none" : "bg-gradient-to-br from-[#253361] to-[#1a2446] cursor-pointer opacity-100 shadow-[0_3px_10px_rgba(37,51,97,0.3)]"}`}
                             >
                                 {saving ? "Saving..." : isEditMode ? "Update Question" : "Create Question"}
                             </button>
