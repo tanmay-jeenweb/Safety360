@@ -50,7 +50,6 @@ export default function ManageBatch() {
 
     const [isQpModalOpen, setIsQpModalOpen] = useState(false);
     const [selectedQpId, setSelectedQpId] = useState("");
-    const [preTestWeightageVal, setPreTestWeightageVal] = useState(30);
 
     const [isPostQpModalOpen, setIsPostQpModalOpen] = useState(false);
     const [selectedPostQpId, setSelectedPostQpId] = useState("");
@@ -446,29 +445,6 @@ export default function ManageBatch() {
                                             ))}
                                         </select>
                                     </div>
-
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                        <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
-                                            Pre-Test Weightage (%)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={preTestWeightageVal}
-                                            onChange={(e) => {
-                                                const val = Math.max(0, Math.min(100, Number(e.target.value) || 0));
-                                                setPreTestWeightageVal(val);
-                                            }}
-                                            style={{ 
-                                                width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
-                                                padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" 
-                                            }}
-                                        />
-                                        <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
-                                            Post-Test Weightage will be: <strong>{100 - preTestWeightageVal}%</strong>
-                                        </span>
-                                    </div>
                                 </div>
                             )}
                         </div>
@@ -496,8 +472,7 @@ export default function ManageBatch() {
                                         }
                                         setIsQpModalOpen(false);
                                         await submitStatusAdvance("Pretest Active", "Pre-Test Active", {
-                                            preTestQuestionPaperId: Number(selectedQpId),
-                                            preTestWeightage: Number(preTestWeightageVal)
+                                            preTestQuestionPaperId: Number(selectedQpId)
                                         });
                                     }}
                                     disabled={!selectedQpId}
@@ -800,12 +775,6 @@ export default function ManageBatch() {
                             <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre-Test Paper</span>
                             <span className="font-bold text-slate-800 text-sm">
                                 {batch.pre_test_question_paper_name || '—'}
-                            </span>
-                        </div>
-                        <div className="border-b border-slate-100 pb-2">
-                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre/Post Weightage</span>
-                            <span className="font-bold text-slate-800 text-sm">
-                                {batch.pre_test_weightage !== undefined && batch.pre_test_weightage !== null ? `${batch.pre_test_weightage}% Pre / ${100 - batch.pre_test_weightage}% Post` : '—'}
                             </span>
                         </div>
                     </div>
