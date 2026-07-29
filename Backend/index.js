@@ -42,7 +42,7 @@ const { createDepartmentsTable } = require("./models/departmentModel.js");
 const { createQuestionBankTable } = require("./models/questionBankModel.js");
 const { createQuestionPaperTable } = require("./models/questionPaperModel.js");
 const { createEmployeesTable } = require("./models/employeeModel.js");
-const { createBatchesTable, createBatchParticipantsTable } = require("./models/batchModel.js");
+const { createBatchesTable, createBatchParticipantsTable, createPostTestAttemptsTable } = require("./models/batchModel.js");
 
 const app = express();
 
@@ -134,6 +134,7 @@ const startServer = async () => {
         await createEmployeesTable();
         await createBatchesTable();
         await createBatchParticipantsTable();
+        await createPostTestAttemptsTable();
 
         console.log("All database tables are initialized and ready.");
 
