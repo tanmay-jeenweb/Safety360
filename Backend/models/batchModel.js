@@ -16,6 +16,7 @@ const createBatchesTable = async () => {
             pre_test_question_paper_id INT DEFAULT NULL,
             post_test_question_paper_id INT DEFAULT NULL,
             pre_test_weightage INT DEFAULT 0,
+            feedback_paper_id INT DEFAULT NULL,
             added_by INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -25,6 +26,7 @@ const createBatchesTable = async () => {
             FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE RESTRICT,
             FOREIGN KEY (pre_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL,
             FOREIGN KEY (post_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL,
+            FOREIGN KEY (feedback_paper_id) REFERENCES feedback_papers(id) ON DELETE SET NULL,
             FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE RESTRICT
         )
     `;
@@ -43,6 +45,10 @@ const createBatchesTable = async () => {
         {
             name: 'pre_test_weightage',
             query: 'ALTER TABLE batches ADD COLUMN pre_test_weightage INT DEFAULT 0'
+        },
+        {
+            name: 'feedback_paper_id',
+            query: 'ALTER TABLE batches ADD COLUMN feedback_paper_id INT DEFAULT NULL'
         }
     ];
 
@@ -71,8 +77,17 @@ const createBatchesTable = async () => {
         if (postFk.length === 0) {
             await db.execute(`ALTER TABLE batches ADD CONSTRAINT fk_post_test_qp FOREIGN KEY (post_test_question_paper_id) REFERENCES question_papers(id) ON DELETE SET NULL`);
         }
+
+        const [feedbackFk] = await db.execute(`
+            SELECT CONSTRAINT_NAME 
+            FROM information_schema.KEY_COLUMN_USAGE 
+            WHERE TABLE_NAME = 'batches' AND COLUMN_NAME = 'feedback_paper_id' AND REFERENCED_TABLE_NAME = 'feedback_papers'
+        `);
+        if (feedbackFk.length === 0) {
+            await db.execute(`ALTER TABLE batches ADD CONSTRAINT fk_feedback_paper FOREIGN KEY (feedback_paper_id) REFERENCES feedback_papers(id) ON DELETE SET NULL`);
+        }
     } catch (e) {
-        console.warn("Could not add foreign key constraints for question papers:", e.message);
+        console.warn("Could not add foreign key constraints for question papers or feedback papers:", e.message);
     }
 
     try {
@@ -99,8 +114,9 @@ const createBatch = async (data, addedBy) => {
             pre_test_question_paper_id,
             post_test_question_paper_id,
             pre_test_weightage,
+            feedback_paper_id,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
@@ -115,6 +131,7 @@ const createBatch = async (data, addedBy) => {
         data.preTestQuestionPaperId || null,
         data.postTestQuestionPaperId || null,
         data.preTestWeightage !== undefined ? data.preTestWeightage : 0,
+        data.feedbackPaperId || null,
         addedBy
     ];
 
@@ -140,8 +157,10 @@ const getAllBatches = async () => {
             b.status,
             b.pre_test_question_paper_id,
             b.post_test_question_paper_id,
+            b.feedback_paper_id,
             qp_pre.name AS pre_test_question_paper_name,
             qp_post.name AS post_test_question_paper_name,
+            fp.name AS feedback_paper_name,
             b.pre_test_weightage,
             b.added_by,
             COALESCE(u.name, 'Unknown') AS added_by_name,
@@ -154,6 +173,7 @@ const getAllBatches = async () => {
         LEFT JOIN trainers t ON b.trainer_id = t.id
         LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
         LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
+        LEFT JOIN feedback_papers fp ON b.feedback_paper_id = fp.id
         LEFT JOIN users u ON b.added_by = u.id
         ORDER BY b.created_at DESC
     `;
@@ -174,7 +194,8 @@ const updateBatch = async (id, data) => {
             status = ?,
             pre_test_question_paper_id = ?,
             post_test_question_paper_id = ?,
-            pre_test_weightage = ?
+            pre_test_weightage = ?,
+            feedback_paper_id = ?
         WHERE id = ?
     `;
 
@@ -190,6 +211,7 @@ const updateBatch = async (id, data) => {
         data.preTestQuestionPaperId !== undefined ? data.preTestQuestionPaperId : null,
         data.postTestQuestionPaperId !== undefined ? data.postTestQuestionPaperId : null,
         data.preTestWeightage !== undefined ? data.preTestWeightage : 0,
+        data.feedbackPaperId !== undefined ? data.feedbackPaperId : null,
         id
     ];
 
@@ -221,8 +243,10 @@ const getBatchById = async (id) => {
             b.status,
             b.pre_test_question_paper_id,
             b.post_test_question_paper_id,
+            b.feedback_paper_id,
             qp_pre.name AS pre_test_question_paper_name,
             qp_post.name AS post_test_question_paper_name,
+            fp.name AS feedback_paper_name,
             b.pre_test_weightage,
             b.added_by,
             COALESCE(u.name, 'Unknown') AS added_by_name,
@@ -235,6 +259,7 @@ const getBatchById = async (id) => {
         LEFT JOIN trainers t ON b.trainer_id = t.id
         LEFT JOIN question_papers qp_pre ON b.pre_test_question_paper_id = qp_pre.id
         LEFT JOIN question_papers qp_post ON b.post_test_question_paper_id = qp_post.id
+        LEFT JOIN feedback_papers fp ON b.feedback_paper_id = fp.id
         LEFT JOIN users u ON b.added_by = u.id
         WHERE b.id = ?
     `;

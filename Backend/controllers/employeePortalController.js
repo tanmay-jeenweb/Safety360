@@ -1,6 +1,9 @@
 const db = require('../config/db.js');
 const bcrypt = require('bcryptjs');
 const { getQuestionPaperById } = require('../models/questionPaperModel.js');
+const { getFeedbackPaperById } = require('../models/feedbackPaperModel.js');
+const { saveEmployeeFeedback, getFeedbackByBatchAndEmployee } = require('../models/feedbackResponseModel.js');
+const { saveExamSubmission } = require('../models/examSubmissionModel.js');
 
 const getMyTestsController = async (req, res) => {
     try {
@@ -157,6 +160,25 @@ const getTestDetailsController = async (req, res) => {
             };
         });
         
+        let feedbackPaper = null;
+        let feedbackSubmitted = false;
+
+        if (testType === 'Post' && batchObj.feedback_paper_id) {
+            const existingFeedback = await getFeedbackByBatchAndEmployee(batchId, employeeId);
+            feedbackSubmitted = !!existingFeedback;
+
+            if (!feedbackSubmitted) {
+                const fp = await getFeedbackPaperById(batchObj.feedback_paper_id);
+                if (fp) {
+                    feedbackPaper = {
+                        id: fp.id,
+                        name: fp.name,
+                        questions: fp.detailedQuestions || []
+                    };
+                }
+            }
+        }
+
         return res.status(200).json({
             success: true,
             data: {
@@ -164,7 +186,9 @@ const getTestDetailsController = async (req, res) => {
                 testType,
                 moduleName: batchObj.module_name,
                 questionPaperName: questionPaper.name,
-                questions: questionsToSend
+                questions: questionsToSend,
+                feedbackSubmitted,
+                feedbackPaper
             }
         });
     } catch (error) {
@@ -175,7 +199,7 @@ const getTestDetailsController = async (req, res) => {
 
 const submitTestController = async (req, res) => {
     try {
-        const { batchId, testType, answers } = req.body;
+        const { batchId, testType, answers, feedback } = req.body;
         const employeeId = req.user.id;
 
         if (req.user.role !== 'employee') {
@@ -251,16 +275,25 @@ const submitTestController = async (req, res) => {
         
         let correctCount = 0;
         const detailedQuestions = questionPaper.detailedQuestions;
+        const answersToSave = [];
         
         for (const q of detailedQuestions) {
             const userAnswer = answers[q.id];
-            if (userAnswer !== undefined && userAnswer !== null) {
-                const cleanUserAnswer = String(userAnswer).trim().toLowerCase();
-                const cleanCorrectAnswer = String(q.correct_answer).trim().toLowerCase();
-                if (cleanUserAnswer === cleanCorrectAnswer) {
-                    correctCount++;
-                }
+            const cleanUserAnswer = userAnswer !== undefined && userAnswer !== null ? String(userAnswer).trim() : "";
+            const cleanCorrectAnswer = String(q.correct_answer).trim();
+            const isCorrect = cleanUserAnswer.toLowerCase() === cleanCorrectAnswer.toLowerCase();
+            
+            if (isCorrect) {
+                correctCount++;
             }
+            
+            answersToSave.push({
+                questionId: q.id,
+                questionText: q.question_text,
+                selectedAnswer: cleanUserAnswer,
+                correctAnswer: q.correct_answer,
+                isCorrect
+            });
         }
         
         // Save the score in the database
@@ -275,6 +308,13 @@ const submitTestController = async (req, res) => {
                 WHERE batch_id = ? AND employee_id = ?
             `;
             await db.execute(updateQuery, [correctCount, batchId, employeeId]);
+
+            // Save question-by-question options submitted for Pre-Test (attempt_number is always 1)
+            try {
+                await saveExamSubmission(batchId, employeeId, 'Pre', 1, answersToSave);
+            } catch (err) {
+                console.error('Error saving Pre-Test exam submission details:', err);
+            }
         } else {
             // Post test is the final evaluation
             finalScore = correctCount;
@@ -303,6 +343,22 @@ const submitTestController = async (req, res) => {
                 WHERE batch_id = ? AND employee_id = ?
             `;
             await db.execute(updateQuery, [correctCount, finalScore, bandBadge, batchId, employeeId]);
+
+            // Save question-by-question options submitted for Post-Test
+            try {
+                await saveExamSubmission(batchId, employeeId, 'Post', attemptNumber, answersToSave);
+            } catch (err) {
+                console.error('Error saving Post-Test exam submission details:', err);
+            }
+
+            // Save feedback responses if provided
+            if (feedback && feedback.paperId && feedback.responses) {
+                try {
+                    await saveEmployeeFeedback(batchId, employeeId, feedback.paperId, feedback.responses);
+                } catch (err) {
+                    console.error('Error saving employee feedback during test submission:', err);
+                }
+            }
         }
         
         return res.status(200).json({
