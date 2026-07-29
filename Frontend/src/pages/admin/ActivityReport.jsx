@@ -5,6 +5,7 @@ import { fetchActivityLogs } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 // ─── Modal to view detailed change data ──────────────────────────────────────────
+// ─── Modal to view detailed change data ──────────────────────────────────────────
 function DetailModal({ isOpen, row, onClose }) {
   if (!isOpen || !row) return null;
 
@@ -26,13 +27,13 @@ function DetailModal({ isOpen, row, onClose }) {
   };
 
   const formatValue = (key, val) => {
-    if (val === null || val === undefined) return <span style={{ color: "#94a3b8" }}>—</span>;
+    if (val === null || val === undefined) return <span className="text-[#94a3b8]">—</span>;
     if (typeof val === "boolean") return val ? "True" : "False";
     if (key === "permissions" && Array.isArray(val)) {
       const active = val.filter(p => p.canRead || p.canWrite || p.canUpdate || p.canDelete);
-      if (active.length === 0) return <span style={{ color: "#94a3b8" }}>No permissions set</span>;
+      if (active.length === 0) return <span className="text-[#94a3b8]">No permissions set</span>;
       return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div className="flex flex-col gap-1">
           {active.map((p, idx) => {
             const actions = [];
             if (p.canRead) actions.push("Read");
@@ -41,8 +42,8 @@ function DetailModal({ isOpen, row, onClose }) {
             if (p.canDelete) actions.push("Delete");
             const label = p.masterName || p.master_name || "Unknown";
             return (
-              <div key={idx} style={{ fontSize: 12 }}>
-                <strong style={{ color: "#1e293b" }}>{label}</strong>: <span style={{ color: "#0284c7" }}>{actions.join(", ")}</span>
+              <div key={idx} className="text-[12px]">
+                <strong className="text-[#1e293b]">{label}</strong>: <span className="text-[#0284c7]">{actions.join(", ")}</span>
               </div>
             );
           })}
@@ -54,42 +55,34 @@ function DetailModal({ isOpen, row, onClose }) {
   };
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 1000,
-      background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 16
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 18, width: "100%", maxWidth: 700, margin: "0 auto",
-        boxShadow: "0 25px 60px rgba(0,0,0,0.2)", overflow: "hidden", display: "flex", flexDirection: "column",
-        maxHeight: "90vh"
-      }}>
+    <div className="fixed inset-0 z-[1000] bg-slate-900/55 backdrop-blur-[4px] flex items-center justify-center p-4">
+      <div className="bg-white rounded-[18px] w-full max-w-[700px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", background: "linear-gradient(135deg,#253361,#1a2446)" }}>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>Activity Log Detail</h2>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "#d9e2ec" }}>
+        <div className="py-5 px-7 border-b border-[#f1f5f9] flex items-center justify-between bg-gradient-to-br from-[#253361] to-[#1a2446]">
+          <div className="flex: 1">
+            <h2 className="m-0 text-[18px] font-bold text-white">Activity Log Detail</h2>
+            <p className="mt-1 text-[13px] text-[#d9e2ec]">
               {row.master_name} — {row.change_type.toUpperCase()} by {row.username}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8, width: 34, height: 34, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 18, height: 18 }}>
+          <button onClick={onClose} className="bg-white/15 border-none rounded-lg w-[34px] h-[34px] cursor-pointer flex items-center justify-center text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-[18px] h-[18px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Modal Body */}
-        <div style={{ padding: "20px 28px", overflowY: "auto", flex: 1, background: "#f8fafc" }}>
+        <div className="py-5 px-7 overflow-y-auto flex-1 bg-[#f8fafc]">
           {/* Metadata Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 20, background: "#fff", padding: 16, borderRadius: 12, border: "1px solid #e2e8f0" }}>
+          <div className="grid grid-cols-3 gap-4 mb-5 bg-white p-4 rounded-xl border border-[#e2e8f0]">
             <div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>User</span>
-              <p style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 600, color: "#1e293b" }}>{row.username || "System"}</p>
+              <span className="text-[11px] font-bold text-[#64748b] uppercase">User</span>
+              <p className="m-0 mt-0.5 text-[14px] font-semibold text-[#1e293b]">{row.username || "System"}</p>
             </div>
             <div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Action Type</span>
-              <p style={{ margin: "2px 0 0" }}>
+              <span className="text-[11px] font-bold text-[#64748b] uppercase">Action Type</span>
+              <p className="m-0 mt-0.5">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
                   row.change_type === 'created' || row.change_type === 'approved' ? 'bg-green-100 text-green-800' :
                   row.change_type === 'updated' ? 'bg-amber-100 text-amber-800' :
@@ -101,50 +94,41 @@ function DetailModal({ isOpen, row, onClose }) {
               </p>
             </div>
             <div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Timestamp</span>
-              <p style={{ margin: "2px 0 0", fontSize: 14, color: "#1e293b" }}>{new Date(row.created_at).toLocaleString()}</p>
+              <span className="text-[11px] font-bold text-[#64748b] uppercase">Timestamp</span>
+              <p className="m-0 mt-0.5 text-[14px] text-[#1e293b]">{new Date(row.created_at).toLocaleString()}</p>
             </div>
           </div>
 
           {afterObj.close_reason && (
-            <div style={{ marginBottom: 20, background: "#fef2f2", border: "1px solid #fee2e2", padding: "14px 18px", borderRadius: 12, color: "#991b1b" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", display: "block", color: "#b91c1c" }}>Inquiry Close Reason</span>
-              <p style={{ margin: "4px 0 0", fontSize: 14, fontWeight: 600 }}>{afterObj.close_reason}</p>
+            <div className="mb-5 bg-[#fef2f2] border border-[#fee2e2] py-3.5 px-4.5 rounded-xl text-[#991b1b]">
+              <span className="text-[11px] font-bold uppercase block text-[#b91c1c]">Inquiry Close Reason</span>
+              <p className="m-0 mt-1 text-[14px] font-semibold">{afterObj.close_reason}</p>
             </div>
           )}
 
           {/* Table View */}
-          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: 13 }}>
+          <div className="bg-white rounded-xl border border-[#e2e8f0] overflow-hidden">
+            <table className="w-full border-collapse text-left text-[13px]">
               <thead>
-                <tr style={{ background: "#f1f5f9", borderBottom: "1px solid #e2e8f0" }}>
-                  <th style={{ padding: "10px 14px", fontWeight: 600, color: "#475569" }}>Field</th>
-                  <th style={{ padding: "10px 14px", fontWeight: 600, color: "#475569" }}>Before</th>
-                  <th style={{ padding: "10px 14px", fontWeight: 600, color: "#475569" }}>After</th>
+                <tr className="bg-[#f1f5f9] border-b border-[#e2e8f0]">
+                  <th className="py-2.5 px-3.5 font-semibold text-[#475569]">Field</th>
+                  <th className="py-2.5 px-3.5 font-semibold text-[#475569]">Before</th>
+                  <th className="py-2.5 px-3.5 font-semibold text-[#475569]">After</th>
                 </tr>
               </thead>
               <tbody>
                 {allKeys.length === 0 ? (
                   <tr>
-                    <td colSpan={3} style={{ padding: 14, textAlign: "center", color: "#64748b" }}>No details available</td>
+                    <td colSpan={3} className="p-3.5 text-center text-[#64748b]">No details available</td>
                   </tr>
                 ) : (
                   allKeys.map((key) => {
                     const changed = isFieldChanged(key);
                     return (
-                      <tr key={key} style={{
-                        borderBottom: "1px solid #f1f5f9",
-                        background: changed ? "rgba(254, 243, 199, 0.4)" : "transparent"
-                      }}>
-                        <td style={{ padding: "10px 14px", fontWeight: 550, color: "#1e293b", width: "30%" }}>{key}</td>
-                        <td style={{ padding: "10px 14px", color: "#475569", width: "35%", wordBreak: "break-all" }}>{formatValue(key, beforeObj[key])}</td>
-                        <td style={{
-                          padding: "10px 14px",
-                          color: changed ? "#92400e" : "#475569",
-                          fontWeight: changed ? 600 : 400,
-                          width: "35%",
-                          wordBreak: "break-all"
-                        }}>
+                      <tr key={key} className={`border-b border-[#f1f5f9] ${changed ? "bg-[#fef3c7]/40" : "bg-transparent"}`}>
+                        <td className="py-2.5 px-3.5 font-medium text-[#1e293b] w-[30%]">{key}</td>
+                        <td className="py-2.5 px-3.5 text-[#475569] w-[35%] break-all">{formatValue(key, beforeObj[key])}</td>
+                        <td className={`py-2.5 px-3.5 w-[35%] break-all ${changed ? "text-[#92400e] font-semibold" : "text-[#475569] font-normal"}`}>
                           {formatValue(key, afterObj[key])}
                         </td>
                       </tr>
@@ -157,9 +141,9 @@ function DetailModal({ isOpen, row, onClose }) {
         </div>
 
         {/* Modal Footer */}
-        <div style={{ padding: "16px 28px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "flex-end", background: "#fafafa" }}>
+        <div className="py-4 px-7 border-t border-[#f1f5f9] flex justify-end bg-[#fafafa]">
           <button type="button" onClick={onClose}
-            style={{ padding: "9px 24px", borderRadius: 8, border: "1.5px solid #cbd5e1", color: "#475569", background: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            className="py-[9px] px-6 rounded-lg border-[1.5px] border-[#cbd5e1] text-[#475569] bg-white font-bold text-[13px] cursor-pointer hover:bg-[#f8fafc] transition-colors duration-150">
             Close
           </button>
         </div>

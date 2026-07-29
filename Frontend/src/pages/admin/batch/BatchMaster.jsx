@@ -84,56 +84,41 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
     };
 
     return (
-        <div style={{
-            position: "fixed", inset: 0, zIndex: 1000,
-            background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)",
-            display: "flex", alignItems: "center", justifyContent: "center", padding: 16
-        }}>
-            <div style={{
-                background: "#fff", borderRadius: 18, width: "95%", maxWidth: 900, margin: "0 auto",
-                boxShadow: "0 25px 60px rgba(0,0,0,0.2)", overflow: "hidden"
-            }}>
+        <div className="fixed inset-0 z-[1000] bg-slate-900/55 backdrop-blur-[4px] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[18px] w-[95%] max-w-[900px] mx-auto shadow-[0_25px_60px_rgba(0,0,0,0.2)] overflow-hidden">
                 {/* Modal Header */}
-                <div style={{
-                    padding: "20px 24px", borderBottom: "1px solid #f1f5f9",
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    background: "linear-gradient(135deg, #253361, #1a2446)"
-                }}>
+                <div className="py-5 px-6 border-b border-[#f1f5f9] flex items-center justify-between bg-gradient-to-br from-[#253361] to-[#1a2446]">
                     <div>
-                        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff" }}>
+                        <h2 className="m-0 text-[18px] font-bold text-white">
                             {editingRow ? "Edit Batch" : "Add New Batch"}
                         </h2>
-                        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#d9e2ec" }}>
+                        <p className="mt-1 text-[13px] text-[#d9e2ec]">
                             {editingRow ? "Update batch details below" : "Fill in the details to schedule a new training batch"}
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        style={{
-                            background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8,
-                            width: 34, height: 34, cursor: "pointer", display: "flex",
-                            alignItems: "center", justifyContent: "center", color: "#fff"
-                        }}
+                        className="bg-white/15 border-none rounded-lg w-[34px] h-[34px] cursor-pointer flex items-center justify-center text-white"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 18, height: 18 }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-[18px] h-[18px]">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
                 {/* Form */}
-                <div style={{ padding: "24px", maxHeight: "70vh", overflowY: "auto" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+                <div className="p-6 max-h-[70vh] overflow-y-auto">
+                    <div className="grid grid-cols-3 gap-5">
                         {/* Row 1 Column 1: Client Organization */}
                         <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Client Organization <span style={{ color: "#e11d48" }}>*</span>
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Client Organization <span className="text-[#e11d48]">*</span>
                             </label>
                             <select
                                 value={clientId}
                                 onChange={handleClientChange}
-                                style={{ width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b", background: "#fff" }}
+                                className="w-full border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b] bg-white"
                             >
                                 <option value="">Select Client...</option>
                                 {clients.map(c => (
@@ -144,14 +129,14 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
 
                         {/* Row 1 Column 2: Site Location */}
                         <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Site Location <span style={{ color: "#e11d48" }}>*</span>
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Site Location <span className="text-[#e11d48]">*</span>
                             </label>
                             <select
                                 value={siteId}
                                 onChange={(e) => setSiteId(e.target.value)}
                                 disabled={!clientId}
-                                style={{ width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b", background: !clientId ? "#f1f5f9" : "#fff" }}
+                                className={`w-full border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b] ${!clientId ? "bg-[#f1f5f9]" : "bg-white"}`}
                             >
                                 <option value="">
                                     {!clientId ? "Select a Client first..." : "Select Site Location..."}
@@ -164,13 +149,13 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
 
                         {/* Row 1 Column 3: Training Module */}
                         <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Training Module <span style={{ color: "#e11d48" }}>*</span>
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Training Module <span className="text-[#e11d48]">*</span>
                             </label>
                             <select
                                 value={trainingModuleId}
                                 onChange={(e) => setTrainingModuleId(e.target.value)}
-                                style={{ width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b", background: "#fff" }}
+                                className="w-full border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b] bg-white"
                             >
                                 <option value="">Select Training Module...</option>
                                 {modules.map(m => (
@@ -181,13 +166,13 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
 
                         {/* Row 2 Column 1: Assigned Trainer */}
                         <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Assigned Trainer <span style={{ color: "#e11d48" }}>*</span>
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Assigned Trainer <span className="text-[#e11d48]">*</span>
                             </label>
                             <select
                                 value={trainerId}
                                 onChange={(e) => setTrainerId(e.target.value)}
-                                style={{ width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b", background: "#fff" }}
+                                className="w-full border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b] bg-white"
                             >
                                 <option value="">Select Trainer...</option>
                                 {trainers.map(t => (
@@ -198,21 +183,21 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
 
                         {/* Row 2 Column 2: Scheduled Date */}
                         <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Scheduled Date <span style={{ color: "#e11d48" }}>*</span>
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Scheduled Date <span className="text-[#e11d48]">*</span>
                             </label>
                             <input
                                 type="date"
                                 value={scheduledDate}
                                 onChange={(e) => setScheduledDate(e.target.value)}
-                                style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b" }}
+                                className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b]"
                             />
                         </div>
 
                         {/* Row 2 Column 3: Batch Size */}
                         <div>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Batch Size <span style={{ color: "#e11d48" }}>*</span>
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Batch Size <span className="text-[#e11d48]">*</span>
                             </label>
                             <input
                                 type="number"
@@ -220,21 +205,21 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
                                 placeholder="Enter batch size..."
                                 value={batchSize}
                                 onChange={(e) => setBatchSize(e.target.value)}
-                                style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b" }}
+                                className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b]"
                             />
                         </div>
 
                         {/* Row 3: Venue (Spans all 3 columns) */}
-                        <div style={{ gridColumn: "span 3" }}>
-                            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                                Venue <span style={{ color: "#e11d48" }}>*</span>
+                        <div className="col-span-3">
+                            <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-2">
+                                Venue <span className="text-[#e11d48]">*</span>
                             </label>
                             <input
                                 type="text"
                                 placeholder="Enter venue address or room details..."
                                 value={venue}
                                 onChange={(e) => setVenue(e.target.value)}
-                                style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b" }}
+                                className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b]"
                             />
                         </div>
 
@@ -242,18 +227,12 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
                 </div>
 
                 {/* Modal Footer */}
-                <div style={{
-                    padding: "16px 24px", borderTop: "1px solid #f1f5f9",
-                    display: "flex", justifyContent: "flex-end", gap: 12, background: "#fafafa"
-                }}>
+                <div className="py-4 px-6 border-t border-[#f1f5f9] flex justify-end gap-3 bg-[#fafafa]">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={saving}
-                        style={{
-                            padding: "9px 20px", borderRadius: 8, border: "1.5px solid #cbd5e1",
-                            color: "#475569", background: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer"
-                        }}
+                        className="py-[9px] px-5 rounded-lg border-[1.5px] border-[#cbd5e1] text-[#475569] bg-white font-semibold text-[13px] cursor-pointer"
                     >
                         Cancel
                     </button>
@@ -261,13 +240,11 @@ function BatchFormModal({ isOpen, onClose, onSave, editingRow, saving, clients, 
                         type="button"
                         onClick={handleSubmit}
                         disabled={saving}
-                        style={{
-                            padding: "9px 24px", borderRadius: 8, border: "none",
-                            background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
-                            color: "#fff", fontWeight: 700, fontSize: 13,
-                            cursor: saving ? "not-allowed" : "pointer",
-                            boxShadow: saving ? "none" : "0 2px 8px rgba(37,51,97,0.35)"
-                        }}
+                        className={`py-[9px] px-6 rounded-lg border-none text-white font-bold text-[13px] ${
+                            saving
+                                ? "bg-[#94a3b8] cursor-not-allowed shadow-none"
+                                : "bg-gradient-to-br from-[#253361] to-[#1a2446] cursor-pointer shadow-[0_2px_8px_rgba(37,51,97,0.35)]"
+                        }`}
                     >
                         {saving ? "Saving…" : "Save"}
                     </button>
@@ -389,22 +366,22 @@ export default function BatchMaster() {
             {
                 key: "client_name",
                 label: "Client Organization",
-                render: (row) => <span style={{ fontWeight: 600, color: "#334155" }}>{row.client_name}</span>
+                render: (row) => <span className="font-semibold text-[#334155]">{row.client_name}</span>
             },
             {
                 key: "site_name",
                 label: "Site Location",
-                render: (row) => <span style={{ color: "#475569" }}>{row.site_name}</span>
+                render: (row) => <span className="text-[#475569]">{row.site_name}</span>
             },
             {
                 key: "module_name",
                 label: "Training Module",
-                render: (row) => <span style={{ fontWeight: 600, color: "#1e293b" }}>{row.module_name}</span>
+                render: (row) => <span className="font-semibold text-[#1e293b]">{row.module_name}</span>
             },
             {
                 key: "trainer_name",
                 label: "Trainer",
-                render: (row) => <span style={{ color: "#475569" }}>{row.trainer_name}</span>
+                render: (row) => <span className="text-[#475569]">{row.trainer_name}</span>
             },
             {
                 key: "scheduled_date",
@@ -445,17 +422,14 @@ export default function BatchMaster() {
             sortable: false,
             minWidth: "160px",
             render: (row) => (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div className="flex items-center gap-2">
                     {/* Manage Button */}
                     <button
                         onClick={() => handleManageBatch(row)}
-                        style={{
-                            display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center",
-                            borderRadius: 8, border: "1px solid #cbd5e1", background: "#f8fafc", color: "#475569", cursor: "pointer"
-                        }}
+                        className="flex w-8 h-8 items-center justify-center rounded-lg border border-[#cbd5e1] bg-[#f8fafc] text-[#475569] cursor-pointer"
                         title="Manage Batch"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" style={{ width: 15, height: 15 }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-[15px] h-[15px]">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.645-.869L9.594 3.94Z" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                         </svg>
@@ -463,13 +437,10 @@ export default function BatchMaster() {
                     {canUpdate && (
                         <button
                             onClick={() => handleOpenEditModal(row)}
-                            style={{
-                                display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center",
-                                borderRadius: 8, border: "1px solid #c2d0eb", background: "#f0f3fa", color: "#253361", cursor: "pointer"
-                            }}
+                            className="flex w-8 h-8 items-center justify-center rounded-lg border border-[#c2d0eb] bg-[#f0f3fa] text-[#253361] cursor-pointer"
                             title="Edit Batch"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" style={{ width: 15, height: 15 }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-[15px] h-[15px]">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931Z" />
                             </svg>
                         </button>
@@ -477,13 +448,10 @@ export default function BatchMaster() {
                     {canDelete && (
                         <button
                             onClick={() => handleDelete(row.id)}
-                            style={{
-                                display: "flex", width: 32, height: 32, alignItems: "center", justifyContent: "center",
-                                borderRadius: 8, border: "1px solid #fecdd3", background: "#fff1f2", color: "#be123c", cursor: "pointer"
-                            }}
+                            className="flex w-8 h-8 items-center justify-center rounded-lg border border-[#fecdd3] bg-[#fff1f2] text-[#be123c] cursor-pointer"
                             title="Delete Batch"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" style={{ width: 15, height: 15 }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-[15px] h-[15px]">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 7.5h12m-1.5 0-.563 12.375A2.25 2.25 0 0113.693 21H10.307a2.25 2.25 0 01-2.244-2.125L7.5 7.5m3-3h3A1.5 1.5 0 0115 6v1.5H9V6a1.5 1.5 0 011.5-1.5Z" />
                             </svg>
                         </button>
@@ -496,7 +464,7 @@ export default function BatchMaster() {
     }, [hasPermission]);
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter',sans-serif" }}>
+        <div className="flex flex-col flex-1 min-h-screen bg-[#f8fafc] font-sans">
             <Navbar title="Safety360 Admin" />
 
             <BatchFormModal
@@ -511,9 +479,9 @@ export default function BatchMaster() {
                 trainers={trainers}
             />
 
-            <main style={{ flex: 1, display: "flex", flexDirection: "column", width: "100%", margin: "0 auto", padding: "32px 30px" }}>
+            <main className="flex-1 flex flex-col w-full mx-auto py-8 px-[30px]">
                 {error && (
-                    <div style={{ background: "#fff1f2", border: "1px solid #fecdd3", color: "#be123c", padding: "12px 16px", borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500 }}>
+                    <div className="bg-[#fff1f2] border border-[#fecdd3] text-[#be123c] py-3 px-4 rounded-[10px] mb-5 text-[14px] font-medium">
                         {error}
                     </div>
                 )}
@@ -528,14 +496,10 @@ export default function BatchMaster() {
                         hasPermission("batch_master", "write") ? (
                             <button
                                 onClick={handleOpenAddModal}
-                                style={{
-                                    display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
-                                    borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
-                                    border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
-                                }}
+                                className="flex w-10 h-10 items-center justify-center rounded-[9px] bg-gradient-to-br from-[#253361] to-[#1a2446] text-white border-none cursor-pointer shadow-[0_2px_8px_rgba(37,51,97,0.35)]"
                                 title="Add Batch"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-[18px] h-[18px]">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
                             </button>

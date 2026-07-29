@@ -157,22 +157,22 @@ export default function CreateUserType() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, background: "linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%)", fontFamily: "'Inter',sans-serif" }}>
+    <div className="flex flex-col flex-1 min-h-screen bg-gradient-to-br from-[#f8fafc] to-[#eef2ff] font-sans">
       <Navbar title="CRM Admin" />
 
       <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+        <div className="flex items-center justify-between mb-7">
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: "#1e293b", margin: 0 }}>Create User Type</h1>
-            <p style={{ color: "#64748b", marginTop: 4, fontSize: 14 }}>Define a new user group and set its module permissions.</p>
+            <h1 className="text-[24px] font-bold text-[#1e293b] m-0">Create User Type</h1>
+            <p className="text-[#64748b] mt-1 text-[14px]">Define a new user group and set its module permissions.</p>
           </div>
           <button
             onClick={() => navigate("/admin/user-types")}
-            style={{ display: "flex", alignItems: "center", gap: 6, color: "#64748b", background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500 }}
+            className="flex items-center gap-1.5 text-[#64748b] bg-none border-none cursor-pointer text-[14px] font-medium"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 16, height: 16 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-[16px] h-[16px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
             Back to User Types
@@ -193,9 +193,9 @@ export default function CreateUserType() {
 
         <form onSubmit={handleAddType}>
           {/* Type Name Card */}
-          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "24px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              User Type Name <span style={{ color: "#e11d48" }}>*</span>
+          <div className="bg-white border border-[#e2e8f0] rounded-[14px] p-6 mb-5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+            <label className="block text-[13px] font-semibold text-[#475569] mb-2 uppercase tracking-[0.05em]">
+              User Type Name <span className="text-[#e11d48]">*</span>
             </label>
             <input
               type="text"
@@ -203,70 +203,49 @@ export default function CreateUserType() {
               value={newTypeName}
               onChange={(e) => setNewTypeName(e.target.value)}
               required
-              style={{
-                width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9,
-                padding: "11px 14px", fontSize: 15, outline: "none", color: "#1e293b",
-                transition: "border 0.2s",
-              }}
-              onFocus={e => e.target.style.borderColor = "#253361"}
-              onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+              className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[15px] outline-none text-[#1e293b] focus:border-[#253361] transition-colors duration-200"
             />
           </div>
 
           {/* Permissions Card */}
-          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "24px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <div className="bg-white border border-[#e2e8f0] rounded-[14px] p-6 mb-5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+            <div className="flex items-center justify-between mb-[18px]">
               <div>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1e293b", margin: 0 }}>Module Permissions</h2>
-                <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0" }}>Set read, write, update and delete access per master module.</p>
+                <h2 className="text-[15px] font-bold text-[#1e293b] m-0">Module Permissions</h2>
+                <p className="text-[13px] text-[#94a3b8] mt-1">Set read, write, update and delete access per master module.</p>
               </div>
               <button
                 type="button"
                 onClick={toggleAll}
-                style={{
-                  fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 8, cursor: "pointer",
-                  border: "1.5px solid #253361", color: isAllAll() ? "#fff" : "#253361",
-                  background: isAllAll() ? "#253361" : "#e6ebf0", transition: "all 0.2s"
-                }}
+                className={`text-[12px] font-semibold py-1.5 px-3.5 rounded-lg cursor-pointer border-[1.5px] border-[#253361] transition-all duration-200 ${isAllAll() ? "text-white bg-[#253361]" : "text-[#253361] bg-[#e6ebf0]"}`}
               >
                 {isAllAll() ? "Deselect All" : "Select All"}
               </button>
             </div>
 
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse min-w-[500px]">
                 <thead>
-                  <tr style={{ background: "#f8fafc" }}>
-                    <th style={{ textAlign: "left", padding: "10px 14px", fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid #e2e8f0", minWidth: 160 }}>
+                  <tr className="bg-[#f8fafc]">
+                    <th className="text-left py-2.5 px-3.5 text-[12px] font-bold text-[#64748b] uppercase tracking-[0.05em] border-b-2 border-[#e2e8f0] min-w-[160px]">
                       Master Module
                     </th>
                     {PERMS.map((perm) => {
                       const c = PERM_COLORS[perm];
                       return (
-                        <th key={perm} style={{ textAlign: "center", padding: "10px 8px", borderBottom: "2px solid #e2e8f0", minWidth: 90 }}>
+                        <th key={perm} className="text-center py-2.5 px-2 border-b-2 border-[#e2e8f0] min-w-[90px]">
                           <button
                             type="button"
                             onClick={() => toggleColumn(perm)}
                             title={`Toggle all ${PERM_LABELS[perm]}`}
-                            style={{
-                              display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 4,
-                              background: "none", border: "none", cursor: "pointer", padding: 4
-                            }}
+                            className="inline-flex flex-col items-center gap-1 bg-none border-none cursor-pointer p-1"
                           >
-                            <span style={{
-                              fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em",
-                              color: c.text, background: c.bg, border: `1px solid ${c.border}`,
-                              borderRadius: 6, padding: "3px 8px"
-                            }}>
+                            <span className="text-[11px] font-bold uppercase tracking-[0.06em] border rounded-md py-[3px] px-2" style={{ color: c.text, backgroundColor: c.bg, borderColor: c.border }}>
                               {PERM_LABELS[perm]}
                             </span>
-                            <div style={{
-                              width: 18, height: 18, borderRadius: 5, border: `2px solid ${isColAll(perm) ? c.check : "#cbd5e1"}`,
-                              background: isColAll(perm) ? c.check : "#fff",
-                              display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s"
-                            }}>
+                            <div className="w-[18px] h-[18px] rounded-[5px] border-2 flex items-center justify-center transition-all duration-150" style={{ borderColor: isColAll(perm) ? c.check : "#cbd5e1", backgroundColor: isColAll(perm) ? c.check : "#fff" }}>
                               {isColAll(perm) && (
-                                <svg viewBox="0 0 12 10" style={{ width: 10, height: 10 }}>
+                                <svg viewBox="0 0 12 10" className="w-[10px] h-[10px]">
                                   <polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                               )}
@@ -275,7 +254,7 @@ export default function CreateUserType() {
                         </th>
                       );
                     })}
-                    <th style={{ textAlign: "center", padding: "10px 8px", borderBottom: "2px solid #e2e8f0", minWidth: 80, fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <th className="text-center py-2.5 px-2 border-b-2 border-[#e2e8f0] min-w-[80px] text-[11px] font-bold text-[#94a3b8] uppercase tracking-[0.05em]">
                       All
                     </th>
                   </tr>
@@ -287,13 +266,11 @@ export default function CreateUserType() {
                     return (
                       <tr
                         key={master.key}
-                        style={{ background: idx % 2 === 0 ? "#fff" : "#fafafa", transition: "background 0.15s" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
-                        onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 0 ? "#fff" : "#fafafa"}
+                        className="odd:bg-white even:bg-[#fafafa] hover:bg-[#f1f5f9] transition-colors duration-150"
                       >
-                        <td style={{ padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#334155", borderBottom: "1px solid #f1f5f9" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#253361", flexShrink: 0 }} />
+                        <td className="py-3 px-3.5 text-[14px] font-semibold text-[#334155] border-b border-[#f1f5f9]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-[#253361] shrink-0" />
                             {master.label}
                           </div>
                         </td>
@@ -304,28 +281,25 @@ export default function CreateUserType() {
 
                           if (isApprovalRow && (perm === "canUpdate" || perm === "canDelete")) {
                             return (
-                              <td key={perm} style={{ textAlign: "center", padding: "12px 8px", borderBottom: "1px solid #f1f5f9", color: "#94a3b8" }}>
+                              <td key={perm} className="text-center py-3 px-2 border-b border-[#f1f5f9] text-[#94a3b8]">
                                 —
                               </td>
                             );
                           }
 
                           return (
-                            <td key={perm} style={{ textAlign: "center", padding: "12px 8px", borderBottom: "1px solid #f1f5f9" }}>
+                            <td key={perm} className="text-center py-3 px-2 border-b border-[#f1f5f9]">
                               <div
                                 onClick={() => togglePerm(master.key, perm)}
+                                className="w-[22px] h-[22px] rounded-md flex items-center justify-center cursor-pointer transition-all duration-150 mx-auto border-2"
                                 style={{
-                                  width: 22, height: 22, borderRadius: 6,
-                                  border: `2px solid ${checked ? c.check : "#cbd5e1"}`,
-                                  background: checked ? c.check : "#fff",
-                                  display: "flex", alignItems: "center", justifyContent: "center",
-                                  cursor: "pointer", transition: "all 0.15s",
-                                  margin: "0 auto",
+                                  borderColor: checked ? c.check : "#cbd5e1",
+                                  backgroundColor: checked ? c.check : "#fff",
                                   boxShadow: checked ? `0 0 0 3px ${c.bg}` : "none"
                                 }}
                               >
                                 {checked && (
-                                  <svg viewBox="0 0 12 10" style={{ width: 11, height: 11 }}>
+                                  <svg viewBox="0 0 12 10" className="w-[11px] h-[11px]">
                                     <polyline points="1,5 4.5,8.5 11,1" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
                                 )}
@@ -334,17 +308,11 @@ export default function CreateUserType() {
                           );
                         })}
                         {/* Row toggle */}
-                        <td style={{ textAlign: "center", padding: "12px 8px", borderBottom: "1px solid #f1f5f9" }}>
+                        <td className="text-center py-3 px-2 border-b border-[#f1f5f9]">
                           <button
                             type="button"
                             onClick={() => toggleRow(master.key)}
-                            style={{
-                              fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, cursor: "pointer",
-                              border: `1.5px solid ${rowAll ? "#253361" : "#cbd5e1"}`,
-                              color: rowAll ? "#fff" : "#64748b",
-                              background: rowAll ? "#253361" : "#f8fafc",
-                              transition: "all 0.15s"
-                            }}
+                            className={`text-[11px] font-semibold py-1 px-2.5 rounded-md cursor-pointer border-[1.5px] transition-all duration-150 ${rowAll ? "border-[#253361] text-white bg-[#253361]" : "border-[#cbd5e1] text-[#64748b] bg-[#f8fafc]"}`}
                           >
                             {rowAll ? "✓ All" : "All"}
                           </button>
@@ -357,13 +325,13 @@ export default function CreateUserType() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, paddingTop: 14, borderTop: "1px solid #f1f5f9" }}>
+            <div className="flex flex-wrap gap-2.5 mt-4 pt-3.5 border-t border-[#f1f5f9]">
               {PERMS.map((perm) => {
                 const c = PERM_COLORS[perm];
                 return (
-                  <div key={perm} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 3, background: c.check }} />
-                    <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>{PERM_LABELS[perm]}</span>
+                  <div key={perm} className="flex items-center gap-1">
+                    <div className="w-2.5 h-2.5 rounded-[3px]" style={{ backgroundColor: c.check }} />
+                    <span className="text-[12px] text-[#64748b] font-medium">{PERM_LABELS[perm]}</span>
                   </div>
                 );
               })}
@@ -371,30 +339,18 @@ export default function CreateUserType() {
           </div>
 
           {/* Actions */}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+          <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={() => navigate("/admin/user-types")}
-              style={{
-                padding: "10px 22px", borderRadius: 9, border: "1.5px solid #cbd5e1",
-                color: "#475569", background: "#fff", fontWeight: 600, fontSize: 14, cursor: "pointer",
-                transition: "background 0.15s"
-              }}
-              onMouseEnter={e => e.target.style.background = "#f8fafc"}
-              onMouseLeave={e => e.target.style.background = "#fff"}
+              className="py-2.5 px-[22px] rounded-[9px] border-[1.5px] border-[#cbd5e1] text-[#475569] bg-white font-semibold text-[14px] cursor-pointer hover:bg-[#f8fafc] transition-colors duration-150"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              style={{
-                padding: "10px 28px", borderRadius: 9, border: "none",
-                background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
-                color: "#fff", fontWeight: 700, fontSize: 14, cursor: saving ? "not-allowed" : "pointer",
-                boxShadow: saving ? "none" : "0 2px 8px rgba(37,51,97,0.35)",
-                transition: "all 0.2s"
-              }}
+              className={`py-2.5 px-7 rounded-[9px] border-none text-white font-bold text-[14px] transition-all duration-200 ${saving ? "bg-[#94a3b8] cursor-not-allowed shadow-none" : "bg-gradient-to-br from-[#253361] to-[#1a2446] cursor-pointer shadow-[0_2px_8px_rgba(37,51,97,0.35)]"}`}
             >
               {saving ? "Saving…" : "Create User Type"}
             </button>
