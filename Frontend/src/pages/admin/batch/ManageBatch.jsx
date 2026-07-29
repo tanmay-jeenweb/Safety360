@@ -953,15 +953,14 @@ export default function ManageBatch() {
                                     <th className="py-3.5 px-6 text-center">Attendance</th>
                                     <th className="py-3.5 px-6 text-center">Pre Test</th>
                                     <th className="py-3.5 px-6 text-center">Post Test</th>
-                                    <th className="py-3.5 px-6 text-center">Final Score</th>
-                                    <th className="py-3.5 px-6 text-center">Band Badge</th>
+                                    <th className="py-3.5 px-6 text-center">Result</th>
                                     <th className="py-3.5 px-6"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {participants.length === 0 ? (
                                     <tr>
-                                        <td colSpan="8" className="py-8 text-center text-sm font-semibold text-slate-400">
+                                        <td colSpan="7" className="py-8 text-center text-sm font-semibold text-slate-400">
                                             No participants registered in this batch.
                                         </td>
                                     </tr>
@@ -986,11 +985,25 @@ export default function ManageBatch() {
                                             </td>
                                             <td className="py-4 px-6 text-center font-bold text-slate-700">{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
                                             <td className="py-4 px-6 text-center font-bold text-slate-700">{part.post_test_score !== null ? part.post_test_score : "—"}</td>
-                                            <td className="py-4 px-6 text-center font-bold text-slate-700">{part.final_score !== null ? part.final_score : "—"}</td>
-                                            <td className="py-4 px-6 text-center">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase">
-                                                    {part.band_badge || 'UNTESTED'}
-                                                </span>
+                                            <td className="py-4 px-6 text-center font-bold text-slate-700">
+                                                {part.post_test_score !== null ? (
+                                                    (() => {
+                                                        const totalQs = trainingModule?.post_test_qs || 1;
+                                                        const pct = (part.post_test_score / totalQs) * 100;
+                                                        const passing = trainingModule?.passing_marks || 0;
+                                                        return pct >= passing ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                                                                Pass
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
+                                                                Fail
+                                                            </span>
+                                                        );
+                                                    })()
+                                                ) : (
+                                                    <span className="text-slate-400 font-medium">—</span>
+                                                )}
                                             </td>
                                             <td className="py-4 px-6 text-right">
                                                 {batch.status === 'Draft' && (

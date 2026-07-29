@@ -273,8 +273,10 @@ const submitTestController = async (req, res) => {
         } else {
             // Post test is the final evaluation
             finalScore = correctCount;
-            // Decide band badge based on passing marks
-            const passed = correctCount >= batchObj.passing_marks;
+            // Decide band badge based on passing marks percentage
+            const totalQs = detailedQuestions.length || 1;
+            const percentage = (correctCount / totalQs) * 100;
+            const passed = percentage >= batchObj.passing_marks;
             bandBadge = passed ? 'PASSED' : 'FAILED';
             
             updateQuery = `
