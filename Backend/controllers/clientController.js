@@ -9,7 +9,7 @@ const { createAuditLog } = require('../models/auditLogModel.js');
 
 const addClient = async (req, res) => {
     try {
-        const { clientName } = req.body;
+        const { clientName, address, representatives, workOrderNo, workOrderDate } = req.body;
         const addedBy = req.user.id;
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
 
@@ -17,8 +17,43 @@ const addClient = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Client name is required' });
         }
 
-        const result = await createClient(clientName.trim(), addedBy);
+        // Validate representatives array if it exists
+        let validatedReps = [];
+        if (representatives) {
+            if (!Array.isArray(representatives)) {
+                return res.status(400).json({ success: false, message: 'Representatives must be an array' });
+            }
+            for (const rep of representatives) {
+                if (!rep.name || !rep.name.trim()) {
+                    return res.status(400).json({ success: false, message: 'Representative name is required' });
+                }
+                validatedReps.push({
+                    name: rep.name.trim(),
+                    email: rep.email ? rep.email.trim() : '',
+                    phoneNo: rep.phoneNo ? rep.phoneNo.trim() : ''
+                });
+            }
+        }
+
+        const result = await createClient({
+            clientName: clientName.trim(),
+            address: address ? address.trim() : null,
+            representatives: validatedReps,
+            workOrderNo: workOrderNo ? workOrderNo.trim() : null,
+            workOrderDate: workOrderDate || null
+        }, addedBy);
         const newId = result.insertId;
+
+        const insertedClient = {
+            id: newId,
+            client_name: clientName.trim(),
+            address: address ? address.trim() : null,
+            representatives: validatedReps,
+            work_order_no: workOrderNo ? workOrderNo.trim() : null,
+            work_order_date: workOrderDate || null,
+            added_by: addedBy,
+            device_id: deviceId
+        };
 
         await createAuditLog(
             addedBy,
@@ -27,18 +62,13 @@ const addClient = async (req, res) => {
             'Client Master',
             'created',
             null,
-            {
-                id: newId,
-                client_name: clientName.trim(),
-                added_by: addedBy,
-                device_id: deviceId
-            }
+            insertedClient
         );
 
         res.status(201).json({
             success: true,
             message: 'Client added successfully',
-            data: { id: newId, client_name: clientName.trim(), added_by: addedBy }
+            data: insertedClient
         });
     } catch (error) {
         console.error('Error adding client:', error);
@@ -72,10 +102,28 @@ const getAllClientsController = async (req, res) => {
 const updateClientController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { clientName } = req.body;
+        const { clientName, address, representatives, workOrderNo, workOrderDate } = req.body;
 
         if (!clientName || !clientName.trim()) {
             return res.status(400).json({ success: false, message: 'Client name is required' });
+        }
+
+        // Validate representatives array if it exists
+        let validatedReps = [];
+        if (representatives) {
+            if (!Array.isArray(representatives)) {
+                return res.status(400).json({ success: false, message: 'Representatives must be an array' });
+            }
+            for (const rep of representatives) {
+                if (!rep.name || !rep.name.trim()) {
+                    return res.status(400).json({ success: false, message: 'Representative name is required' });
+                }
+                validatedReps.push({
+                    name: rep.name.trim(),
+                    email: rep.email ? rep.email.trim() : '',
+                    phoneNo: rep.phoneNo ? rep.phoneNo.trim() : ''
+                });
+            }
         }
 
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
@@ -84,7 +132,13 @@ const updateClientController = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Client not found' });
         }
 
-        await updateClient(id, clientName.trim());
+        await updateClient(id, {
+            clientName: clientName.trim(),
+            address: address ? address.trim() : null,
+            representatives: validatedReps,
+            workOrderNo: workOrderNo ? workOrderNo.trim() : null,
+            workOrderDate: workOrderDate || null
+        });
         const afterData = await getClientById(id);
 
         await createAuditLog(
