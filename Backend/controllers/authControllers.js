@@ -38,9 +38,9 @@ const login = async (req, res) => {
         let isEmployee = false;
 
         if (!user) {
-            // Check if there is an employee with this employee_code
+            // Check if there is an employee with this email
             const [empRows] = await db.execute(
-                "SELECT * FROM employees WHERE employee_code = ?",
+                "SELECT * FROM employees WHERE email = ?",
                 [username]
             );
             if (empRows.length > 0) {
@@ -76,7 +76,7 @@ const login = async (req, res) => {
                     id: user.id,
                     role: "employee",
                     name: user.full_name,
-                    username: user.employee_code,
+                    username: user.email || user.employee_code,
                     client_id: user.client_id,
                     site_id: user.site_id,
                     is_first_login: user.is_first_login
@@ -92,7 +92,7 @@ const login = async (req, res) => {
                 user: {
                     id: user.id,
                     name: user.full_name,
-                    username: user.employee_code,
+                    username: user.email || user.employee_code,
                     role: "employee",
                     client_id: user.client_id,
                     site_id: user.site_id,

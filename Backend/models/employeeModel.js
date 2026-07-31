@@ -32,7 +32,6 @@ const createEmployeesTable = async () => {
         console.log("Employees table creation failed/skipped (probably exists), running schema alter queries...");
     }
 
-    // Alter table to add phone_no and password if they do not exist
     try {
         await db.execute("ALTER TABLE employees ADD COLUMN phone_no VARCHAR(20) NOT NULL AFTER contractor_name");
     } catch (e1) {}
@@ -42,6 +41,15 @@ const createEmployeesTable = async () => {
     try {
         await db.execute("ALTER TABLE employees ADD COLUMN is_first_login TINYINT(1) DEFAULT 1 AFTER password");
     } catch (e3) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN email VARCHAR(150) DEFAULT NULL AFTER phone_no");
+    } catch (e4) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN joining_date DATE DEFAULT NULL AFTER email");
+    } catch (e5) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD UNIQUE INDEX idx_employees_email (email)");
+    } catch (e6) {}
 
     console.log("Employees table ready");
 };
@@ -58,10 +66,12 @@ const createEmployee = async (data, addedBy) => {
             contractor_name,
             phone_no,
             password,
+            email,
+            joining_date,
             client_id,
             site_id,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
@@ -73,6 +83,8 @@ const createEmployee = async (data, addedBy) => {
         data.employeeType === 'Contractor' ? (data.contractorName || null) : null,
         data.phoneNo,
         data.password,
+        data.email,
+        data.joiningDate,
         data.clientId,
         data.siteId,
         addedBy
@@ -94,6 +106,8 @@ const getAllEmployees = async () => {
             e.employee_type,
             e.contractor_name,
             e.phone_no,
+            e.email,
+            e.joining_date,
             e.client_id,
             COALESCE(c.client_name, 'Unknown') AS client_name,
             e.site_id,
@@ -123,6 +137,8 @@ const updateEmployee = async (id, data) => {
             employee_type = ?,
             contractor_name = ?,
             phone_no = ?,
+            email = ?,
+            joining_date = ?,
             client_id = ?,
             site_id = ?
         WHERE id = ?
@@ -136,6 +152,8 @@ const updateEmployee = async (id, data) => {
         data.employeeType || 'Direct',
         data.employeeType === 'Contractor' ? (data.contractorName || null) : null,
         data.phoneNo,
+        data.email,
+        data.joiningDate,
         data.clientId,
         data.siteId,
         id
@@ -163,6 +181,8 @@ const getEmployeeById = async (id) => {
             e.employee_type,
             e.contractor_name,
             e.phone_no,
+            e.email,
+            e.joining_date,
             e.client_id,
             COALESCE(c.client_name, 'Unknown') AS client_name,
             e.site_id,
@@ -207,11 +227,13 @@ const importEmployees = async (records, addedBy) => {
             const employeeType = String(record.employeeType || 'Direct').trim();
             const contractorName = record.contractorName ? String(record.contractorName).trim() : null;
             const phoneNo = String(record.phoneNo || '').trim();
+            const email = record.email ? String(record.email).trim() : null;
+            const joiningDate = record.joiningDate ? String(record.joiningDate).trim() : null;
             const clientName = String(record.clientName || '').trim().toLowerCase();
             const siteName = String(record.siteName || '').trim().toLowerCase();
 
-            if (!code || !fullName || !deptName || !designation || !phoneNo || !clientName || !siteName) {
-                throw new Error(`Row with code '${code || 'Unknown'}' is missing required fields (Code, Name, Dept, Designation, Phone, Client, Site).`);
+            if (!code || !fullName || !deptName || !designation || !phoneNo || !clientName || !siteName || !email || !joiningDate) {
+                throw new Error(`Row with code '${code || 'Unknown'}' is missing required fields (Code, Name, Dept, Designation, Phone, Email, Joining Date, Client, Site).`);
             }
 
             if (employeeType !== 'Direct' && employeeType !== 'Contractor') {
@@ -249,6 +271,8 @@ const importEmployees = async (records, addedBy) => {
                         employee_type = ?,
                         contractor_name = ?,
                         phone_no = ?,
+                        email = ?,
+                        joining_date = ?,
                         client_id = ?,
                         site_id = ?
                     WHERE id = ?
@@ -260,6 +284,8 @@ const importEmployees = async (records, addedBy) => {
                     employeeType,
                     employeeType === 'Contractor' ? contractorName : null,
                     phoneNo,
+                    email,
+                    joiningDate,
                     clientId,
                     siteId,
                     existingId
@@ -277,10 +303,12 @@ const importEmployees = async (records, addedBy) => {
                         contractor_name,
                         phone_no,
                         password,
+                        email,
+                        joining_date,
                         client_id,
                         site_id,
                         added_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `;
                 await connection.execute(insertQuery, [
                     code,
@@ -291,6 +319,8 @@ const importEmployees = async (records, addedBy) => {
                     employeeType === 'Contractor' ? contractorName : null,
                     phoneNo,
                     hashedPassword,
+                    email,
+                    joiningDate,
                     clientId,
                     siteId,
                     addedBy

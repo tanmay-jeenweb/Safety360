@@ -120,7 +120,7 @@ export default function Login() {
                             {/* Username Field */}
                             <div className="space-y-1.5">
                                 <label htmlFor="username" className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                                    Username
+                                    Username / Email
                                 </label>
                                 <div className="relative">
                                     <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -133,7 +133,7 @@ export default function Login() {
                                         name="username"
                                         type="text"
                                         required
-                                        placeholder="Enter your username"
+                                        placeholder="Enter your username or email"
                                         value={form.username}
                                         onChange={(e) => setForm({ ...form, username: e.target.value })}
                                         className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-800 text-xs sm:text-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-orange-600 focus:ring-1 focus:ring-orange-600/50 focus:bg-white"
