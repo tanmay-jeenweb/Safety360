@@ -20,7 +20,7 @@ const verifyToken = async (req, res, next) => {
         if (!req.user.username || !req.user.name) {
             if (req.user.role === "employee") {
                 const [rows] = await db.execute(
-                    "SELECT full_name AS name, employee_code AS username FROM employees WHERE id = ?",
+                    "SELECT full_name AS name, COALESCE(email, employee_code) AS username FROM employees WHERE id = ?",
                     [req.user.id]
                 );
 

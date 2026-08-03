@@ -46,7 +46,12 @@ export default function TrainingModuleMaster() {
 
     const columns = useMemo(() => {
         const cols = [
-            { key: "id", label: "ID", minWidth: "60px" },
+            {
+                key: "display_id",
+                label: "ID",
+                minWidth: "60px",
+                render: (row) => <span>{row.display_id || row.id}</span>
+            },
             {
                 key: "module_name",
                 label: "Module Name",

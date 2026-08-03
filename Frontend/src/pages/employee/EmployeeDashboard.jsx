@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyDashboardData, changeEmployeePassword } from "../../api/employeeApi";
+import { getMyDashboardData, changeEmployeePassword, sendChangePasswordOtp } from "../../api/employeeApi";
 import toast from "react-hot-toast";
 
 export default function EmployeeDashboard() {
@@ -19,8 +19,11 @@ export default function EmployeeDashboard() {
     // Change Password Modal state
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [modalConfig, setModalConfig] = useState({ isForced: false });
-    const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    const [passwordForm, setPasswordForm] = useState({ otp: "", newPassword: "", confirmPassword: "" });
     const [passwordLoading, setPasswordLoading] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [changePassReceivedOtp, setChangePassReceivedOtp] = useState("");
 
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -87,11 +90,30 @@ export default function EmployeeDashboard() {
         navigate(`/employee/test/${batchId}/${testType}`);
     };
 
+    const handleSendChangePasswordOtp = async () => {
+        setOtpLoading(true);
+        try {
+            const res = await sendChangePasswordOtp();
+            if (res.data.success) {
+                setOtpSent(true);
+                setChangePassReceivedOtp(res.data.otp || "");
+                toast.success("OTP sent to your registered email address.");
+            } else {
+                toast.error("Failed to send OTP.");
+            }
+        } catch (err) {
+            console.error("Error sending change password OTP:", err);
+            toast.error(err.response?.data?.message || "Failed to send OTP.");
+        } finally {
+            setOtpLoading(false);
+        }
+    };
+
     const handlePasswordChangeSubmit = async (e) => {
         e.preventDefault();
         
-        if (!passwordForm.oldPassword) {
-            toast.error("Current password is required.");
+        if (!modalConfig.isForced && !passwordForm.otp) {
+            toast.error("Verification OTP is required.");
             return;
         }
         if (passwordForm.newPassword.length < 4) {
@@ -106,7 +128,7 @@ export default function EmployeeDashboard() {
         setPasswordLoading(true);
         try {
             const res = await changeEmployeePassword({
-                oldPassword: passwordForm.oldPassword,
+                otp: modalConfig.isForced ? undefined : passwordForm.otp,
                 newPassword: passwordForm.newPassword
             });
 
@@ -119,7 +141,9 @@ export default function EmployeeDashboard() {
                 setUser(updatedUser);
 
                 // Clear form and close modal
-                setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                setPasswordForm({ otp: "", newPassword: "", confirmPassword: "" });
+                setOtpSent(false);
+                setChangePassReceivedOtp("");
                 setShowPasswordModal(false);
                 setModalConfig({ isForced: false });
             } else {
@@ -127,7 +151,7 @@ export default function EmployeeDashboard() {
             }
         } catch (err) {
             console.error("Error changing password:", err);
-            toast.error(err.response?.data?.message || "Invalid current password.");
+            toast.error(err.response?.data?.message || "Invalid verification OTP.");
         } finally {
             setPasswordLoading(false);
         }
@@ -580,7 +604,9 @@ export default function EmployeeDashboard() {
                             <button 
                                 onClick={() => {
                                     setShowPasswordModal(false);
-                                    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+                                    setPasswordForm({ otp: "", newPassword: "", confirmPassword: "" });
+                                    setOtpSent(false);
+                                    setChangePassReceivedOtp("");
                                 }}
                                 className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer border-none bg-transparent"
                             >
@@ -607,51 +633,98 @@ export default function EmployeeDashboard() {
                         </div>
 
 
-                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Current Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={passwordForm.oldPassword}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
-                                    placeholder="Enter current password"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">New Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={passwordForm.newPassword}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
-                                    placeholder="Minimum 4 characters"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Confirm New Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    value={passwordForm.confirmPassword}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
-                                    placeholder="Confirm new password"
-                                />
-                            </div>
-
-                            <div className="pt-2">
+                        {!modalConfig.isForced && !otpSent ? (
+                            <div className="space-y-4 text-center py-2">
+                                <p className="text-slate-600 text-xs leading-relaxed">
+                                    For your security, we'll send a 6-digit One-Time Password (OTP) to your registered email address to verify your identity.
+                                </p>
                                 <button
-                                    type="submit"
-                                    disabled={passwordLoading}
-                                    className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:hover:translate-y-0 border-none"
+                                    type="button"
+                                    onClick={handleSendChangePasswordOtp}
+                                    disabled={otpLoading}
+                                    className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:hover:translate-y-0 border-none flex justify-center items-center gap-2"
                                 >
-                                    {passwordLoading ? "Updating Password..." : "Update Password"}
+                                    {otpLoading ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                            Sending OTP...
+                                        </>
+                                    ) : (
+                                        "Send Verification OTP"
+                                    )}
                                 </button>
                             </div>
-                        </form>
+                        ) : (
+                            <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+
+                                {!modalConfig.isForced && (
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Verification Code (OTP)</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            maxLength="6"
+                                            value={passwordForm.otp}
+                                            onChange={(e) => setPasswordForm({ ...passwordForm, otp: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
+                                            placeholder="Enter 6-digit OTP"
+                                        />
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">New Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={passwordForm.newPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
+                                        placeholder="Minimum 4 characters"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={passwordForm.confirmPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 focus:border-orange-500/50 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none transition-colors"
+                                        placeholder="Confirm new password"
+                                    />
+                                </div>
+
+                                <div className="pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={passwordLoading}
+                                        className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:hover:translate-y-0 border-none"
+                                    >
+                                        {passwordLoading ? "Updating Password..." : "Update Password"}
+                                    </button>
+                                </div>
+
+                                {!modalConfig.isForced && (
+                                    <div className="text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setOtpSent(false);
+                                                setPasswordForm({ otp: "", newPassword: "", confirmPassword: "" });
+                                                setChangePassReceivedOtp("");
+                                            }}
+                                            className="text-slate-400 hover:text-orange-600 transition-colors text-[11px] font-bold uppercase tracking-wider cursor-pointer border-none bg-transparent"
+                                        >
+                                            Back / Resend OTP
+                                        </button>
+                                    </div>
+                                )}
+                            </form>
+                        )}
                     </div>
                 </div>
             )}

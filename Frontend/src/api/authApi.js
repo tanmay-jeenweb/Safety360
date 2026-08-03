@@ -38,6 +38,10 @@ export const loginUser = async (data) => {
     return apiClient.post("/auth/login", data);
 };
 
+export const verifyOtp = async (data) => {
+    return apiClient.post("/auth/verify-otp", data);
+};
+
 export const requestDeviceRegistration = async (data) => {
     return apiClient.post("/auth/request-device", data);
 };

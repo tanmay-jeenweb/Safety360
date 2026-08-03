@@ -14,6 +14,7 @@ const {
     getPendingDevice,
     createPendingDevice
 } = require("../models/deviceModel.js");
+const { sendOtpEmail } = require("../config/mailer.js");
 
 // ================= LOGIN =================
 
@@ -26,10 +27,10 @@ const login = async (req, res) => {
         } = req.body;
 
         // Validate Input
-        if (!username || !password || !deviceId) {
+        if (!username || !deviceId) {
             return res.status(400).json({
                 success: false,
-                message: "All fields are required"
+                message: "Username/Email and deviceId are required"
             });
         }
 
@@ -38,10 +39,10 @@ const login = async (req, res) => {
         let isEmployee = false;
 
         if (!user) {
-            // Check if there is an employee with this employee_code
+            // Check if there is an employee with this email or phone_no
             const [empRows] = await db.execute(
-                "SELECT * FROM employees WHERE employee_code = ?",
-                [username]
+                "SELECT * FROM employees WHERE email = ? OR phone_no = ?",
+                [username, username]
             );
             if (empRows.length > 0) {
                 user = empRows[0];
@@ -54,29 +55,60 @@ const login = async (req, res) => {
             }
         }
 
-        if (!isEmployee && (user.active === 0 || user.active === false)) {
-            return res.status(403).json({
-                success: false,
-                message: "Your account is deactivated. Please contact an administrator."
-            });
-        }
-
-        // Compare Password (which is plain text phone number for employee, checked against hashed password in db)
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
-        if (!isPasswordCorrect) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid credentials"
-            });
-        }
-
         if (isEmployee) {
+            // Check if it's first login
+            if (user.is_first_login === 1 || user.is_first_login === true) {
+                // Generate a random 6-digit OTP
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                // Save OTP and set expiry (10 minutes from now)
+                await db.execute(
+                    "UPDATE employees SET otp = ?, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?",
+                    [otp, user.id]
+                );
+
+                console.log(`[OTP LOGIN] Generated OTP for employee ${user.email || user.full_name}: ${otp}`);
+
+                // Send OTP via SMTP
+                if (user.email) {
+                    try {
+                        await sendOtpEmail(user.email, otp);
+                        console.log(`[OTP LOGIN] OTP email sent successfully to ${user.email}`);
+                    } catch (mailErr) {
+                        console.error(`[OTP LOGIN] Failed to send OTP email to ${user.email}:`, mailErr);
+                    }
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    status: "OTP_REQUIRED",
+                    message: "First login verification required. OTP sent to your registered email.",
+                    email: user.email,
+                    phone: user.phone_no
+                });
+            }
+
+            // For subsequent employee logins, password is required
+            if (!password) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Password is required"
+                });
+            }
+
+            const isPasswordCorrect = await bcrypt.compare(password, user.password);
+            if (!isPasswordCorrect) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Invalid credentials"
+                });
+            }
+
             const token = jwt.sign(
                 {
                     id: user.id,
                     role: "employee",
                     name: user.full_name,
-                    username: user.employee_code,
+                    username: user.email || user.employee_code,
                     client_id: user.client_id,
                     site_id: user.site_id,
                     is_first_login: user.is_first_login
@@ -92,12 +124,36 @@ const login = async (req, res) => {
                 user: {
                     id: user.id,
                     name: user.full_name,
-                    username: user.employee_code,
+                    username: user.email || user.employee_code,
                     role: "employee",
                     client_id: user.client_id,
                     site_id: user.site_id,
                     is_first_login: user.is_first_login
                 }
+            });
+        }
+
+        // ================= ADMIN & STAFF LOGIN =================
+        if (user.active === 0 || user.active === false) {
+            return res.status(403).json({
+                success: false,
+                message: "Your account is deactivated. Please contact an administrator."
+            });
+        }
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Password is required"
+            });
+        }
+
+        // Compare Password
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
             });
         }
 
@@ -424,11 +480,106 @@ const getActiveUsersController = async (req, res) => {
     }
 };
 
+const verifyOtp = async (req, res) => {
+    try {
+        const { username, otp } = req.body;
+        if (!username || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Username and OTP are required"
+            });
+        }
+
+        // Find Employee by email or phone_no
+        const [empRows] = await db.execute(
+            "SELECT * FROM employees WHERE email = ? OR phone_no = ?",
+            [username, username]
+        );
+
+        if (empRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Employee not found"
+            });
+        }
+
+        const user = empRows[0];
+
+        // Check if it's first login
+        if (user.is_first_login !== 1 && user.is_first_login !== true) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP verification is only required for first login"
+            });
+        }
+
+        // Check OTP
+        if (!user.otp || user.otp !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
+        }
+
+        // Check OTP Expiry
+        const otpExpiry = new Date(user.otp_expiry);
+        if (otpExpiry < new Date()) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP has expired"
+            });
+        }
+
+        // Clear OTP
+        await db.execute(
+            "UPDATE employees SET otp = NULL, otp_expiry = NULL WHERE id = ?",
+            [user.id]
+        );
+
+        const token = jwt.sign(
+            {
+                id: user.id,
+                role: "employee",
+                name: user.full_name,
+                username: user.email || user.employee_code,
+                client_id: user.client_id,
+                site_id: user.site_id,
+                is_first_login: user.is_first_login
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Employee login successful",
+            token,
+            user: {
+                id: user.id,
+                name: user.full_name,
+                username: user.email || user.employee_code,
+                role: "employee",
+                client_id: user.client_id,
+                site_id: user.site_id,
+                is_first_login: user.is_first_login
+            }
+        });
+
+    } catch (error) {
+        console.error("Verify OTP Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
 module.exports = {
     login,
     logout,
     updateProfileController,
     requestDeviceRegistration,
     getMyPermissions,
-    getActiveUsersController
+    getActiveUsersController,
+    verifyOtp
 };
