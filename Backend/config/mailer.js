@@ -1,12 +1,12 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "mail.thesafety360.com",
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT, 10),
     secure: false, // 587 is STARTTLS, so secure should be false
     auth: {
-        user: process.env.SMTP_USER || "noreply@thesafety360.com",
-        pass: process.env.SMTP_PASS || "Jeenweb@123",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
     },
     tls: {
         rejectUnauthorized: false // bypass SSL verification issues if any
@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const sendOtpEmail = async (toEmail, otp) => {
     const mailOptions = {
-        from: process.env.SMTP_FROM || '"Safety360" <noreply@thesafety360.com>',
+        from: process.env.SMTP_FROM,
         to: toEmail,
         subject: "Safety360 - Login OTP",
         html: `
