@@ -50,6 +50,12 @@ const createEmployeesTable = async () => {
     try {
         await db.execute("ALTER TABLE employees ADD UNIQUE INDEX idx_employees_email (email)");
     } catch (e6) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN otp VARCHAR(6) DEFAULT NULL AFTER is_first_login");
+    } catch (e7) {}
+    try {
+        await db.execute("ALTER TABLE employees ADD COLUMN otp_expiry TIMESTAMP NULL DEFAULT NULL AFTER otp");
+    } catch (e8) {}
 
     console.log("Employees table ready");
 };

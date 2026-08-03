@@ -4,6 +4,7 @@ const { getQuestionPaperById } = require('../models/questionPaperModel.js');
 const { getFeedbackPaperById } = require('../models/feedbackPaperModel.js');
 const { saveEmployeeFeedback, getFeedbackByBatchAndEmployee } = require('../models/feedbackResponseModel.js');
 const { saveExamSubmission } = require('../models/examSubmissionModel.js');
+const { sendOtpEmail } = require('../config/mailer.js');
 
 const getMyTestsController = async (req, res) => {
     try {
@@ -513,39 +514,93 @@ const getMyDashboardController = async (req, res) => {
     }
 };
 
+const sendChangePasswordOtpController = async (req, res) => {
+    try {
+        const employeeId = req.user.id;
+        if (req.user.role !== 'employee') {
+            return res.status(403).json({ success: false, message: 'Access denied. Employees only.' });
+        }
+
+        // Fetch employee details
+        const [rows] = await db.execute("SELECT email, full_name FROM employees WHERE id = ?", [employeeId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Employee not found' });
+        }
+
+        const user = rows[0];
+        if (!user.email) {
+            return res.status(400).json({ success: false, message: 'Employee does not have a registered email address.' });
+        }
+
+        // Generate a random 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        // Save OTP and set expiry (10 minutes from now)
+        await db.execute(
+            "UPDATE employees SET otp = ?, otp_expiry = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE id = ?",
+            [otp, employeeId]
+        );
+
+        console.log(`[PASSWORD CHANGE OTP] Generated OTP for employee ${user.email || user.full_name}: ${otp}`);
+
+        // Send OTP email
+        try {
+            await sendOtpEmail(user.email, otp);
+            console.log(`[PASSWORD CHANGE OTP] OTP email sent successfully to ${user.email}`);
+        } catch (mailErr) {
+            console.error(`[PASSWORD CHANGE OTP] Failed to send OTP email to ${user.email}:`, mailErr);
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully to your registered email address."
+        });
+    } catch (error) {
+        console.error("Send Change Password OTP Error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 const changePasswordController = async (req, res) => {
     try {
         const employeeId = req.user.id;
-        const { oldPassword, newPassword } = req.body;
+        const { otp, newPassword } = req.body;
 
         if (req.user.role !== 'employee') {
             return res.status(403).json({ success: false, message: 'Access denied. Employees only.' });
         }
 
-        if (!oldPassword || !newPassword) {
-            return res.status(400).json({ success: false, message: 'Old password and new password are required' });
+        if (!newPassword) {
+            return res.status(400).json({ success: false, message: 'New password is required' });
         }
 
         // Fetch employee
-        const [rows] = await db.execute("SELECT password FROM employees WHERE id = ?", [employeeId]);
+        const [rows] = await db.execute("SELECT password, is_first_login, otp, otp_expiry FROM employees WHERE id = ?", [employeeId]);
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Employee not found' });
         }
 
         const employee = rows[0];
 
-        // Compare old password
-        const isMatch = await bcrypt.compare(oldPassword, employee.password);
-        if (!isMatch) {
-            return res.status(400).json({ success: false, message: 'Invalid current password' });
+        // Compare OTP ONLY if it is NOT the first login
+        if (employee.is_first_login !== 1 && employee.is_first_login !== true) {
+            if (!otp) {
+                return res.status(400).json({ success: false, message: 'Verification OTP is required' });
+            }
+            if (!employee.otp || employee.otp !== otp) {
+                return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            }
+            const otpExpiry = new Date(employee.otp_expiry);
+            if (otpExpiry < new Date()) {
+                return res.status(400).json({ success: false, message: 'OTP has expired' });
+            }
         }
 
         // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Update password and set is_first_login to 0
+        // Update password and clear OTP/expiry, set is_first_login to 0
         await db.execute(
-            "UPDATE employees SET password = ?, is_first_login = 0 WHERE id = ?",
+            "UPDATE employees SET password = ?, is_first_login = 0, otp = NULL, otp_expiry = NULL WHERE id = ?",
             [hashedPassword, employeeId]
         );
 
@@ -561,5 +616,6 @@ module.exports = {
     getTestDetailsController,
     submitTestController,
     getMyDashboardController,
-    changePasswordController
+    changePasswordController,
+    sendChangePasswordOtpController
 };
