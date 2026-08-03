@@ -21,6 +21,9 @@ const MASTERS = [
   { key: "question_paper",           label: "Question Paper Master" },
   { key: "employee_master",          label: "Employee Master" },
   { key: "batch_master",             label: "Batch Master" },
+  { key: "feedback_question_bank",   label: "Feedback Question Bank Master" },
+  { key: "feedback_papers",          label: "Feedback Paper Master" },
+  { key: "activity_report",          label: "Activity Report" },
 ];
 
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];

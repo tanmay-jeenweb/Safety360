@@ -549,7 +549,7 @@ export default function Navbar() {
                         )}
 
                         {/* Activity Report Tab */}
-                        {isAdmin && (
+                        {(isAdmin || hasPermission("activity_report", "read")) && (
                             <div className="relative">
                                 <button
                                     onClick={() => navigate("/admin/report")}
