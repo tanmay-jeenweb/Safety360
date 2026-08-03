@@ -111,30 +111,41 @@ export default function CreateTrainingModule() {
         }
     };
 
+    /* Shared input class */
+    const inputClass =
+        "w-full box-border border-[1.5px] border-slate-300 rounded-[9px] px-3.5 py-[11px] text-sm outline-none text-slate-800 bg-white focus:border-[#253361] transition-colors";
+
+    const inputSmClass =
+        "w-full box-border border-[1.5px] border-slate-300 rounded-[9px] px-3 py-[10px] text-sm outline-none text-slate-800 bg-white focus:border-[#253361] transition-colors";
+
+    const sectionHeadingClass =
+        "mt-0 mb-4 text-[15px] font-bold text-[#253361] uppercase tracking-[0.05em] border-b-[1.5px] border-slate-100 pb-2";
+
+    const labelClass = "block text-[13px] font-bold text-slate-500 mb-1.5";
+    const labelSmClass = "block text-xs font-bold text-slate-500 mb-1.5";
+
     return (
-        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter',sans-serif" }}>
+        <div className="flex flex-col min-h-screen bg-slate-50 font-['Inter',sans-serif]">
             <Navbar title="CRM Admin" />
 
-            <main style={{ flex: 1, padding: "32px 30px", maxWidth: 900, width: "100%", margin: "0 auto", boxSizing: "border-box" }}>
+            <main className="flex-1 px-[30px] py-8 w-full mx-auto box-border">
                 {/* Top Bar Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#1e293b" }}>
+                        <h1 className="m-0 text-2xl font-bold text-slate-800">
                             {isEditMode ? "Edit Training Module" : "Create New Training Module"}
                         </h1>
-                        <p style={{ margin: "4px 0 0", fontSize: 14, color: "#64748b" }}>
-                            {isEditMode ? "Modify module details and settings below" : "Fill out the fields to add a new training module to the system"}
+                        <p className="mt-1 mb-0 text-sm text-slate-500">
+                            {isEditMode
+                                ? "Modify module details and settings below"
+                                : "Fill out the fields to add a new training module to the system"}
                         </p>
                     </div>
                     <button
                         onClick={() => navigate("/admin/training-modules")}
-                        style={{
-                            padding: "9px 18px", borderRadius: 9, border: "1.5px solid #cbd5e1",
-                            background: "#fff", color: "#475569", fontWeight: 600, fontSize: 13, cursor: "pointer",
-                            display: "flex", alignItems: "center", gap: 6
-                        }}
+                        className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-[9px] border-[1.5px] border-slate-300 bg-white text-slate-500 font-semibold text-[13px] cursor-pointer hover:bg-slate-50 transition-colors"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 16, height: 16 }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                         </svg>
                         Back to List
@@ -142,28 +153,28 @@ export default function CreateTrainingModule() {
                 </div>
 
                 {error && (
-                    <div style={{ background: "#fff1f2", border: "1px solid #fecdd3", color: "#be123c", padding: "12px 16px", borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500 }}>
+                    <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-[10px] mb-5 text-sm font-medium">
                         {error}
                     </div>
                 )}
 
                 {loading ? (
-                    <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>Loading module details...</div>
+                    <div className="text-center py-10 text-slate-500">Loading module details...</div>
                 ) : (
-                    <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.06)", overflow: "hidden", border: "1px solid #e2e8f0" }}>
-                        <div style={{ padding: "28px" }}>
-                            
+                    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden border border-slate-200">
+                        <div className="p-7">
+
                             {/* Section 1: Basic Module Info */}
-                            <div style={{ marginBottom: 24 }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                            <div className="mb-6">
+                                <h3 className={sectionHeadingClass}>
                                     1. Basic Module Details
                                 </h3>
 
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                <div className="grid grid-cols-2 gap-5">
                                     {/* Module Name */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                            Module Name <span style={{ color: "#e11d48" }}>*</span>
+                                        <label className={labelClass}>
+                                            Module Name <span className="text-rose-600">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -171,25 +182,21 @@ export default function CreateTrainingModule() {
                                             value={formData.moduleName}
                                             onChange={handleChange}
                                             placeholder="Enter module name..."
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputClass}
                                             required
                                         />
                                     </div>
 
                                     {/* Category Lookup Dropdown */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
-                                            Category <span style={{ color: "#e11d48" }}>*</span>
+                                        <label className={labelClass}>
+                                            Category <span className="text-rose-600">*</span>
                                         </label>
                                         <select
                                             name="categoryId"
                                             value={formData.categoryId}
                                             onChange={handleChange}
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputClass}
                                             required
                                         >
                                             <option value="">-- Select Category --</option>
@@ -204,15 +211,15 @@ export default function CreateTrainingModule() {
                             </div>
 
                             {/* Section 2: Timing & Evaluation */}
-                            <div style={{ marginBottom: 24 }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
-                                    2. Duration & Evaluation Settings
+                            <div className="mb-6">
+                                <h3 className={sectionHeadingClass}>
+                                    2. Duration &amp; Evaluation Settings
                                 </h3>
 
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16 }}>
+                                <div className="grid grid-cols-4 gap-4">
                                     {/* Duration (Hours) */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        <label className={labelSmClass}>
                                             Duration (Hours)
                                         </label>
                                         <input
@@ -223,15 +230,13 @@ export default function CreateTrainingModule() {
                                             value={formData.durationHours}
                                             onChange={handleChange}
                                             placeholder="e.g. 2"
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputSmClass}
                                         />
                                     </div>
 
                                     {/* Validity (Months) */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        <label className={labelSmClass}>
                                             Validity (Months)
                                         </label>
                                         <input
@@ -241,15 +246,13 @@ export default function CreateTrainingModule() {
                                             value={formData.validityMonths}
                                             onChange={handleChange}
                                             placeholder="e.g. 12"
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputSmClass}
                                         />
                                     </div>
 
                                     {/* Passing Marks (%) */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        <label className={labelSmClass}>
                                             Passing Marks (%)
                                         </label>
                                         <input
@@ -260,15 +263,13 @@ export default function CreateTrainingModule() {
                                             value={formData.passingMarks}
                                             onChange={handleChange}
                                             placeholder="e.g. 80"
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputSmClass}
                                         />
                                     </div>
 
                                     {/* Refresher (Months) */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        <label className={labelSmClass}>
                                             Refresher (Months)
                                         </label>
                                         <input
@@ -278,24 +279,22 @@ export default function CreateTrainingModule() {
                                             value={formData.refresherMonths}
                                             onChange={handleChange}
                                             placeholder="e.g. 6"
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "10px 12px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputSmClass}
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Section 3: Assessment Questions */}
-                            <div style={{ marginBottom: 24 }}>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                            <div className="mb-6">
+                                <h3 className={sectionHeadingClass}>
                                     3. Test Questions Count
                                 </h3>
 
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                <div className="grid grid-cols-2 gap-5">
                                     {/* Pre-Test Qs */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        <label className={labelClass}>
                                             Pre-Test Qs (Count)
                                         </label>
                                         <input
@@ -305,15 +304,13 @@ export default function CreateTrainingModule() {
                                             value={formData.preTestQs}
                                             onChange={handleChange}
                                             placeholder="e.g. 5"
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputClass}
                                         />
                                     </div>
 
                                     {/* Post-Test Qs */}
                                     <div>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        <label className={labelClass}>
                                             Post-Test Qs (Count)
                                         </label>
                                         <input
@@ -323,9 +320,7 @@ export default function CreateTrainingModule() {
                                             value={formData.postTestQs}
                                             onChange={handleChange}
                                             placeholder="e.g. 10"
-                                            style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b" }}
-                                            onFocus={e => e.target.style.borderColor = "#253361"}
-                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            className={inputClass}
                                         />
                                     </div>
                                 </div>
@@ -333,36 +328,36 @@ export default function CreateTrainingModule() {
 
                             {/* Section 4: Options & Requirements */}
                             <div>
-                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
-                                    4. Requirements & Options
+                                <h3 className={sectionHeadingClass}>
+                                    4. Requirements &amp; Options
                                 </h3>
 
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                <div className="grid grid-cols-2 gap-5">
                                     {/* Practical Required Radio */}
-                                    <div style={{ background: "#f8fafc", padding: "14px 18px", borderRadius: 10, border: "1px solid #e2e8f0" }}>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+                                    <div className="bg-slate-50 px-[18px] py-3.5 rounded-[10px] border border-slate-200">
+                                        <label className="block text-[13px] font-bold text-slate-500 mb-2.5">
                                             Practical Required?
                                         </label>
-                                        <div style={{ display: "flex", gap: 24 }}>
-                                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 600, color: "#1e293b" }}>
+                                        <div className="flex gap-6">
+                                            <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-800">
                                                 <input
                                                     type="radio"
                                                     name="practicalRequired"
                                                     value="Yes"
                                                     checked={formData.practicalRequired === "Yes"}
                                                     onChange={handleChange}
-                                                    style={{ accentColor: "#253361", width: 16, height: 16 }}
+                                                    className="accent-[#253361] w-4 h-4"
                                                 />
                                                 Yes
                                             </label>
-                                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 600, color: "#1e293b" }}>
+                                            <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-800">
                                                 <input
                                                     type="radio"
                                                     name="practicalRequired"
                                                     value="No"
                                                     checked={formData.practicalRequired === "No"}
                                                     onChange={handleChange}
-                                                    style={{ accentColor: "#253361", width: 16, height: 16 }}
+                                                    className="accent-[#253361] w-4 h-4"
                                                 />
                                                 No
                                             </label>
@@ -370,30 +365,30 @@ export default function CreateTrainingModule() {
                                     </div>
 
                                     {/* Certificate Applicable Radio */}
-                                    <div style={{ background: "#f8fafc", padding: "14px 18px", borderRadius: 10, border: "1px solid #e2e8f0" }}>
-                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+                                    <div className="bg-slate-50 px-[18px] py-3.5 rounded-[10px] border border-slate-200">
+                                        <label className="block text-[13px] font-bold text-slate-500 mb-2.5">
                                             Certificate Applicable?
                                         </label>
-                                        <div style={{ display: "flex", gap: 24 }}>
-                                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 600, color: "#1e293b" }}>
+                                        <div className="flex gap-6">
+                                            <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-800">
                                                 <input
                                                     type="radio"
                                                     name="certificateApplicable"
                                                     value="Yes"
                                                     checked={formData.certificateApplicable === "Yes"}
                                                     onChange={handleChange}
-                                                    style={{ accentColor: "#253361", width: 16, height: 16 }}
+                                                    className="accent-[#253361] w-4 h-4"
                                                 />
                                                 Yes
                                             </label>
-                                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontWeight: 600, color: "#1e293b" }}>
+                                            <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-800">
                                                 <input
                                                     type="radio"
                                                     name="certificateApplicable"
                                                     value="No"
                                                     checked={formData.certificateApplicable === "No"}
                                                     onChange={handleChange}
-                                                    style={{ accentColor: "#253361", width: 16, height: 16 }}
+                                                    className="accent-[#253361] w-4 h-4"
                                                 />
                                                 No
                                             </label>
@@ -404,25 +399,23 @@ export default function CreateTrainingModule() {
                         </div>
 
                         {/* Form Footer Action Buttons */}
-                        <div style={{ padding: "20px 28px", borderTop: "1px solid #f1f5f9", background: "#fafafa", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+                        <div className="px-7 py-5 border-t border-slate-100 bg-[#fafafa] flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={() => navigate("/admin/training-modules")}
                                 disabled={saving}
-                                style={{ padding: "10px 22px", borderRadius: 9, border: "1.5px solid #cbd5e1", background: "#fff", color: "#475569", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
+                                className="px-[22px] py-2.5 rounded-[9px] border-[1.5px] border-slate-300 bg-white text-slate-500 font-semibold text-sm cursor-pointer hover:bg-slate-50 transition-colors disabled:opacity-60"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={saving}
-                                style={{
-                                    padding: "10px 28px", borderRadius: 9, border: "none",
-                                    background: saving ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
-                                    color: "#fff", fontWeight: 700, fontSize: 14,
-                                    cursor: saving ? "not-allowed" : "pointer",
-                                    boxShadow: saving ? "none" : "0 3px 10px rgba(37,51,97,0.3)"
-                                }}
+                                className={`px-7 py-2.5 rounded-[9px] border-none text-white font-bold text-sm transition-all
+                                    ${saving
+                                        ? "bg-slate-400 cursor-not-allowed shadow-none"
+                                        : "bg-gradient-to-br from-[#253361] to-[#1a2446] cursor-pointer shadow-[0_3px_10px_rgba(37,51,97,0.3)] hover:opacity-90"
+                                    }`}
                             >
                                 {saving ? "Saving…" : isEditMode ? "Save Changes" : "Create Training Module"}
                             </button>
