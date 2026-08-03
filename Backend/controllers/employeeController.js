@@ -20,7 +20,9 @@ const addEmployee = async (req, res) => {
             contractorName,
             clientId,
             siteId,
-            phoneNo
+            phoneNo,
+            email,
+            joiningDate
         } = req.body;
 
         const addedBy = req.user.id;
@@ -47,6 +49,12 @@ const addEmployee = async (req, res) => {
         if (!phoneNo || !phoneNo.trim()) {
             return res.status(400).json({ success: false, message: 'Phone Number is required' });
         }
+        if (!email || !email.trim()) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+        if (!joiningDate) {
+            return res.status(400).json({ success: false, message: 'Joining Date is required' });
+        }
         if (!clientId) {
             return res.status(400).json({ success: false, message: 'Client is required' });
         }
@@ -65,6 +73,8 @@ const addEmployee = async (req, res) => {
             contractorName: employeeType === 'Contractor' ? contractorName.trim() : null,
             phoneNo: phoneNo.trim(),
             password: hashedPassword,
+            email: email.trim(),
+            joiningDate,
             clientId: parseInt(clientId, 10),
             siteId: parseInt(siteId, 10)
         };
@@ -93,7 +103,7 @@ const addEmployee = async (req, res) => {
     } catch (error) {
         console.error('Error adding employee:', error);
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'Employee Code already exists' });
+            return res.status(400).json({ success: false, message: 'Employee Code or Email already exists' });
         }
         res.status(500).json({
             success: false,
@@ -131,7 +141,9 @@ const updateEmployeeController = async (req, res) => {
             contractorName,
             clientId,
             siteId,
-            phoneNo
+            phoneNo,
+            email,
+            joiningDate
         } = req.body;
 
         if (!employeeCode || !employeeCode.trim()) {
@@ -155,6 +167,12 @@ const updateEmployeeController = async (req, res) => {
         if (!phoneNo || !phoneNo.trim()) {
             return res.status(400).json({ success: false, message: 'Phone Number is required' });
         }
+        if (!email || !email.trim()) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+        if (!joiningDate) {
+            return res.status(400).json({ success: false, message: 'Joining Date is required' });
+        }
         if (!clientId) {
             return res.status(400).json({ success: false, message: 'Client is required' });
         }
@@ -176,6 +194,8 @@ const updateEmployeeController = async (req, res) => {
             employeeType,
             contractorName: employeeType === 'Contractor' ? contractorName.trim() : null,
             phoneNo: phoneNo.trim(),
+            email: email.trim(),
+            joiningDate,
             clientId: parseInt(clientId, 10),
             siteId: parseInt(siteId, 10)
         };
@@ -201,7 +221,7 @@ const updateEmployeeController = async (req, res) => {
     } catch (error) {
         console.error('Error updating employee:', error);
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ success: false, message: 'Employee Code already exists' });
+            return res.status(400).json({ success: false, message: 'Employee Code or Email already exists' });
         }
         res.status(500).json({
             success: false,

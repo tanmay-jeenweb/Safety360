@@ -39,3 +39,7 @@ export const getTestDetails = async (batchId, testType) => {
 export const submitTest = async (payload) => {
     return apiClient.post("/employees/submit-test", payload);
 };
+
+export const sendChangePasswordOtp = async () => {
+    return apiClient.post("/employees/send-change-password-otp");
+};

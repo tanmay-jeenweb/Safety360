@@ -11,7 +11,8 @@ const {
     getTestDetailsController,
     submitTestController,
     getMyDashboardController,
-    changePasswordController
+    changePasswordController,
+    sendChangePasswordOtpController
 } = require('../controllers/employeePortalController.js');
 const { verifyToken, verifyPermission } = require('../middleware/authMiddleware.js');
 
@@ -23,6 +24,7 @@ router.get('/my-dashboard', verifyToken, getMyDashboardController);
 router.get('/test-details/:batchId/:testType', verifyToken, getTestDetailsController);
 router.post('/submit-test', verifyToken, submitTestController);
 router.post('/change-password', verifyToken, changePasswordController);
+router.post('/send-change-password-otp', verifyToken, sendChangePasswordOtpController);
 
 router.post('/add', verifyToken, verifyPermission('employee_master', 'write'), addEmployee);
 router.post('/import', verifyToken, verifyPermission('employee_master', 'write'), importEmployeesController);

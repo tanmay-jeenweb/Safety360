@@ -18,6 +18,8 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
     const [employeeType, setEmployeeType] = useState("Direct");
     const [contractorName, setContractorName] = useState("");
     const [phoneNo, setPhoneNo] = useState("");
+    const [email, setEmail] = useState("");
+    const [joiningDate, setJoiningDate] = useState("");
     const [clientId, setClientId] = useState("");
     const [siteId, setSiteId] = useState("");
 
@@ -26,6 +28,11 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
         if (!clientId) return [];
         return sites.filter(s => String(s.client_id) === String(clientId));
     }, [sites, clientId]);
+
+    const formatForInput = (dateStr) => {
+        if (!dateStr) return "";
+        return dateStr.substring(0, 10);
+    };
 
     useEffect(() => {
         if (editingRow) {
@@ -36,6 +43,8 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             setEmployeeType(editingRow.employee_type || "Direct");
             setContractorName(editingRow.contractor_name || "");
             setPhoneNo(editingRow.phone_no || "");
+            setEmail(editingRow.email || "");
+            setJoiningDate(formatForInput(editingRow.joining_date));
             setClientId(editingRow.client_id || "");
             setSiteId(editingRow.site_id || "");
         } else {
@@ -46,6 +55,8 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             setEmployeeType("Direct");
             setContractorName("");
             setPhoneNo("");
+            setEmail("");
+            setJoiningDate("");
             setClientId("");
             setSiteId("");
         }
@@ -78,12 +89,25 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             toast.error("Designation is required");
             return;
         }
-        if (employeeType === "Contractor" && !contractorName.trim()) {
-            toast.error("Contractor Name is required when Employee Type is Contractor");
-            return;
-        }
         if (!phoneNo.trim()) {
             toast.error("Phone Number is required");
+            return;
+        }
+        if (!email.trim()) {
+            toast.error("Email is required");
+            return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+        if (!joiningDate) {
+            toast.error("Joining Date is required");
+            return;
+        }
+        if (employeeType === "Contractor" && !contractorName.trim()) {
+            toast.error("Contractor Name is required when Employee Type is Contractor");
             return;
         }
         if (!clientId) {
@@ -103,6 +127,8 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
             employeeType,
             contractorName: employeeType === "Contractor" ? contractorName.trim() : null,
             phoneNo: phoneNo.trim(),
+            email: email.trim(),
+            joiningDate,
             clientId,
             siteId
         });
@@ -210,6 +236,35 @@ function EmployeeFormModal({ isOpen, onClose, onSave, editingRow, saving, depart
                                     value={phoneNo}
                                     onChange={(e) => setPhoneNo(e.target.value)}
                                     placeholder="Enter phone number..."
+                                    className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-2.5 px-3 text-[14px] outline-none text-[#1e293b] focus:border-[#253361] transition-colors duration-200"
+                                    required
+                                />
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-1.5">
+                                    Email <span className="text-[#e11d48]">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="e.g. employee@company.com"
+                                    className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-2.5 px-3 text-[14px] outline-none text-[#1e293b] focus:border-[#253361] transition-colors duration-200"
+                                    required
+                                />
+                            </div>
+
+                            {/* Joining Date */}
+                            <div>
+                                <label className="block text-[12px] font-bold text-[#475569] uppercase tracking-[0.05em] mb-1.5">
+                                    Joining Date <span className="text-[#e11d48]">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={joiningDate}
+                                    onChange={(e) => setJoiningDate(e.target.value)}
                                     className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-2.5 px-3 text-[14px] outline-none text-[#1e293b] focus:border-[#253361] transition-colors duration-200"
                                     required
                                 />
@@ -356,6 +411,8 @@ export default function EmployeeMaster() {
                 "Employee Type",
                 "Contractor Name",
                 "Phone Number",
+                "Email",
+                "Joining Date",
                 "Client",
                 "Site"
             ];
@@ -423,7 +480,7 @@ export default function EmployeeMaster() {
                 error: "Please select Direct or Contractor."
             });
 
-            worksheet.dataValidations.add("H2:H10000", {
+            worksheet.dataValidations.add("J2:J10000", {
                 type: "list",
                 allowBlank: true,
                 formulae: [clientRange],
@@ -432,7 +489,7 @@ export default function EmployeeMaster() {
                 error: "Please select a client from the dropdown list."
             });
 
-            worksheet.dataValidations.add("I2:I10000", {
+            worksheet.dataValidations.add("K2:K10000", {
                 type: "list",
                 allowBlank: true,
                 formulae: [siteRange],
@@ -496,6 +553,19 @@ export default function EmployeeMaster() {
                     return foundKey ? row[foundKey] : null;
                 };
 
+                const formatDate = (val) => {
+                    if (!val) return null;
+                    if (typeof val === 'number') {
+                        const date = new Date((val - 25569) * 86400 * 1000);
+                        return date.toISOString().split('T')[0];
+                    }
+                    const d = new Date(val);
+                    if (!isNaN(d.getTime())) {
+                        return d.toISOString().split('T')[0];
+                    }
+                    return val;
+                };
+
                 const mappedRecords = jsonData.map((row) => {
                     const empCode = getVal(row, ["employee code", "employee_code", "code", "emp code"]);
                     const fullName = getVal(row, ["full name", "full_name", "name", "employee name"]);
@@ -504,6 +574,8 @@ export default function EmployeeMaster() {
                     const employeeType = getVal(row, ["employee type", "employee_type", "type"]) || "Direct";
                     const contractorName = getVal(row, ["contractor name", "contractor_name", "contractor"]);
                     const phoneNo = getVal(row, ["phone number", "phone_no", "phone", "phone no", "phone no."]);
+                    const email = getVal(row, ["email", "email_id", "email id"]);
+                    const joiningDate = getVal(row, ["joining date", "joining_date", "date of joining", "doj"]);
                     const clientName = getVal(row, ["client", "client_name", "client_id"]);
                     const siteName = getVal(row, ["site", "site_name", "site_id"]);
 
@@ -515,6 +587,8 @@ export default function EmployeeMaster() {
                         employeeType: employeeType ? String(employeeType).trim() : "Direct",
                         contractorName: contractorName ? String(contractorName).trim() : null,
                         phoneNo: phoneNo ? String(phoneNo).trim() : null,
+                        email: email ? String(email).trim() : null,
+                        joiningDate: formatDate(joiningDate),
                         clientName: clientName ? String(clientName).trim() : null,
                         siteName: siteName ? String(siteName).trim() : null
                     };
@@ -657,6 +731,20 @@ export default function EmployeeMaster() {
                 key: "phone_no",
                 label: "Phone No.",
                 render: (row) => <span className="font-semibold text-[#1e293b]">{row.phone_no || "—"}</span>
+            },
+            {
+                key: "email",
+                label: "Email",
+                render: (row) => <span className="font-semibold text-[#1e293b]">{row.email || "—"}</span>
+            },
+            {
+                key: "joining_date",
+                label: "Joining Date",
+                render: (row) => {
+                    if (!row.joining_date) return "—";
+                    const date = new Date(row.joining_date);
+                    return <span className="font-semibold text-[#475569]">{date.toLocaleDateString('en-GB')}</span>;
+                }
             },
             {
                 key: "employee_type",
