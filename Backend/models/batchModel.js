@@ -278,6 +278,7 @@ const createBatchParticipantsTable = async () => {
             post_test_score INT DEFAULT NULL,
             final_score INT DEFAULT NULL,
             band_badge VARCHAR(50) DEFAULT 'UNTESTED',
+            allow_training_exception TINYINT(1) DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE,
@@ -287,6 +288,14 @@ const createBatchParticipantsTable = async () => {
     `;
     await db.execute(query);
     console.log("Batch participants table ready");
+
+    // Dynamic schema migration
+    try {
+        await db.execute("ALTER TABLE batch_participants ADD COLUMN allow_training_exception TINYINT(1) DEFAULT 0");
+        console.log("Migration: Added allow_training_exception column to batch_participants table");
+    } catch (err) {
+        // Ignored if column already exists
+    }
 };
 
 const createPostTestAttemptsTable = async () => {
@@ -322,13 +331,17 @@ const getParticipantsByBatchId = async (batchId) => {
             bp.post_test_score,
             bp.final_score,
             bp.band_badge,
+            bp.allow_training_exception,
             e.employee_code,
             e.full_name,
             e.employee_type,
             e.contractor_name,
-            (SELECT COUNT(*) FROM post_test_attempts pta WHERE pta.batch_id = bp.batch_id AND pta.employee_id = bp.employee_id) AS post_test_attempts_count
+            (SELECT COUNT(*) FROM post_test_attempts pta WHERE pta.batch_id = bp.batch_id AND pta.employee_id = bp.employee_id) AS post_test_attempts_count,
+            etr.status AS exception_status,
+            etr.comments AS exception_comments
         FROM batch_participants bp
         INNER JOIN employees e ON bp.employee_id = e.id
+        LEFT JOIN employee_training_requests etr ON bp.batch_id = etr.batch_id AND bp.employee_id = etr.employee_id
         WHERE bp.batch_id = ?
         ORDER BY e.full_name ASC
     `;
@@ -362,7 +375,8 @@ const updateParticipantDetails = async (batchId, employeeId, data) => {
             pre_test_score = COALESCE(?, pre_test_score),
             post_test_score = COALESCE(?, post_test_score),
             final_score = COALESCE(?, final_score),
-            band_badge = COALESCE(?, band_badge)
+            band_badge = COALESCE(?, band_badge),
+            allow_training_exception = COALESCE(?, allow_training_exception)
         WHERE batch_id = ? AND employee_id = ?
     `;
     const params = [
@@ -371,11 +385,106 @@ const updateParticipantDetails = async (batchId, employeeId, data) => {
         data.postTestScore !== undefined ? data.postTestScore : null,
         data.finalScore !== undefined ? data.finalScore : null,
         data.bandBadge !== undefined ? data.bandBadge : null,
+        data.allowTrainingException !== undefined ? (data.allowTrainingException ? 1 : 0) : null,
         batchId,
         employeeId
     ];
     const [result] = await db.execute(query, params);
     return result;
+};
+
+// ─── Employee Training Exception Requests Table & Helpers ─────────────────────
+const createEmployeeTrainingRequestsTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS employee_training_requests (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            batch_id INT NOT NULL,
+            employee_id INT NOT NULL,
+            requested_by INT NOT NULL,
+            comments TEXT DEFAULT NULL,
+            status VARCHAR(50) DEFAULT 'Pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE,
+            FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+            FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_batch_employee_req (batch_id, employee_id)
+        )
+    `;
+    await db.execute(query);
+    console.log("Employee training requests table ready");
+};
+
+const createTrainingExceptionRequest = async (batchId, employeeId, requestedBy, comments) => {
+    const query = `
+        INSERT INTO employee_training_requests (batch_id, employee_id, requested_by, comments, status)
+        VALUES (?, ?, ?, ?, 'Pending')
+        ON DUPLICATE KEY UPDATE status = 'Pending', comments = ?, requested_by = ?, updated_at = CURRENT_TIMESTAMP
+    `;
+    const [result] = await db.execute(query, [batchId, employeeId, requestedBy, comments, comments, requestedBy]);
+    return result;
+};
+
+const getAllTrainingExceptionRequests = async () => {
+    const query = `
+        SELECT 
+            etr.id,
+            etr.batch_id,
+            etr.employee_id,
+            etr.requested_by,
+            etr.comments,
+            etr.status,
+            etr.created_at,
+            etr.updated_at,
+            e.employee_code,
+            e.full_name AS employee_name,
+            u.name AS requester_name,
+            tm.module_name
+        FROM employee_training_requests etr
+        INNER JOIN employees e ON etr.employee_id = e.id
+        INNER JOIN users u ON etr.requested_by = u.id
+        INNER JOIN batches b ON etr.batch_id = b.id
+        INNER JOIN training_modules tm ON b.training_module_id = tm.id
+        ORDER BY etr.created_at DESC
+    `;
+    const [results] = await db.execute(query);
+    return results;
+};
+
+const updateTrainingExceptionRequestStatus = async (requestId, status) => {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        
+        // Update request status
+        await connection.execute(
+            "UPDATE employee_training_requests SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            [status, requestId]
+        );
+        
+        // If Approved, update batch_participants to set allow_training_exception = 1
+        if (status === 'Approved') {
+            const [reqRows] = await connection.execute(
+                "SELECT batch_id, employee_id FROM employee_training_requests WHERE id = ?",
+                [requestId]
+            );
+            if (reqRows.length > 0) {
+                const { batch_id, employee_id } = reqRows[0];
+                await connection.execute(
+                    "UPDATE batch_participants SET allow_training_exception = 1 WHERE batch_id = ? AND employee_id = ?",
+                    [batch_id, employee_id]
+                );
+            }
+        }
+        
+        await connection.commit();
+        return true;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 };
 
 module.exports = {
@@ -390,6 +499,10 @@ module.exports = {
     addParticipantToBatch,
     removeParticipantFromBatch,
     updateParticipantDetails,
-    createPostTestAttemptsTable
+    createPostTestAttemptsTable,
+    createEmployeeTrainingRequestsTable,
+    createTrainingExceptionRequest,
+    getAllTrainingExceptionRequests,
+    updateTrainingExceptionRequestStatus
 };
 

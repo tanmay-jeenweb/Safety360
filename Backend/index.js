@@ -45,7 +45,7 @@ const { createDepartmentsTable } = require("./models/departmentModel.js");
 const { createQuestionBankTable } = require("./models/questionBankModel.js");
 const { createQuestionPaperTable } = require("./models/questionPaperModel.js");
 const { createEmployeesTable } = require("./models/employeeModel.js");
-const { createBatchesTable, createBatchParticipantsTable, createPostTestAttemptsTable } = require("./models/batchModel.js");
+const { createBatchesTable, createBatchParticipantsTable, createPostTestAttemptsTable, createEmployeeTrainingRequestsTable } = require("./models/batchModel.js");
 const { createFeedbackQuestionBankTable } = require("./models/feedbackQuestionBankModel.js");
 const { createFeedbackPapersTable } = require("./models/feedbackPaperModel.js");
 const { createEmployeeFeedbacksTable } = require("./models/feedbackResponseModel.js");
@@ -144,6 +144,7 @@ const startServer = async () => {
         await createBatchesTable();
         await createBatchParticipantsTable();
         await createPostTestAttemptsTable();
+        await createEmployeeTrainingRequestsTable();
         await createFeedbackQuestionBankTable();
         await createFeedbackPapersTable();
         await createEmployeeFeedbacksTable();

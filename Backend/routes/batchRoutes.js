@@ -8,7 +8,10 @@ const {
     getBatchParticipantsController,
     addBatchParticipantController,
     removeBatchParticipantController,
-    updateBatchParticipantController
+    updateBatchParticipantController,
+    createExceptionRequestController,
+    getExceptionRequestsController,
+    updateExceptionStatusController
 } = require('../controllers/batchController.js');
 const { verifyToken, verifyPermission } = require('../middleware/authMiddleware.js');
 
@@ -24,6 +27,11 @@ router.get('/:id/participants', verifyToken, verifyPermission('batch_master', 'r
 router.post('/:id/participants', verifyToken, verifyPermission('batch_master', 'update'), addBatchParticipantController);
 router.delete('/:id/participants/:employeeId', verifyToken, verifyPermission('batch_master', 'update'), removeBatchParticipantController);
 router.put('/:id/participants/:employeeId', verifyToken, verifyPermission('batch_master', 'update'), updateBatchParticipantController);
+
+// Training exceptions
+router.post('/request-exception', verifyToken, verifyPermission('employee_training_approval', 'read'), createExceptionRequestController);
+router.get('/exceptions/all', verifyToken, verifyPermission('employee_training_approval', 'read'), getExceptionRequestsController);
+router.put('/exceptions/:id/status', verifyToken, verifyPermission('employee_training_approval', 'write'), updateExceptionStatusController);
 
 module.exports = router;
 

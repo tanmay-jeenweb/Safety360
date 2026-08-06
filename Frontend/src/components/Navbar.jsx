@@ -538,11 +538,26 @@ export default function Navbar() {
                             <div className="relative">
                                 <button
                                     onClick={() => navigate("/admin/batches")}
-                                    className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname.startsWith("/admin/batches") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
+                                    className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname.startsWith("/admin/batches") && !location.pathname.includes("/allow-training") && !location.pathname.includes("/training-approvals") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
                                         }`}
                                 >
                                     <span className="flex items-center gap-2 font-semibold text-white truncate">
                                         Batches
+                                    </span>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Training Exceptions Tab */}
+                        {(isAdmin || hasPermission("employee_training_approval", "read")) && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => navigate(isAdmin || hasPermission("employee_training_approval", "write") ? "/admin/batches/training-approvals" : "/admin/batches/allow-training")}
+                                    className={`w-44 flex items-center justify-center px-4 py-2.5 text-sm border-r border-white/10 rounded-none focus:outline-none transition-all duration-200 font-semibold text-white cursor-pointer ${location.pathname.includes("/allow-training") || location.pathname.includes("/training-approvals") ? "bg-white/15" : "bg-[#253361] hover:bg-white/5"
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-2 font-semibold text-white truncate">
+                                        Exceptions
                                     </span>
                                 </button>
                             </div>

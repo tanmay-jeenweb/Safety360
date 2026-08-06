@@ -7,7 +7,8 @@ import {
     addBatchParticipant,
     removeBatchParticipant,
     updateBatchParticipant,
-    updateBatch
+    updateBatch,
+    requestTrainingException
 } from "../../../api/batchApi";
 import { getEmployees } from "../../../api/employeeApi";
 import { getTrainingModuleById } from "../../../api/trainingModuleApi";
@@ -17,6 +18,7 @@ import { getDepartments } from "../../../api/departmentApi";
 import { getClients } from "../../../api/clientApi";
 import { getSites } from "../../../api/siteApi";
 import toast from "react-hot-toast";
+import { usePermission } from "../../../context/PermissionContext";
 
 const STATUS_STEPS = [
     { label: "Draft Setup", value: "Draft" },
@@ -29,6 +31,7 @@ const STATUS_STEPS = [
 export default function ManageBatch() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { hasPermission, isAdmin } = usePermission();
 
     const [batch, setBatch] = useState(null);
     const [participants, setParticipants] = useState([]);
@@ -57,6 +60,11 @@ export default function ManageBatch() {
 
     const [feedbackPapers, setFeedbackPapers] = useState([]);
     const [selectedFeedbackPaperId, setSelectedFeedbackPaperId] = useState("");
+
+    // Custom Exception Request Modal states
+    const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
+    const [exceptionEmployeeId, setExceptionEmployeeId] = useState("");
+    const [exceptionComments, setExceptionComments] = useState("");
 
     // Fetch batch details, participants, and question papers
     const fetchData = async () => {
@@ -253,6 +261,28 @@ export default function ManageBatch() {
         }
     };
 
+    // Request exception for ineligible trainee - opens custom modal
+    const handleRequestException = (employeeId) => {
+        setExceptionEmployeeId(employeeId);
+        setExceptionComments("");
+        setIsExceptionModalOpen(true);
+    };
+
+    // Submits exception request from custom modal
+    const submitExceptionRequest = async () => {
+        try {
+            await requestTrainingException(batch.id, exceptionEmployeeId, exceptionComments || "Requested exception from Manage Batch page");
+            toast.success("Exception approval request submitted");
+            setIsExceptionModalOpen(false);
+            // Refresh
+            const partRes = await getBatchParticipants(id);
+            setParticipants(partRes.data.data || []);
+        } catch (err) {
+            console.error("Error submitting exception request:", err);
+            toast.error(err?.response?.data?.message || "Failed to submit exception request");
+        }
+    };
+
     // Helper to submit status advance
     const submitStatusAdvance = async (nextStatus, nextStatusLabel, additionalPayload = {}) => {
         setSubmitting(true);
@@ -345,6 +375,20 @@ export default function ManageBatch() {
         if (!batch) return "";
         return `BAT-b${String(batch.id).padStart(7, '0')}`;
     }, [batch]);
+
+    const isPastPreTest = useMemo(() => {
+        return batch && batch.status && ["training held", "posttest active", "closed"].includes(batch.status.toLowerCase());
+    }, [batch]);
+
+    const activeParticipants = useMemo(() => {
+        if (!isPastPreTest) return participants;
+        return participants.filter(p => p.pre_test_score !== null || p.allow_training_exception === 1);
+    }, [participants, isPastPreTest]);
+
+    const inactiveParticipants = useMemo(() => {
+        if (!isPastPreTest) return [];
+        return participants.filter(p => p.pre_test_score === null && p.allow_training_exception === 0);
+    }, [participants, isPastPreTest]);
 
     if (loading) {
         return (
@@ -638,6 +682,90 @@ export default function ManageBatch() {
                                     Activate Post-test
                                 </button>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Exception Justification Modal */}
+            {isExceptionModalOpen && (
+                <div 
+                    style={{
+                        position: "fixed", inset: 0, zIndex: 1000,
+                        background: "rgba(15,23,42,0.55)", backdropFilter: "blur(4px)",
+                        display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center", padding: 16
+                    }}
+                >
+                    <div 
+                        style={{
+                            background: "#fff", borderRadius: 18, width: "95%", maxWidth: 450, margin: "auto",
+                            boxShadow: "0 25px 60px rgba(0,0,0,0.2)", overflow: "hidden"
+                        }}
+                    >
+                        {/* Header */}
+                        <div 
+                            style={{
+                                padding: "20px 24px", borderBottom: "1px solid #f1f5f9",
+                                display: "flex", justifyContent: "space-between", alignItems: "center",
+                                background: "linear-gradient(135deg, #253361, #1a2446)"
+                            }}
+                        >
+                            <h3 style={{ margin: 0, color: "#fff", fontSize: 16, fontWeight: 800 }}>
+                                Request Exception Justification
+                            </h3>
+                            <button 
+                                onClick={() => setIsExceptionModalOpen(false)}
+                                style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 20 }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+                            <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
+                                Enter justification/reason for exception (optional):
+                            </label>
+                            <textarea
+                                value={exceptionComments}
+                                onChange={(e) => setExceptionComments(e.target.value)}
+                                placeholder="E.g., Trainee missed the pre-test because they were off-duty, but they have completed all preparatory material..."
+                                rows={4}
+                                style={{ 
+                                    width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
+                                    padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b", background: "#fff",
+                                    fontFamily: "inherit", resize: "none"
+                                }}
+                            />
+                        </div>
+
+                        {/* Footer */}
+                        <div 
+                            style={{
+                                padding: "16px 24px", borderTop: "1px solid #f1f5f9",
+                                display: "flex", justifyContent: "flex-end", gap: 12, background: "#fafafa"
+                            }}
+                        >
+                            <button
+                                onClick={() => setIsExceptionModalOpen(false)}
+                                style={{
+                                    padding: "9px 20px", borderRadius: 8, border: "1.5px solid #cbd5e1",
+                                    color: "#475569", background: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer"
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={submitExceptionRequest}
+                                style={{
+                                    padding: "9px 24px", borderRadius: 8, border: "none",
+                                    background: "linear-gradient(135deg, #253361, #1a2446)",
+                                    color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                                    boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
+                                }}
+                            >
+                                Submit Request
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1012,6 +1140,12 @@ export default function ManageBatch() {
                                             No participants registered in this batch.
                                         </td>
                                     </tr>
+                                ) : activeParticipants.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" className="py-8 text-center text-sm font-semibold text-rose-500">
+                                            No eligible trainees (all registered trainees missed the pre-test).
+                                        </td>
+                                    </tr>
                                 ) : (() => {
                                     const preQp = questionPapers.find(q => q.id === batch?.pre_test_question_paper_id);
                                     const preTotal = preQp?.questions?.length || 0;
@@ -1019,10 +1153,10 @@ export default function ManageBatch() {
                                     const postTotal = postQp?.questions?.length || 0;
                                     const passingMarks = trainingModule?.passing_marks || 0;
 
-                                    return participants.map(part => {
+                                    return activeParticipants.map(part => {
                                         const preScorePercent = part.pre_test_score !== null && preTotal > 0 ? Math.round((part.pre_test_score / preTotal) * 100) : null;
                                         const isPrePass = preScorePercent !== null ? preScorePercent >= passingMarks : null;
-                                        const preColorClass = isPrePass === null ? "text-slate-700" : (isPrePass ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold");
+                                        const preColorClass = isPrePass === null ? (part.allow_training_exception ? "text-amber-600 font-extrabold" : "text-slate-700") : (isPrePass ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold");
 
                                         const postScorePercent = part.post_test_score !== null && postTotal > 0 ? Math.round((part.post_test_score / postTotal) * 100) : null;
                                         const isPostPass = postScorePercent !== null ? postScorePercent >= passingMarks : null;
@@ -1038,15 +1172,30 @@ export default function ManageBatch() {
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-6 text-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={Boolean(part.attendance)}
-                                                        disabled={!batch.status || batch.status.toLowerCase() !== "training held"}
-                                                        onChange={() => handleAttendanceChange(part.employee_id, part.attendance)}
-                                                        className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    />
+                                                    {(() => {
+                                                        const isPastPreTest = batch.status && ["training held", "posttest active", "closed"].includes(batch.status.toLowerCase());
+                                                        const showNoPreTestWarning = part.pre_test_score === null && isPastPreTest && !part.allow_training_exception;
+
+                                                        return (
+                                                            <div className="flex flex-col items-center gap-1">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={Boolean(part.attendance)}
+                                                                    disabled={!batch.status || batch.status.toLowerCase() !== "training held" || showNoPreTestWarning}
+                                                                    onChange={() => handleAttendanceChange(part.employee_id, part.attendance)}
+                                                                    className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    title={showNoPreTestWarning ? "Cannot mark attendance because trainee did not take the pre-test" : ""}
+                                                                />
+                                                                {showNoPreTestWarning && (
+                                                                    <span className="text-[9px] text-red-500 font-extrabold uppercase tracking-wider">
+                                                                        No Pre-Test
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </td>
-                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
+                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : (part.allow_training_exception ? "No Pre-Test" : "—")}</td>
                                                 <td className="py-4 px-6 text-center">
                                                     {part.post_test_score !== null ? (
                                                         <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
@@ -1088,6 +1237,86 @@ export default function ManageBatch() {
                         </table>
                     </div>
                 </div>
+
+                {/* Ineligible Trainees Table - Only shown if there are participants who missed the pre-test */}
+                {inactiveParticipants.length > 0 && (
+                    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-rose-50/20">
+                            <div className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-rose-600">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                </svg>
+                                <h3 className="font-extrabold text-rose-955 text-sm tracking-wider uppercase">Ineligible Trainees (Missed Pre-Test)</h3>
+                            </div>
+                            <span className="px-2.5 py-0.5 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
+                                {inactiveParticipants.length} Trainee(s)
+                            </span>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase bg-slate-50/40">
+                                        <th className="py-3.5 px-6">Code</th>
+                                        <th className="py-3.5 px-6">Trainee Name</th>
+                                        <th className="py-3.5 px-6 text-center">Pre Test Score</th>
+                                        <th className="py-3.5 px-6 text-center">Status</th>
+                                        <th className="py-3.5 px-6 text-right">Exception Request</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {inactiveParticipants.map(part => (
+                                        <tr key={part.id} className="hover:bg-rose-50/10 transition-colors text-sm">
+                                            <td className="py-4 px-6 font-mono text-slate-500 font-semibold text-xs">{part.employee_code}</td>
+                                            <td className="py-4 px-6">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-slate-900">{part.full_name}</span>
+                                                    <span className="text-[11px] text-slate-400 mt-0.5">{part.employee_type}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-6 text-center font-bold text-rose-600">No Pre-Test</td>
+                                            <td className="py-4 px-6 text-center">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
+                                                    Ineligible
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6 text-right">
+                                                {part.exception_status === 'Pending' ? (
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+                                                        Pending Approval
+                                                    </span>
+                                                ) : part.exception_status === 'Rejected' ? (
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <span className="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
+                                                            Rejected
+                                                        </span>
+                                                        {(isAdmin || hasPermission("employee_training_approval", "read")) && (
+                                                            <button
+                                                                onClick={() => handleRequestException(part.employee_id)}
+                                                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] rounded-lg border border-slate-200 cursor-pointer transition-colors"
+                                                            >
+                                                                Re-Request
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    (isAdmin || hasPermission("employee_training_approval", "read")) && (
+                                                        <button
+                                                            onClick={() => handleRequestException(part.employee_id)}
+                                                            className="px-3 py-1 bg-[#253361] hover:bg-[#1a2446] text-white font-bold text-[10px] rounded-lg border-none shadow-sm cursor-pointer transition-colors"
+                                                        >
+                                                            Request Exception
+                                                        </button>
+                                                    )
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
 
             </main>
 
