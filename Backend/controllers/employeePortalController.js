@@ -53,8 +53,8 @@ const getMyTestsController = async (req, res) => {
                     venue: row.venue
                 });
             }
-            // Post-Test is active: status is 'Posttest Active', paper is configured, and score is null (not taken yet) OR failed (re-attempt), and attendance is marked present
-            if (row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && (row.post_test_score === null || row.band_badge === 'FAILED') && row.attendance === 1) {
+            // Post-Test is active: status is 'Posttest Active', paper is configured, and score is null (not taken yet), and attendance is marked present
+            if (row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null && row.attendance === 1) {
                 activeTests.push({
                     batchId: row.batch_id,
                     testType: 'Post',
@@ -105,8 +105,8 @@ const getTestDetailsController = async (req, res) => {
         if (testType === 'Pre' && participant.pre_test_score !== null) {
             return res.status(400).json({ success: false, message: 'You have already submitted this pre-test.' });
         }
-        if (testType === 'Post' && participant.post_test_score !== null && participant.band_badge === 'PASSED') {
-            return res.status(400).json({ success: false, message: 'You have already passed this post-test.' });
+        if (testType === 'Post' && participant.post_test_score !== null) {
+            return res.status(400).json({ success: false, message: 'You have already submitted this post-test.' });
         }
         if (testType === 'Post' && !participant.attendance) {
             return res.status(400).json({ success: false, message: 'You cannot attend the post-training exam because you were marked absent.' });
@@ -230,8 +230,8 @@ const submitTestController = async (req, res) => {
         if (testType === 'Pre' && participant.pre_test_score !== null) {
             return res.status(400).json({ success: false, message: 'You have already submitted this pre-test.' });
         }
-        if (testType === 'Post' && participant.post_test_score !== null && participant.band_badge === 'PASSED') {
-            return res.status(400).json({ success: false, message: 'You have already passed this post-test.' });
+        if (testType === 'Post' && participant.post_test_score !== null) {
+            return res.status(400).json({ success: false, message: 'You have already submitted this post-test.' });
         }
         if (testType === 'Post' && !participant.attendance) {
             return res.status(400).json({ success: false, message: 'You cannot submit the post-training exam because you were marked absent.' });
@@ -423,7 +423,7 @@ const getMyDashboardController = async (req, res) => {
         
         for (const row of rows) {
             const isPendingPreTest = row.batch_status === 'Pretest Active' && row.pre_test_question_paper_id && row.pre_test_score === null;
-            const isPendingPostTest = row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && (row.post_test_score === null || row.band_badge === 'FAILED') && row.attendance === 1;
+            const isPendingPostTest = row.batch_status === 'Posttest Active' && row.post_test_question_paper_id && row.post_test_score === null && row.attendance === 1;
             
             if (isPendingPreTest) {
                 pendingTestsCount++;

@@ -732,7 +732,7 @@ export default function EmployeeDashboard() {
                                                                             ? "bg-red-50 text-red-700 border-red-100"
                                                                             : "bg-slate-50 text-slate-500 border-slate-100"
                                                                 }`}>
-                                                                    {history.bandBadge || "UNTESTED"}
+                                                                    {isPassed ? "COMPLETED" : isFailed ? "RETRAINING NEEDED" : (history.bandBadge || "UNTESTED")}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1048,7 +1048,7 @@ export default function EmployeeDashboard() {
                                                                     <div className="flex items-center gap-1.5">
                                                                         <span className="text-slate-400">Final Result:</span>
                                                                         <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${isPassed ? 'bg-emerald-50 text-emerald-700' : isFailed ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
-                                                                            {selectedTraining.bandBadge || 'IN EVALUATION'}
+                                                                            {isPassed ? "COMPLETED" : isFailed ? "RETRAINING NEEDED" : (selectedTraining.bandBadge || 'IN EVALUATION')}
                                                                         </span>
                                                                     </div>
                                                                 </div>

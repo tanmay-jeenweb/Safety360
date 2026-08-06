@@ -1049,12 +1049,7 @@ export default function ManageBatch() {
                                                 <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
                                                 <td className="py-4 px-6 text-center">
                                                     {part.post_test_score !== null ? (
-                                                        <div className="flex flex-col items-center">
-                                                            <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
-                                                            {part.post_test_attempts_count > 0 && (
-                                                                <span className="text-[10px] text-slate-400 font-normal">({part.post_test_attempts_count} attempt{part.post_test_attempts_count > 1 ? 's' : ''})</span>
-                                                            )}
-                                                        </div>
+                                                        <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
                                                     ) : (
                                                         <span className="font-bold text-slate-700">—</span>
                                                     )}
