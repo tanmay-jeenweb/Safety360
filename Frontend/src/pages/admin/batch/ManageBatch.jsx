@@ -8,7 +8,7 @@ import {
     removeBatchParticipant,
     updateBatchParticipant,
     updateBatch,
-    requestTrainingException
+    requestTrainingApproval
 } from "../../../api/batchApi";
 import { getEmployees } from "../../../api/employeeApi";
 import { getTrainingModuleById } from "../../../api/trainingModuleApi";
@@ -61,10 +61,10 @@ export default function ManageBatch() {
     const [feedbackPapers, setFeedbackPapers] = useState([]);
     const [selectedFeedbackPaperId, setSelectedFeedbackPaperId] = useState("");
 
-    // Custom Exception Request Modal states
-    const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
-    const [exceptionEmployeeId, setExceptionEmployeeId] = useState("");
-    const [exceptionComments, setExceptionComments] = useState("");
+    // Custom Approval Request Modal states
+    const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+    const [approvalEmployeeId, setApprovalEmployeeId] = useState("");
+    const [approvalComments, setApprovalComments] = useState("");
 
     // Fetch batch details, participants, and question papers
     const fetchData = async () => {
@@ -261,25 +261,25 @@ export default function ManageBatch() {
         }
     };
 
-    // Request exception for ineligible trainee - opens custom modal
-    const handleRequestException = (employeeId) => {
-        setExceptionEmployeeId(employeeId);
-        setExceptionComments("");
-        setIsExceptionModalOpen(true);
+    // Request approval for ineligible trainee - opens custom modal
+    const handleRequestApproval = (employeeId) => {
+        setApprovalEmployeeId(employeeId);
+        setApprovalComments("");
+        setIsApprovalModalOpen(true);
     };
 
-    // Submits exception request from custom modal
-    const submitExceptionRequest = async () => {
+    // Submits approval request from custom modal
+    const submitApprovalRequest = async () => {
         try {
-            await requestTrainingException(batch.id, exceptionEmployeeId, exceptionComments || "Requested exception from Manage Batch page");
-            toast.success("Exception approval request submitted");
-            setIsExceptionModalOpen(false);
+            await requestTrainingApproval(batch.id, approvalEmployeeId, approvalComments || "Requested training approval from Manage Batch page");
+            toast.success("Training approval request submitted");
+            setIsApprovalModalOpen(false);
             // Refresh
             const partRes = await getBatchParticipants(id);
             setParticipants(partRes.data.data || []);
         } catch (err) {
-            console.error("Error submitting exception request:", err);
-            toast.error(err?.response?.data?.message || "Failed to submit exception request");
+            console.error("Error submitting approval request:", err);
+            toast.error(err?.response?.data?.message || "Failed to submit approval request");
         }
     };
 
@@ -687,8 +687,8 @@ export default function ManageBatch() {
                 </div>
             )}
 
-            {/* Custom Exception Justification Modal */}
-            {isExceptionModalOpen && (
+            {/* Custom Approval Justification Modal */}
+            {isApprovalModalOpen && (
                 <div 
                     style={{
                         position: "fixed", inset: 0, zIndex: 1000,
@@ -711,10 +711,10 @@ export default function ManageBatch() {
                             }}
                         >
                             <h3 style={{ margin: 0, color: "#fff", fontSize: 16, fontWeight: 800 }}>
-                                Request Exception Justification
+                                Request Training Approval Justification
                             </h3>
                             <button 
-                                onClick={() => setIsExceptionModalOpen(false)}
+                                onClick={() => setIsApprovalModalOpen(false)}
                                 style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 20 }}
                             >
                                 &times;
@@ -724,11 +724,11 @@ export default function ManageBatch() {
                         {/* Body */}
                         <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
                             <label style={{ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase" }}>
-                                Enter justification/reason for exception (optional):
+                                Enter justification/reason for approval (optional):
                             </label>
                             <textarea
-                                value={exceptionComments}
-                                onChange={(e) => setExceptionComments(e.target.value)}
+                                value={approvalComments}
+                                onChange={(e) => setApprovalComments(e.target.value)}
                                 placeholder="E.g., Trainee missed the pre-test because they were off-duty, but they have completed all preparatory material..."
                                 rows={4}
                                 style={{ 
@@ -747,7 +747,7 @@ export default function ManageBatch() {
                             }}
                         >
                             <button
-                                onClick={() => setIsExceptionModalOpen(false)}
+                                onClick={() => setIsApprovalModalOpen(false)}
                                 style={{
                                     padding: "9px 20px", borderRadius: 8, border: "1.5px solid #cbd5e1",
                                     color: "#475569", background: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer"
@@ -756,7 +756,7 @@ export default function ManageBatch() {
                                 Cancel
                             </button>
                             <button
-                                onClick={submitExceptionRequest}
+                                onClick={submitApprovalRequest}
                                 style={{
                                     padding: "9px 24px", borderRadius: 8, border: "none",
                                     background: "linear-gradient(135deg, #253361, #1a2446)",
@@ -1198,12 +1198,7 @@ export default function ManageBatch() {
                                                 <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : (part.allow_training_exception ? "No Pre-Test" : "—")}</td>
                                                 <td className="py-4 px-6 text-center">
                                                     {part.post_test_score !== null ? (
-                                                        <div className="flex flex-col items-center">
-                                                            <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
-                                                            {part.post_test_attempts_count > 0 && (
-                                                                <span className="text-[10px] text-slate-400 font-normal">({part.post_test_attempts_count} attempt{part.post_test_attempts_count > 1 ? 's' : ''})</span>
-                                                            )}
-                                                        </div>
+                                                        <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
                                                     ) : (
                                                         <span className="font-bold text-slate-700">—</span>
                                                     )}
@@ -1266,7 +1261,7 @@ export default function ManageBatch() {
                                         <th className="py-3.5 px-6">Trainee Name</th>
                                         <th className="py-3.5 px-6 text-center">Pre Test Score</th>
                                         <th className="py-3.5 px-6 text-center">Status</th>
-                                        <th className="py-3.5 px-6 text-right">Exception Request</th>
+                                        <th className="py-3.5 px-6 text-right">Approval Request</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -1297,7 +1292,7 @@ export default function ManageBatch() {
                                                         </span>
                                                         {(isAdmin || hasPermission("employee_training_approval", "read")) && (
                                                             <button
-                                                                onClick={() => handleRequestException(part.employee_id)}
+                                                                onClick={() => handleRequestApproval(part.employee_id)}
                                                                 className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] rounded-lg border border-slate-200 cursor-pointer transition-colors"
                                                             >
                                                                 Re-Request
@@ -1307,10 +1302,10 @@ export default function ManageBatch() {
                                                 ) : (
                                                     (isAdmin || hasPermission("employee_training_approval", "read")) && (
                                                         <button
-                                                            onClick={() => handleRequestException(part.employee_id)}
+                                                            onClick={() => handleRequestApproval(part.employee_id)}
                                                             className="px-3 py-1 bg-[#253361] hover:bg-[#1a2446] text-white font-bold text-[10px] rounded-lg border-none shadow-sm cursor-pointer transition-colors"
                                                         >
-                                                            Request Exception
+                                                            Request Approval
                                                         </button>
                                                     )
                                                 )}

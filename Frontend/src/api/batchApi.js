@@ -41,15 +41,15 @@ export const updateBatchParticipant = async (batchId, employeeId, data) => {
     return apiClient.put(`/batches/${batchId}/participants/${employeeId}`, data);
 };
 
-export const requestTrainingException = async (batchId, employeeId, comments) => {
+export const requestTrainingApproval = async (batchId, employeeId, comments) => {
     return apiClient.post("/batches/request-exception", { batchId, employeeId, comments });
 };
 
-export const getExceptionRequests = async () => {
+export const getApprovalRequests = async () => {
     return apiClient.get("/batches/exceptions/all");
 };
 
-export const updateExceptionRequestStatus = async (requestId, status) => {
+export const updateApprovalRequestStatus = async (requestId, status) => {
     return apiClient.put(`/batches/exceptions/${requestId}/status`, { status });
 };
 
