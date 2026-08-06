@@ -82,11 +82,11 @@ const getAllTrainingModules = async () => {
             COALESCE(u.name, 'Unknown') AS added_by_name,
             tm.created_at,
             tm.updated_at,
-            CONCAT(tm.category_id, '.', (
+            CAST(CONCAT(tm.category_id, '.', (
                 SELECT COUNT(*) 
                 FROM training_modules tm2 
                 WHERE tm2.category_id = tm.category_id AND tm2.id <= tm.id
-            )) AS display_id
+            )) AS CHAR) AS display_id
         FROM training_modules tm
         LEFT JOIN categories c ON tm.category_id = c.id
         LEFT JOIN users u ON tm.added_by = u.id
@@ -155,11 +155,11 @@ const getTrainingModuleById = async (id) => {
             COALESCE(u.name, 'Unknown') AS added_by_name,
             tm.created_at,
             tm.updated_at,
-            CONCAT(tm.category_id, '.', (
+            CAST(CONCAT(tm.category_id, '.', (
                 SELECT COUNT(*) 
                 FROM training_modules tm2 
                 WHERE tm2.category_id = tm.category_id AND tm2.id <= tm.id
-            )) AS display_id
+            )) AS CHAR) AS display_id
         FROM training_modules tm
         LEFT JOIN categories c ON tm.category_id = c.id
         LEFT JOIN users u ON tm.added_by = u.id

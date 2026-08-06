@@ -19,7 +19,27 @@ export default function TrainingModuleMaster() {
         setError("");
         try {
             const response = await getTrainingModules();
-            setModules(response.data.data || []);
+            const rawData = response.data.data || [];
+            
+            // Helper to recursively convert Buffer objects to strings
+            const sanitizeData = (val) => {
+                if (val && typeof val === 'object') {
+                    if (val.type === 'Buffer' && Array.isArray(val.data)) {
+                        return val.data.map(code => String.fromCharCode(code)).join('');
+                    }
+                    if (Array.isArray(val)) {
+                        return val.map(sanitizeData);
+                    }
+                    const obj = {};
+                    for (const key in val) {
+                        obj[key] = sanitizeData(val[key]);
+                    }
+                    return obj;
+                }
+                return val;
+            };
+
+            setModules(sanitizeData(rawData));
         } catch (err) {
             console.error("Failed to load training modules", err);
             setError("Unable to load training modules. Please try again.");

@@ -34,6 +34,37 @@ apiClient.interceptors.request.use(async (config) => {
     return Promise.reject(error);
 });
 
+// Helper to recursively convert serialized Buffer objects to strings
+const sanitizeBufferData = (val) => {
+    if (val && typeof val === "object") {
+        if (val.type === "Buffer" && Array.isArray(val.data)) {
+            return val.data.map(code => String.fromCharCode(code)).join("");
+        }
+        if (Array.isArray(val)) {
+            return val.map(sanitizeBufferData);
+        }
+        const obj = {};
+        for (const key in val) {
+            if (Object.prototype.hasOwnProperty.call(val, key)) {
+                obj[key] = sanitizeBufferData(val[key]);
+            }
+        }
+        return obj;
+    }
+    return val;
+};
+
+// Response interceptor to handle binary/Buffer data seamlessly on the frontend
+apiClient.interceptors.response.use((response) => {
+    if (response && response.data) {
+        response.data = sanitizeBufferData(response.data);
+    }
+    return response;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+
 export const loginUser = async (data) => {
     return apiClient.post("/auth/login", data);
 };
