@@ -14,6 +14,7 @@ export default function EmployeeTest() {
     const [answers, setAnswers] = useState({}); // { [questionId]: selected_option }
     const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const [showFeedback, setShowFeedback] = useState(false);
     const [feedbackAnswers, setFeedbackAnswers] = useState({}); // { [questionId]: value }
@@ -60,16 +61,12 @@ export default function EmployeeTest() {
         }
     };
 
-    const handleSubmit = async () => {
-        // Validation: check if all questions are answered
-        const unansweredCount = questions.length - Object.keys(answers).length;
-        let confirmMsg = "Are you sure you want to submit your exam?";
-        if (unansweredCount > 0) {
-            confirmMsg = `You have ${unansweredCount} unanswered question(s). Are you sure you want to submit your exam?`;
-        }
+    const handleSubmit = () => {
+        setShowConfirmModal(true);
+    };
 
-        if (!window.confirm(confirmMsg)) return;
-
+    const executeSubmit = async () => {
+        setShowConfirmModal(false);
         setSubmitting(true);
         try {
             const payload = {
@@ -102,6 +99,60 @@ export default function EmployeeTest() {
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const renderConfirmModal = () => {
+        if (!showConfirmModal) return null;
+
+        const unansweredCount = questions.length - Object.keys(answers).length;
+
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 border border-amber-100 mb-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 animate-pulse">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mb-2">Submit Assessment</h3>
+                    <p className="text-slate-500 font-semibold text-xs sm:text-sm leading-relaxed mb-6">
+                        Are you sure you want to submit? You cannot appear for this test again.
+                    </p>
+                    
+                    {unansweredCount > 0 && (
+                        <div className="w-full bg-red-50 border border-red-100 text-red-700 rounded-2xl p-4 mb-6 flex items-start gap-2.5 text-left animate-in slide-in-from-top-4 duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 shrink-0 mt-0.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                            </svg>
+                            <div>
+                                <h4 className="font-extrabold text-xs">Unanswered Questions</h4>
+                                <p className="text-[11px] font-semibold opacity-90 mt-0.5">
+                                    You have {unansweredCount} unanswered question(s). You can still submit, but any unanswered questions will be marked incorrect.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-3 w-full">
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmModal(false)}
+                            className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 text-xs sm:text-sm font-bold transition-all cursor-pointer text-center"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={executeSubmit}
+                            disabled={submitting}
+                            className="flex-1 py-3 px-4 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold transition-all hover:shadow-md cursor-pointer text-center disabled:opacity-75 flex items-center justify-center gap-1.5"
+                        >
+                            {submitting ? "Submitting..." : "Yes, Submit"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     if (loading) {
@@ -276,6 +327,7 @@ export default function EmployeeTest() {
                         </div>
                     </div>
                 </main>
+                {renderConfirmModal()}
             </div>
         );
     }
@@ -390,6 +442,7 @@ export default function EmployeeTest() {
                     </div>
                 </div>
             </main>
+            {renderConfirmModal()}
         </div>
     );
 }
