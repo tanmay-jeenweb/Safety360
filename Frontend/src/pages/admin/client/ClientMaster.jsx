@@ -9,7 +9,7 @@ import { usePermission } from "../../../context/PermissionContext";
 function ClientForm({ onBack, onSave, editingRow, saving }) {
     const [clientName, setClientName] = useState("");
     const [address, setAddress] = useState("");
-    const [representatives, setRepresentatives] = useState([{ name: "", email: "", phoneNo: "" }]);
+    const [representatives, setRepresentatives] = useState([{ name: "", email: "", phoneNo: "", designation: "", department: "" }]);
     const [workOrderNo, setWorkOrderNo] = useState("");
     const [workOrderDate, setWorkOrderDate] = useState("");
 
@@ -30,14 +30,14 @@ function ClientForm({ onBack, onSave, editingRow, saving }) {
         } else {
             setClientName("");
             setAddress("");
-            setRepresentatives([{ name: "", email: "", phoneNo: "" }]);
+            setRepresentatives([{ name: "", email: "", phoneNo: "", designation: "", department: "" }]);
             setWorkOrderNo("");
             setWorkOrderDate("");
         }
     }, [editingRow]);
 
     const handleAddRep = () => {
-        setRepresentatives([...representatives, { name: "", email: "", phoneNo: "" }]);
+        setRepresentatives([...representatives, { name: "", email: "", phoneNo: "", designation: "", department: "" }]);
     };
 
     const handleRemoveRep = (index) => {
@@ -180,6 +180,8 @@ function ClientForm({ onBack, onSave, editingRow, saving }) {
                                     <thead>
                                         <tr className="bg-[#f8fafc] border-b-2 border-[#e2e8f0]">
                                             <th className="text-left px-4 py-3 text-[12px] font-bold text-[#475569] uppercase">Name <span className="text-[#e11d48]">*</span></th>
+                                            <th className="text-left px-4 py-3 text-[12px] font-bold text-[#475569] uppercase">Designation</th>
+                                            <th className="text-left px-4 py-3 text-[12px] font-bold text-[#475569] uppercase">Department</th>
                                             <th className="text-left px-4 py-3 text-[12px] font-bold text-[#475569] uppercase">Email</th>
                                             <th className="text-left px-4 py-3 text-[12px] font-bold text-[#475569] uppercase">Phone Number</th>
                                             <th className="text-center px-4 py-3 text-[12px] font-bold text-[#475569] uppercase w-[80px]">Actions</th>
@@ -194,6 +196,24 @@ function ClientForm({ onBack, onSave, editingRow, saving }) {
                                                         value={rep.name}
                                                         onChange={(e) => handleRepChange(idx, "name", e.target.value)}
                                                         placeholder="Representative Name *"
+                                                        className="w-full border border-[#cbd5e1] rounded-[6px] px-3 py-2 text-[14px] outline-none text-[#1e293b] bg-white transition-colors duration-200 focus:border-[#253361]"
+                                                    />
+                                                </td>
+                                                <td className="px-2 py-3">
+                                                    <input
+                                                        type="text"
+                                                        value={rep.designation || ""}
+                                                        onChange={(e) => handleRepChange(idx, "designation", e.target.value)}
+                                                        placeholder="Designation"
+                                                        className="w-full border border-[#cbd5e1] rounded-[6px] px-3 py-2 text-[14px] outline-none text-[#1e293b] bg-white transition-colors duration-200 focus:border-[#253361]"
+                                                    />
+                                                </td>
+                                                <td className="px-2 py-3">
+                                                    <input
+                                                        type="text"
+                                                        value={rep.department || ""}
+                                                        onChange={(e) => handleRepChange(idx, "department", e.target.value)}
+                                                        placeholder="Department"
                                                         className="w-full border border-[#cbd5e1] rounded-[6px] px-3 py-2 text-[14px] outline-none text-[#1e293b] bg-white transition-colors duration-200 focus:border-[#253361]"
                                                     />
                                                 </td>
@@ -368,7 +388,16 @@ export default function ClientMaster() {
                 render: (row) => {
                     const reps = row.representatives || [];
                     if (reps.length === 0) return <span className="text-[#94a3b8]">-</span>;
-                    const namesStr = reps.map(rep => rep.name).filter(Boolean).join(", ");
+                    const namesStr = reps.map(rep => {
+                        let str = rep.name;
+                        const details = [];
+                        if (rep.designation) details.push(rep.designation);
+                        if (rep.department) details.push(rep.department);
+                        if (details.length > 0) {
+                            str += ` (${details.join(" - ")})`;
+                        }
+                        return str;
+                    }).filter(Boolean).join(", ");
                     return <span className="text-[#475569] font-medium">{namesStr || "-"}</span>;
                 }
             }
