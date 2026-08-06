@@ -24,3 +24,7 @@ export const getQuestionsByModule = async (moduleId) => {
     return apiClient.get(`/question-bank/module/${moduleId}`);
 };
 
+export const importQuestions = async (questions) => {
+    return apiClient.post("/question-bank/bulk-add", { questions });
+};
+

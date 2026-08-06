@@ -1,15 +1,18 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar";
-import { getQuestions, deleteQuestion } from "../../../api/questionBankApi";
+import { getQuestions, deleteQuestion, importQuestions } from "../../../api/questionBankApi";
+import { getTrainingModules } from "../../../api/trainingModuleApi";
 import DataTable from "../../../components/DataTable";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
 import { usePermission } from "../../../context/PermissionContext";
 
 export default function QuestionBankMaster() {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
 
     const { hasPermission } = usePermission();
 
@@ -30,6 +33,300 @@ export default function QuestionBankMaster() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleExportTemplate = async () => {
+        try {
+            // Load modules
+            const modRes = await getTrainingModules();
+            const allModulesList = modRes.data.data || [];
+            
+            const ExcelJS = await import("exceljs");
+            const workbook = new ExcelJS.Workbook();
+            
+            // Sheet 1: Template
+            const worksheet = workbook.addWorksheet("Template", {
+                views: [{ showGridLines: true }]
+            });
+            
+            // Sheet 2: Lookup Lists
+            const listsSheet = workbook.addWorksheet("Lists", {
+                views: [{ showGridLines: true }]
+            });
+            listsSheet.state = "hidden";
+
+            // Headers for Template
+            const headers = [
+                "Module Name",
+                "Language",
+                "Question Type",
+                "Question Text",
+                "Option A",
+                "Option B",
+                "Option C",
+                "Option D",
+                "Correct Answer"
+            ];
+            
+            worksheet.addRow(headers);
+            
+            // Format Template Header Row
+            const headerRow = worksheet.getRow(1);
+            headerRow.height = 24;
+            headerRow.eachCell((cell) => {
+                cell.font = { name: "Segoe UI", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FF253361" } // Dark blue theme
+                };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+            });
+
+            // Populate Lists sheet
+            const moduleNames = allModulesList.map(m => m.module_name).filter(Boolean);
+            const languages = ["English", "Hindi"];
+            const questionTypes = ["MCQ", "True/False"];
+            const correctAnswers = ["A", "B", "C", "D", "True", "False"];
+
+            const maxListLength = Math.max(moduleNames.length, languages.length, questionTypes.length, correctAnswers.length);
+            listsSheet.addRow(["Modules", "Languages", "QuestionTypes", "CorrectAnswers"]);
+
+            for (let i = 0; i < maxListLength; i++) {
+                listsSheet.addRow([
+                    moduleNames[i] || "",
+                    languages[i] || "",
+                    questionTypes[i] || "",
+                    correctAnswers[i] || ""
+                ]);
+            }
+
+            // Data validation formulas in Excel notation
+            const moduleRange = `Lists!$A$2:$A$${moduleNames.length + 1}`;
+            const languageRange = `Lists!$B$2:$B$3`;
+            const typeRange = `Lists!$C$2:$C$3`;
+            const answerRange = `Lists!$D$2:$D$7`;
+
+            // Apply validations to rows 2 to 1000
+            worksheet.dataValidations.add("A2:A1000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [moduleRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select a training module from the list."
+            });
+
+            worksheet.dataValidations.add("B2:B1000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [languageRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select English or Hindi."
+            });
+
+            worksheet.dataValidations.add("C2:C1000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [typeRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select MCQ or True/False."
+            });
+
+            // Apply row-by-row validations for dependent dropdowns
+            for (let r = 2; r <= 1000; r++) {
+                // Correct Answer dropdown: depends on Question Type in column C
+                worksheet.getCell(`I${r}`).dataValidation = {
+                    type: "list",
+                    allowBlank: true,
+                    formulae: [`IF(C${r}="True/False", Lists!$D$6:$D$7, Lists!$D$2:$D$5)`],
+                    showErrorMessage: true,
+                    errorTitle: "Invalid Correct Answer",
+                    error: "For MCQ, select A, B, C, or D. For True/False, select True or False."
+                };
+            }
+
+            // Adjust column widths
+            worksheet.columns.forEach((column, index) => {
+                const headerText = headers[index];
+                column.width = Math.max(headerText.length + 5, 18);
+            });
+
+            // Write Buffer and trigger download
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = "Question_Bank_Import_Template.xlsx";
+            anchor.click();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Question Bank Excel template exported successfully!");
+        } catch (err) {
+            console.error("Failed to export Excel template:", err);
+            toast.error("Failed to export template. Please try again.");
+        }
+    };
+
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setLoading(true);
+        const reader = new FileReader();
+
+        reader.onload = async (evt) => {
+            try {
+                // Fetch modules first so we can map names to module_ids
+                const modRes = await getTrainingModules();
+                const allModulesList = modRes.data.data || [];
+
+                const dataBuffer = evt.target.result;
+                const workbook = XLSX.read(dataBuffer, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                if (jsonData.length === 0) {
+                    toast.error("The selected file is empty.");
+                    setLoading(false);
+                    return;
+                }
+
+                // Helper to search headers case-insensitively
+                const keysSet = new Set();
+                jsonData.forEach(row => {
+                    Object.keys(row).forEach(k => keysSet.add(k));
+                });
+                const keys = Array.from(keysSet);
+
+                const getVal = (row, fieldOptions) => {
+                    const foundKey = keys.find(k => fieldOptions.includes(k.toLowerCase().trim()));
+                    return foundKey ? row[foundKey] : null;
+                };
+
+                const mappedQuestions = [];
+                let rowNum = 1; // track row number for user error reporting
+
+                for (const row of jsonData) {
+                    rowNum++;
+
+                    const moduleName = getVal(row, ["module name", "module_name", "module"]);
+                    const language = getVal(row, ["language"]) || "English";
+                    const questionType = getVal(row, ["question type", "question_type", "type"]);
+                    const questionText = getVal(row, ["question text", "question_text", "question"]);
+                    const optA = getVal(row, ["option a", "option_a", "option1", "a"]);
+                    const optB = getVal(row, ["option b", "option_b", "option2", "b"]);
+                    const optC = getVal(row, ["option c", "option_c", "option3", "c"]);
+                    const optD = getVal(row, ["option d", "option_d", "option4", "d"]);
+                    const correctAnswerRaw = getVal(row, ["correct answer", "correct_answer", "answer", "correct"]);
+
+                    if (!moduleName) {
+                        throw new Error(`Row ${rowNum}: Module Name is missing.`);
+                    }
+                    if (!questionText) {
+                        throw new Error(`Row ${rowNum}: Question Text is missing.`);
+                    }
+                    if (!questionType) {
+                        throw new Error(`Row ${rowNum}: Question Type is missing.`);
+                    }
+                    if (!correctAnswerRaw) {
+                        throw new Error(`Row ${rowNum}: Correct Answer is missing.`);
+                    }
+
+                    // Map module name to module id
+                    const matchMod = allModulesList.find(m => m.module_name.toLowerCase().trim() === String(moduleName).toLowerCase().trim());
+                    if (!matchMod) {
+                        throw new Error(`Row ${rowNum}: Training module "${moduleName}" not found in database.`);
+                    }
+
+                    const normalizedType = String(questionType).trim();
+                    const qType = (normalizedType.toLowerCase() === "true/false" || normalizedType.toLowerCase() === "true or false")
+                        ? "True/False"
+                        : "MCQ";
+
+                    const normalizedLanguage = String(language).trim().toLowerCase() === "hindi" ? "Hindi" : "English";
+
+                    let optionsArray = [];
+                    let finalCorrectAnswer = "";
+
+                    if (qType === "MCQ") {
+                        if (!optA || !optB) {
+                            throw new Error(`Row ${rowNum}: Option A and Option B are required for MCQ questions.`);
+                        }
+                        
+                        optionsArray = [String(optA).trim(), String(optB).trim()];
+                        if (optC) optionsArray.push(String(optC).trim());
+                        if (optD) optionsArray.push(String(optD).trim());
+
+                        const ansLetter = String(correctAnswerRaw).trim().toUpperCase();
+                        if (ansLetter === "A") {
+                            finalCorrectAnswer = String(optA).trim();
+                        } else if (ansLetter === "B") {
+                            finalCorrectAnswer = String(optB).trim();
+                        } else if (ansLetter === "C") {
+                            if (!optC) throw new Error(`Row ${rowNum}: Correct Answer is specified as C, but Option C is empty.`);
+                            finalCorrectAnswer = String(optC).trim();
+                        } else if (ansLetter === "D") {
+                            if (!optD) throw new Error(`Row ${rowNum}: Correct Answer is specified as D, but Option D is empty.`);
+                            finalCorrectAnswer = String(optD).trim();
+                        } else {
+                            // fallback: if user wrote the exact option content instead of letter, match it
+                            const exactMatch = optionsArray.find(opt => opt.toLowerCase() === ansLetter.toLowerCase());
+                            if (!exactMatch) {
+                                throw new Error(`Row ${rowNum}: Correct Answer "${correctAnswerRaw}" must be A, B, C, or D (or match one of the option texts exactly).`);
+                            }
+                            finalCorrectAnswer = exactMatch;
+                        }
+                    } else {
+                        // True/False
+                        optionsArray = ["True", "False"];
+                        const ansStr = String(correctAnswerRaw).trim().toLowerCase();
+                        if (ansStr === "true" || ansStr === "yes" || ansStr === "t" || ansStr === "a") {
+                            finalCorrectAnswer = "True";
+                        } else if (ansStr === "false" || ansStr === "no" || ansStr === "f" || ansStr === "b") {
+                            finalCorrectAnswer = "False";
+                        } else {
+                            throw new Error(`Row ${rowNum}: Correct Answer "${correctAnswerRaw}" must be True or False.`);
+                        }
+                    }
+
+                    mappedQuestions.push({
+                        moduleId: matchMod.id,
+                        language: normalizedLanguage,
+                        questionType: qType,
+                        questionText: String(questionText).trim(),
+                        options: optionsArray,
+                        correctAnswer: finalCorrectAnswer
+                    });
+                }
+
+                // Send bulk insert to backend
+                const importRes = await importQuestions(mappedQuestions);
+                if (importRes.data.success) {
+                    toast.success(importRes.data.message || `Successfully imported ${mappedQuestions.length} questions.`);
+                    await loadData();
+                } else {
+                    toast.error(importRes.data.message || "Failed to import questions.");
+                }
+            } catch (err) {
+                console.error("Error reading/importing Excel:", err);
+                toast.error(err.message || "Failed to process import file.");
+            } finally {
+                setLoading(false);
+                if (e.target) e.target.value = "";
+            }
+        };
+
+        reader.onerror = () => {
+            toast.error("Failed to read the file.");
+            setLoading(false);
+        };
+
+        reader.readAsArrayBuffer(file);
     };
 
     useEffect(() => {
@@ -157,21 +454,63 @@ export default function QuestionBankMaster() {
         }
     ], [canUpdate, canDelete, questions, navigate]);
 
-    // Custom add button with "+" icon matching other masters' actionButton
+    // Custom action buttons group containing Export Template, Import Excel, and Create New
     const actionButton = canWrite && (
-        <button
-            onClick={() => navigate("/admin/question-bank/create")}
-            style={{
-                display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
-                borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
-                border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)"
-            }}
-            title="Add New Question"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-        </button>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImport}
+                accept=".xlsx, .xls"
+                style={{ display: "none" }}
+            />
+            {/* Export Template Button */}
+            <button
+                onClick={handleExportTemplate}
+                style={{
+                    display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                    borderRadius: 9, border: "1.5px solid #cbd5e1", background: "#fff", color: "#253361",
+                    cursor: "pointer", transition: "all 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+                onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                title="Export Excel Template"
+            >
+                <i className="fa-solid fa-file-export" style={{ fontSize: 14 }}></i>
+            </button>
+
+            {/* Import Button */}
+            <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                    display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                    borderRadius: 9, border: "1.5px solid #cbd5e1", background: "#fff", color: "#253361",
+                    cursor: "pointer", transition: "all 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+                onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                title="Import Excel File"
+            >
+                <i className="fa-solid fa-file-import" style={{ fontSize: 14 }}></i>
+            </button>
+
+            {/* Create New Button */}
+            <button
+                onClick={() => navigate("/admin/question-bank/create")}
+                style={{
+                    display: "flex", width: 40, height: 40, alignItems: "center", justifyContent: "center",
+                    borderRadius: 9, background: "linear-gradient(135deg,#253361,#1a2446)", color: "#fff",
+                    border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,51,97,0.35)", transition: "all 0.2s"
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = 0.9}
+                onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                title="Add New Question"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 18, height: 18 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
+        </div>
     );
 
     return (
@@ -182,7 +521,7 @@ export default function QuestionBankMaster() {
 
                 {loading ? (
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center text-slate-400">
-                        Loading Question Bank data...
+                        {questions.length === 0 && loading ? "Processing import file and loading data..." : "Loading Question Bank data..."}
                     </div>
                 ) : (
                     <DataTable
