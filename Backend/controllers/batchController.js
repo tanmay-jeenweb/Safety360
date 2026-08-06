@@ -7,7 +7,10 @@ const {
     getParticipantsByBatchId,
     addParticipantToBatch,
     removeParticipantFromBatch,
-    updateParticipantDetails
+    updateParticipantDetails,
+    createTrainingExceptionRequest,
+    getAllTrainingExceptionRequests,
+    updateTrainingExceptionRequestStatus
 } = require('../models/batchModel.js');
 const { createAuditLog } = require('../models/auditLogModel.js');
 
@@ -323,6 +326,20 @@ const updateBatchParticipantController = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Batch not found' });
         }
 
+        const participants = await getParticipantsByBatchId(id);
+        const participant = participants.find(p => String(p.employee_id) === String(employeeId));
+        if (!participant) {
+            return res.status(404).json({ success: false, message: 'Participant not found in this batch' });
+        }
+
+        // Enforce that attendance cannot be set to present if they did not complete the pre-test and no exception is approved
+        if (attendance && participant.pre_test_score === null && !participant.allow_training_exception) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Cannot mark attendance as present because this trainee has not attended the pre-test.' 
+            });
+        }
+
         await updateParticipantDetails(id, employeeId, { attendance, preTestScore, postTestScore, finalScore, bandBadge });
         const updatedParticipants = await getParticipantsByBatchId(id);
 
@@ -337,6 +354,72 @@ const updateBatchParticipantController = async (req, res) => {
     }
 };
 
+const createExceptionRequestController = async (req, res) => {
+    try {
+        const { batchId, employeeId, comments } = req.body;
+        const requestedBy = req.user.id;
+
+        if (!batchId || !employeeId) {
+            return res.status(400).json({ success: false, message: 'Batch ID and Employee ID are required' });
+        }
+
+        await createTrainingExceptionRequest(batchId, employeeId, requestedBy, comments || "");
+
+        // Log audit
+        await createAuditLog(
+            req.user.id,
+            req.headers['x-device-id'] || 'Unknown',
+            'employee_training_approval',
+            batchId,
+            'create_request',
+            { batchId, employeeId, comments }
+        );
+
+        res.status(200).json({ success: true, message: 'Exception approval request submitted successfully' });
+    } catch (error) {
+        console.error('Error creating exception request:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const getExceptionRequestsController = async (req, res) => {
+    try {
+        const requests = await getAllTrainingExceptionRequests();
+        res.status(200).json({ success: true, data: requests });
+    } catch (error) {
+        console.error('Error getting exception requests:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const updateExceptionStatusController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body; // 'Approved' or 'Rejected'
+
+        if (!status || !['Approved', 'Rejected'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+
+        await updateTrainingExceptionRequestStatus(id, status);
+
+        // Log audit
+        await createAuditLog(
+            req.user.id,
+            req.headers['x-device-id'] || 'Unknown',
+            'employee_training_approval',
+            id,
+            'update_request_status',
+            { status }
+        );
+
+        res.status(200).json({ success: true, message: `Request status updated to ${status}` });
+    } catch (error) {
+        console.error('Error updating exception status:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     addBatch,
     getAllBatchesController,
@@ -346,5 +429,8 @@ module.exports = {
     getBatchParticipantsController,
     addBatchParticipantController,
     removeBatchParticipantController,
-    updateBatchParticipantController
+    updateBatchParticipantController,
+    createExceptionRequestController,
+    getExceptionRequestsController,
+    updateExceptionStatusController
 };

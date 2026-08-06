@@ -108,6 +108,9 @@ const getTestDetailsController = async (req, res) => {
         if (testType === 'Post' && participant.post_test_score !== null && participant.band_badge === 'PASSED') {
             return res.status(400).json({ success: false, message: 'You have already passed this post-test.' });
         }
+        if (testType === 'Post' && participant.pre_test_score === null && !participant.allow_training_exception) {
+            return res.status(400).json({ success: false, message: 'You cannot take the post-training exam because you did not complete the pre-test.' });
+        }
         if (testType === 'Post' && !participant.attendance) {
             return res.status(400).json({ success: false, message: 'You cannot attend the post-training exam because you were marked absent.' });
         }
@@ -232,6 +235,9 @@ const submitTestController = async (req, res) => {
         }
         if (testType === 'Post' && participant.post_test_score !== null && participant.band_badge === 'PASSED') {
             return res.status(400).json({ success: false, message: 'You have already passed this post-test.' });
+        }
+        if (testType === 'Post' && participant.pre_test_score === null && !participant.allow_training_exception) {
+            return res.status(400).json({ success: false, message: 'You cannot submit the post-training exam because you did not complete the pre-test.' });
         }
         if (testType === 'Post' && !participant.attendance) {
             return res.status(400).json({ success: false, message: 'You cannot submit the post-training exam because you were marked absent.' });

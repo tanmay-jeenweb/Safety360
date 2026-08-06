@@ -24,6 +24,7 @@ const MASTERS = [
   { key: "feedback_question_bank",   label: "Feedback Question Bank Master" },
   { key: "feedback_papers",          label: "Feedback Paper Master" },
   { key: "activity_report",          label: "Activity Report" },
+  { key: "employee_training_approval", label: "Employee Training Approval" },
 ];
 
 const PERMS = ["canRead", "canWrite", "canUpdate", "canDelete"];
