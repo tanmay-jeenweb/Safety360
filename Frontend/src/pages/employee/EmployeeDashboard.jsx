@@ -25,13 +25,20 @@ export default function EmployeeDashboard() {
     const [otpLoading, setOtpLoading] = useState(false);
     const [changePassReceivedOtp, setChangePassReceivedOtp] = useState("");
 
-    // Accordion State
-    const [activeTrainingsExpanded, setActiveTrainingsExpanded] = useState(true);
-    const [trainingHistoryExpanded, setTrainingHistoryExpanded] = useState(false);
+    // Tabs & Accordion Row State
+    const [activeTab, setActiveTab] = useState("active"); // "active" or "history"
+    const [expandedRows, setExpandedRows] = useState({}); // { [batchId]: boolean }
 
     // Selected Training Details Modal State
     const [selectedTraining, setSelectedTraining] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+    const toggleRow = (batchId) => {
+        setExpandedRows(prev => ({
+            ...prev,
+            [batchId]: !prev[batchId]
+        }));
+    };
 
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -472,278 +479,334 @@ export default function EmployeeDashboard() {
                             </div>
                         </div>
 
-                        {/* Collapsible Accordions Stack */}
-                        <div className="space-y-6">
-                            
-                            {/* Accordion 1: Active Trainings */}
-                            <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.015)]">
-                                <button
-                                    onClick={() => setActiveTrainingsExpanded(!activeTrainingsExpanded)}
-                                    className="w-full flex items-center justify-between p-6 bg-slate-50/50 hover:bg-slate-50 transition-colors text-left border-none focus:outline-none cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75" />
+                        {/* Tab Selector */}
+                        <div className="flex bg-slate-100/80 backdrop-blur-md p-1 rounded-2xl w-fit border border-slate-200/50 mb-8 z-10 self-center sm:self-start">
+                            <button
+                                onClick={() => setActiveTab("active")}
+                                className={`px-6 py-2.5 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 cursor-pointer border-none flex items-center gap-2 ${
+                                    activeTab === "active"
+                                        ? "bg-white text-orange-600 shadow-md shadow-orange-500/5"
+                                        : "text-slate-500 hover:text-slate-800"
+                                }`}
+                            >
+                                Active Trainings
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${activeTab === "active" ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'}`}>
+                                    {activeTrainings.length}
+                                </span>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("history")}
+                                className={`px-6 py-2.5 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 cursor-pointer border-none flex items-center gap-2 ${
+                                    activeTab === "history"
+                                        ? "bg-white text-orange-600 shadow-md shadow-orange-500/5"
+                                        : "text-slate-500 hover:text-slate-800"
+                                }`}
+                            >
+                                Training History
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${activeTab === "history" ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'}`}>
+                                    {trainingHistory.length}
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* List/Accordion Container */}
+                        <div className="space-y-4">
+                            {activeTab === "active" ? (
+                                activeTrainings.length === 0 ? (
+                                    <div className="w-full py-16 flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-200/80 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.015)]">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                                             </svg>
                                         </div>
-                                        <div>
-                                            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">Active Trainings</h2>
-                                            <p className="text-slate-500 text-xs mt-1.5 font-medium">Your current and ongoing training modules</p>
-                                        </div>
+                                        <h3 className="text-base font-bold text-slate-800">No Active Trainings</h3>
+                                        <p className="text-slate-500 text-xs max-w-sm mt-1 font-medium">
+                                            There are no active training batches assigned to you at the moment.
+                                        </p>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="bg-orange-600/10 text-orange-600 font-extrabold text-xs px-2.5 py-1 rounded-full">
-                                            {activeTrainings.length}
-                                        </span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-5 h-5 text-slate-400 transition-transform duration-250 ${activeTrainingsExpanded ? 'rotate-180' : ''}`}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                        </svg>
-                                    </div>
-                                </button>
-
-                                {activeTrainingsExpanded && (
-                                    <div className="p-6 border-t border-slate-100">
-                                        {activeTrainings.length === 0 ? (
-                                            <div className="w-full py-12 flex flex-col items-center justify-center text-center p-6">
-                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                                                    </svg>
-                                                </div>
-                                                <h3 className="text-base font-bold text-slate-800">No Active Trainings</h3>
-                                                <p className="text-slate-500 text-xs max-w-sm mt-1 font-medium">
-                                                    There are no active training batches assigned to you at the moment.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                {activeTrainings.map((training) => (
+                                ) : (
+                                    <div className="flex flex-col gap-3">
+                                        {activeTrainings.map((training) => {
+                                            const isExpanded = !!expandedRows[training.batchId];
+                                            return (
+                                                <div 
+                                                    key={training.batchId} 
+                                                    className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:border-slate-350 transition-colors"
+                                                >
+                                                    {/* Accordion Row Header */}
                                                     <div
-                                                        key={training.batchId}
-                                                        className={`bg-white border border-slate-200 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_10px_35px_rgba(0,0,0,0.03)] transition-all duration-300 flex flex-col justify-between ${getCardStyle(training.status)}`}
+                                                        onClick={() => toggleRow(training.batchId)}
+                                                        className={`w-full flex items-center justify-between p-5 bg-white hover:bg-slate-50/50 transition-colors text-left cursor-pointer select-none border-l-4 ${
+                                                            training.status === "Pretest Active" ? "border-l-blue-500" :
+                                                            training.status === "Training Held" ? "border-l-amber-500" :
+                                                            training.status === "Posttest Active" ? "border-l-purple-500" :
+                                                            "border-l-slate-400"
+                                                        }`}
                                                     >
-                                                        <div>
-                                                            <div className="flex justify-between items-start gap-2 mb-3 pb-3 border-b border-slate-100">
-                                                                <div>
-                                                                    <span className="text-[10px] font-extrabold text-slate-400 tracking-wider">BATCH B-{training.batchId}</span>
-                                                                    <h3 className="text-md font-extrabold text-slate-900 leading-snug mt-0.5 min-h-[44px] line-clamp-2">
-                                                                        {training.moduleName}
-                                                                    </h3>
-                                                                </div>
-                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider shrink-0 ${getStatusBadgeClass(training.status)}`}>
+                                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center w-full pr-4">
+                                                            <div className="md:col-span-2 flex items-center gap-3">
+                                                                <span className="text-[10px] font-black text-slate-450 tracking-wider bg-slate-50 px-2 py-1 rounded border border-slate-200/60 uppercase shrink-0">B-{training.batchId}</span>
+                                                                <span className="md:hidden block text-xs font-semibold text-slate-500">{new Date(training.scheduledDate).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <div className="md:col-span-5">
+                                                                <h3 className="text-sm font-extrabold text-slate-900 leading-snug">{training.moduleName}</h3>
+                                                            </div>
+                                                            <div className="hidden md:block md:col-span-2 text-xs font-semibold text-slate-500">
+                                                                Scheduled: {new Date(training.scheduledDate).toLocaleDateString()}
+                                                            </div>
+                                                            <div className="hidden md:block md:col-span-2 text-xs font-semibold text-slate-500 truncate">
+                                                                Trainer: {training.trainerName}
+                                                            </div>
+                                                            <div className="md:col-span-1 flex items-center justify-between md:justify-end">
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${getStatusBadgeClass(training.status)}`}>
                                                                     {getStatusLabel(training.status)}
                                                                 </span>
                                                             </div>
-
-                                                            <div className="space-y-2 text-xs text-slate-500 font-semibold mb-5">
-                                                                <div className="flex items-center gap-2">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                                                    </svg>
-                                                                    <span className="truncate">Trainer: <strong className="text-slate-700 font-bold">{training.trainerName}</strong></span>
-                                                                </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-                                                                    </svg>
-                                                                    <span>Scheduled: <strong className="text-slate-700 font-bold">{new Date(training.scheduledDate).toLocaleDateString()}</strong></span>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Visual Stage Progress Stepper */}
-                                                            <div className="relative my-5 px-3">
-                                                                {/* Connection Line */}
-                                                                <div className="absolute left-[10%] right-[10%] top-4 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0">
-                                                                    <div 
-                                                                        className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-500" 
-                                                                        style={{ width: getProgressPercent(training.status, training.preTestScore, training.postTestScore) }}
-                                                                    />
-                                                                </div>
-                                                                
-                                                                {/* Steps */}
-                                                                <div className="relative flex justify-between items-center w-full z-10">
-                                                                    {getProgressSteps(training).map((step, idx) => (
-                                                                        <div key={idx} className="flex flex-col items-center">
-                                                                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-extrabold transition-all duration-300 ${step.style}`}>
-                                                                                {step.icon}
-                                                                            </div>
-                                                                            <span className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${step.labelStyle}`}>
-                                                                                {step.label}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
                                                         </div>
-
-                                                        <div>
-                                                            {/* Score progress summary */}
-                                                            <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-100/50">
-                                                                <div className="flex items-center gap-1">
-                                                                    <span className={`w-1.5 h-1.5 rounded-full ${training.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                                                                    <span>Pre: {training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}%` : 'Pending'}</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-1">
-                                                                    <span className={`w-1.5 h-1.5 rounded-full ${training.attendance ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                                                                    <span>Attended: {training.attendance ? 'Yes' : 'No'}</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-1">
-                                                                    <span className={`w-1.5 h-1.5 rounded-full ${training.postTestScore !== null ? (training.bandBadge === 'PASSED' ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
-                                                                    <span>Post: {training.postTestScore !== null ? `${Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}%` : 'Pending'}</span>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Actions */}
-                                                            {training.pendingTests && training.pendingTests.length > 0 ? (
-                                                                <div className="space-y-2">
-                                                                    {training.pendingTests.map((t) => (
-                                                                        <button
-                                                                            key={t.type}
-                                                                            onClick={() => handleStartTest(training.batchId, t.type)}
-                                                                            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow cursor-pointer border-none flex items-center justify-center gap-1.5"
-                                                                        >
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
-                                                                            </svg>
-                                                                            Start {t.type}-Test
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            ) : (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedTraining(training);
-                                                                        setShowDetailsModal(true);
-                                                                    }}
-                                                                    className="w-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all duration-350 cursor-pointer border-none flex items-center justify-center gap-1.5"
-                                                                >
-                                                                    View Training Details
-                                                                </button>
-                                                            )}
+                                                        
+                                                        {/* Expand Chevron */}
+                                                        <div className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 transition-colors">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-4 h-4 transition-transform duration-250 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                            </svg>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Accordion 2: Training History */}
-                            <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.015)]">
-                                <button
-                                    onClick={() => setTrainingHistoryExpanded(!trainingHistoryExpanded)}
-                                    className="w-full flex items-center justify-between p-6 bg-slate-50/50 hover:bg-slate-50 transition-colors text-left border-none focus:outline-none cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">Training History</h2>
-                                            <p className="text-slate-500 text-xs mt-1.5 font-medium">History of your completed and evaluated training modules</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="bg-emerald-600/10 text-emerald-600 font-extrabold text-xs px-2.5 py-1 rounded-full">
-                                            {trainingHistory.length}
-                                        </span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-5 h-5 text-slate-400 transition-transform duration-250 ${trainingHistoryExpanded ? 'rotate-180' : ''}`}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                        </svg>
-                                    </div>
-                                </button>
-
-                                {trainingHistoryExpanded && (
-                                    <div className="p-6 border-t border-slate-100">
-                                        {trainingHistory.length === 0 ? (
-                                            <div className="w-full py-12 flex flex-col items-center justify-center text-center p-6">
-                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292" />
-                                                    </svg>
-                                                </div>
-                                                <h3 className="text-base font-bold text-slate-800">No Past History</h3>
-                                                <p className="text-slate-500 text-xs max-w-sm mt-1 font-medium">
-                                                    Evaluated course details and results will show here once completed.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                {trainingHistory.map((history) => {
-                                                    const isPassed = history.bandBadge === "PASSED";
-                                                    const isFailed = history.bandBadge === "FAILED";
-
-                                                    return (
-                                                        <div
-                                                            key={history.batchId}
-                                                            className={`bg-white border border-slate-200 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_10px_35px_rgba(0,0,0,0.03)] transition-all duration-300 flex flex-col justify-between ${getHistoryCardStyle(history.bandBadge)}`}
-                                                        >
-                                                            <div>
-                                                                <div className="flex justify-between items-start gap-2 mb-3 pb-3 border-b border-slate-100">
-                                                                    <div>
-                                                                        <span className="text-[10px] font-extrabold text-slate-400 tracking-wider">
-                                                                            {new Date(history.scheduledDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                                                                        </span>
-                                                                        <h3 className="text-md font-extrabold text-slate-900 leading-snug mt-0.5 min-h-[44px] line-clamp-2">
-                                                                            {history.moduleName}
-                                                                        </h3>
-                                                                    </div>
-                                                                    <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border shrink-0 uppercase tracking-wider ${isPassed
-                                                                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                                                            : isFailed
-                                                                                ? "bg-red-50 text-red-700 border-red-100"
-                                                                                : "bg-slate-50 text-slate-500 border-slate-100"
-                                                                        }`}>
-                                                                        {history.bandBadge || "UNTESTED"}
-                                                                    </span>
+                                                    {/* Accordion Details */}
+                                                    {isExpanded && (
+                                                        <div className="p-6 bg-slate-50/50 border-t border-slate-100 space-y-6 animate-fade-in">
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold text-slate-600 bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm">
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Trainer Name</p>
+                                                                    <p className="text-slate-800 font-extrabold">{training.trainerName}</p>
                                                                 </div>
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Venue</p>
+                                                                    <p className="text-slate-800 font-extrabold truncate">{training.venue || 'N/A'}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Scheduled Date</p>
+                                                                    <p className="text-slate-800 font-extrabold">{new Date(training.scheduledDate).toLocaleDateString()}</p>
+                                                                </div>
+                                                            </div>
 
-                                                                <div className="space-y-2 text-xs text-slate-500 font-semibold mb-5">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                                                        </svg>
-                                                                        <span className="truncate">Trainer: <strong className="text-slate-700 font-bold">{history.trainerName}</strong></span>
+                                                            {/* Progress Stepper */}
+                                                            <div>
+                                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">Training Stage Progress</h4>
+                                                                <div className="relative px-3 py-1 mb-2">
+                                                                    {/* Connection Line */}
+                                                                    <div className="absolute left-[10%] right-[10%] top-5 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0">
+                                                                        <div 
+                                                                            className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-550" 
+                                                                            style={{ width: getProgressPercent(training.status, training.preTestScore, training.postTestScore) }}
+                                                                        />
+                                                                    </div>
+                                                                    
+                                                                    {/* Steps */}
+                                                                    <div className="relative flex justify-between items-center w-full z-10">
+                                                                        {getProgressSteps(training).map((step, idx) => (
+                                                                            <div key={idx} className="flex flex-col items-center">
+                                                                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-extrabold transition-all duration-300 ${step.style}`}>
+                                                                                    {step.icon}
+                                                                                </div>
+                                                                                <span className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${step.labelStyle}`}>
+                                                                                    {step.label}
+                                                                                </span>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
                                                                 </div>
                                                             </div>
 
-                                                            <div>
-                                                                {/* Summary of results */}
-                                                                <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-100/50">
-                                                                    <span>Pre: {history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}%` : "-"}</span>
-                                                                    <span className="w-px h-3.5 bg-slate-200"></span>
-                                                                    <span>Post: {history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}%` : "-"}</span>
-                                                                    <span className="w-px h-3.5 bg-slate-200"></span>
-                                                                    <span>Attended: <strong className={history.attendance ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>{history.attendance ? "Yes" : "No"}</strong></span>
+                                                            {/* Evaluation Scores / Actions */}
+                                                            <div className="border-t border-slate-200/80 pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                                {/* Left Side: Score Summaries */}
+                                                                <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-semibold bg-white px-4 py-2.5 rounded-xl border border-slate-200/60 shadow-sm w-fit">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span>Pre-Test: <strong className="text-slate-800">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
+                                                                    </div>
+                                                                    <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`w-2 h-2 rounded-full ${training.attendance ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span>Attendance: <strong className="text-slate-800">{training.attendance ? 'Present' : 'Absent'}</strong></span>
+                                                                    </div>
+                                                                    <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`w-2 h-2 rounded-full ${training.postTestScore !== null ? (training.bandBadge === 'PASSED' ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
+                                                                        <span>Post-Test: <strong className="text-slate-800">{training.postTestScore !== null ? `${Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
+                                                                    </div>
                                                                 </div>
 
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedTraining(history);
-                                                                        setShowDetailsModal(true);
-                                                                    }}
-                                                                    className="w-full bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all duration-350 cursor-pointer border-none flex items-center justify-center gap-1.5"
-                                                                >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-slate-400">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-                                                                    </svg>
-                                                                    Review Performance
-                                                                </button>
+                                                                {/* Right Side: Action Button */}
+                                                                <div className="shrink-0">
+                                                                    {training.pendingTests && training.pendingTests.length > 0 ? (
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {training.pendingTests.map((t) => (
+                                                                                <button
+                                                                                    key={t.type}
+                                                                                    onClick={() => handleStartTest(training.batchId, t.type)}
+                                                                                    className="bg-orange-600 hover:bg-orange-500 text-white font-black text-xs px-5 py-3 rounded-xl transition-all duration-300 shadow-sm hover:shadow cursor-pointer border-none flex items-center gap-2"
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
+                                                                                    </svg>
+                                                                                    Start {t.type}-Test
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setSelectedTraining(training);
+                                                                                setShowDetailsModal(true);
+                                                                            }}
+                                                                            className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-5 py-3 rounded-xl transition-all duration-300 cursor-pointer border-none flex items-center gap-1.5"
+                                                                        >
+                                                                            View Performance Summary
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                )}
-                            </div>
+                                )
+                            ) : (
+                                trainingHistory.length === 0 ? (
+                                    <div className="w-full py-16 flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-200/80 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.015)]">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-base font-bold text-slate-800">No Past History</h3>
+                                        <p className="text-slate-500 text-xs max-w-sm mt-1 font-medium">
+                                            Evaluated course details and results will show here once completed.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-3">
+                                        {trainingHistory.map((history) => {
+                                            const isExpanded = !!expandedRows[history.batchId];
+                                            const isPassed = history.bandBadge === "PASSED";
+                                            const isFailed = history.bandBadge === "FAILED";
+                                            return (
+                                                <div 
+                                                    key={history.batchId} 
+                                                    className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:border-slate-355 transition-colors"
+                                                >
+                                                    {/* Accordion Row Header */}
+                                                    <div
+                                                        onClick={() => toggleRow(history.batchId)}
+                                                        className={`w-full flex items-center justify-between p-5 bg-white hover:bg-slate-50/50 transition-colors text-left cursor-pointer select-none border-l-4 ${
+                                                            isPassed ? "border-l-emerald-500" :
+                                                            isFailed ? "border-l-red-500" :
+                                                            "border-l-slate-400"
+                                                        }`}
+                                                    >
+                                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center w-full pr-4">
+                                                            <div className="md:col-span-2 flex items-center gap-3">
+                                                                <span className="text-[10px] font-black text-slate-455 tracking-wider bg-slate-50 px-2 py-1 rounded border border-slate-200/60 uppercase shrink-0">B-{history.batchId}</span>
+                                                                <span className="md:hidden block text-xs font-semibold text-slate-500">
+                                                                    {new Date(history.scheduledDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                                </span>
+                                                            </div>
+                                                            <div className="md:col-span-5">
+                                                                <h3 className="text-sm font-extrabold text-slate-900 leading-snug">{history.moduleName}</h3>
+                                                            </div>
+                                                            <div className="hidden md:block md:col-span-2 text-xs font-semibold text-slate-500">
+                                                                {new Date(history.scheduledDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                            </div>
+                                                            <div className="hidden md:block md:col-span-2 text-xs font-semibold text-slate-500 truncate">
+                                                                Trainer: {history.trainerName}
+                                                            </div>
+                                                            <div className="md:col-span-1 flex items-center justify-between md:justify-end">
+                                                                <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold border shrink-0 uppercase tracking-wider ${
+                                                                    isPassed
+                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                        : isFailed
+                                                                            ? "bg-red-50 text-red-700 border-red-100"
+                                                                            : "bg-slate-50 text-slate-500 border-slate-100"
+                                                                }`}>
+                                                                    {history.bandBadge || "UNTESTED"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Expand Chevron */}
+                                                        <div className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 transition-colors">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={`w-4 h-4 transition-transform duration-250 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
 
+                                                    {/* Accordion Details */}
+                                                    {isExpanded && (
+                                                        <div className="p-6 bg-slate-50/50 border-t border-slate-100 space-y-6 animate-fade-in">
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold text-slate-600 bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm">
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Trainer Name</p>
+                                                                    <p className="text-slate-800 font-extrabold">{history.trainerName}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Venue</p>
+                                                                    <p className="text-slate-800 font-extrabold truncate">{history.venue || 'N/A'}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Completed Date</p>
+                                                                    <p className="text-slate-800 font-extrabold">{new Date(history.scheduledDate).toLocaleDateString()}</p>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Performance chart info */}
+                                                            <div className="border-t border-slate-200/80 pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                                {/* Left Side: Scores Summary */}
+                                                                <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-semibold bg-white px-4 py-2.5 rounded-xl border border-slate-200/60 shadow-sm w-fit">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`w-2 h-2 rounded-full ${history.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span>Pre-Test: <strong className="text-slate-800">{history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
+                                                                    </div>
+                                                                    <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`w-2 h-2 rounded-full ${history.attendance ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span>Attendance: <strong className="text-slate-800">{history.attendance ? 'Present' : 'Absent'}</strong></span>
+                                                                    </div>
+                                                                    <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`w-2 h-2 rounded-full ${history.postTestScore !== null ? (isPassed ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
+                                                                        <span>Post-Test: <strong className="text-slate-800">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Right Side: Action Button */}
+                                                                <div className="shrink-0">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSelectedTraining(history);
+                                                                            setShowDetailsModal(true);
+                                                                        }}
+                                                                        className="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-bold text-xs px-5 py-3 rounded-xl transition-all duration-350 cursor-pointer border-none flex items-center gap-1.5"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-slate-400">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                                                                        </svg>
+                                                                        Review Performance Detail
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )
+                            )}
                         </div>
                     </>
                 )}
