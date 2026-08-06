@@ -30,7 +30,9 @@ const addClient = async (req, res) => {
                 validatedReps.push({
                     name: rep.name.trim(),
                     email: rep.email ? rep.email.trim() : '',
-                    phoneNo: rep.phoneNo ? rep.phoneNo.trim() : ''
+                    phoneNo: rep.phoneNo ? rep.phoneNo.trim() : '',
+                    designation: rep.designation ? rep.designation.trim() : '',
+                    department: rep.department ? rep.department.trim() : ''
                 });
             }
         }
@@ -121,7 +123,9 @@ const updateClientController = async (req, res) => {
                 validatedReps.push({
                     name: rep.name.trim(),
                     email: rep.email ? rep.email.trim() : '',
-                    phoneNo: rep.phoneNo ? rep.phoneNo.trim() : ''
+                    phoneNo: rep.phoneNo ? rep.phoneNo.trim() : '',
+                    designation: rep.designation ? rep.designation.trim() : '',
+                    department: rep.department ? rep.department.trim() : ''
                 });
             }
         }
