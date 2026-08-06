@@ -549,13 +549,6 @@ export default function EmployeeDashboard() {
                                                                     </svg>
                                                                     <span>Scheduled: <strong className="text-slate-700 font-bold">{new Date(training.scheduledDate).toLocaleDateString()}</strong></span>
                                                                 </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                                    </svg>
-                                                                    <span className="truncate">Venue: <strong className="text-slate-700 font-bold">{training.venue}</strong></span>
-                                                                </div>
                                                             </div>
 
                                                             {/* Visual Stage Progress Stepper */}
@@ -589,7 +582,7 @@ export default function EmployeeDashboard() {
                                                             <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-100/50">
                                                                 <div className="flex items-center gap-1">
                                                                     <span className={`w-1.5 h-1.5 rounded-full ${training.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                                                                    <span>Pre: {training.preTestScore !== null ? `${training.preTestScore}/${training.preTotalQuestions}` : 'Pending'}</span>
+                                                                    <span>Pre: {training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}%` : 'Pending'}</span>
                                                                 </div>
                                                                 <div className="flex items-center gap-1">
                                                                     <span className={`w-1.5 h-1.5 rounded-full ${training.attendance ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
@@ -597,7 +590,7 @@ export default function EmployeeDashboard() {
                                                                 </div>
                                                                 <div className="flex items-center gap-1">
                                                                     <span className={`w-1.5 h-1.5 rounded-full ${training.postTestScore !== null ? (training.bandBadge === 'PASSED' ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
-                                                                    <span>Post: {training.postTestScore !== null ? `${training.postTestScore}/${training.postTotalQuestions}` : 'Pending'}</span>
+                                                                    <span>Post: {training.postTestScore !== null ? `${Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}%` : 'Pending'}</span>
                                                                 </div>
                                                             </div>
 
@@ -715,13 +708,6 @@ export default function EmployeeDashboard() {
                                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                                                         </svg>
                                                                         <span className="truncate">Trainer: <strong className="text-slate-700 font-bold">{history.trainerName}</strong></span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-slate-400">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                                        </svg>
-                                                                        <span className="truncate">Venue: <strong className="text-slate-700 font-bold">{history.venue || 'N/A'}</strong></span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -961,63 +947,49 @@ export default function EmployeeDashboard() {
                                 <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Evaluation Scores</h4>
                                 
                                 {/* Pre test bar */}
-                                <div>
-                                    <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                                        <span className="text-slate-500">Pre-Test Score</span>
-                                        <span className="text-slate-800 font-bold">{prePercent !== null ? `${prePercent}% (${selectedTraining.preTestScore}/${selectedTraining.preTotalQuestions})` : "Pending"}</span>
-                                    </div>
-                                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div 
-                                            className="h-full bg-amber-500 rounded-full transition-all duration-500" 
-                                            style={{ width: prePercent !== null ? `${prePercent}%` : '0%' }}
-                                        />
-                                    </div>
-                                </div>
+                                                                <div>
+                                                                    <div className="flex justify-between items-center text-xs font-bold mb-1.5">
+                                                                        <span className="text-slate-500">Pre-Test Score</span>
+                                                                        <span className="text-slate-805 font-bold">{prePercent !== null ? `${prePercent}%` : "Pending"}</span>
+                                                                    </div>
+                                                                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                        <div 
+                                                                            className="h-full bg-amber-500 rounded-full transition-all duration-500" 
+                                                                            style={{ width: prePercent !== null ? `${prePercent}%` : '0%' }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
 
-                                {/* Post test bar */}
-                                <div>
-                                    <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                                        <span className="text-slate-500">Post-Test Score</span>
-                                        <span className="text-slate-800 font-bold">{postPercent !== null ? `${postPercent}% (${selectedTraining.postTestScore}/${selectedTraining.postTotalQuestions})` : "Pending"}</span>
-                                    </div>
-                                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div 
-                                            className={`h-full rounded-full transition-all duration-500 ${isPassed ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-orange-500'}`} 
-                                            style={{ width: postPercent !== null ? `${postPercent}%` : '0%' }}
-                                        />
-                                    </div>
-                                </div>
+                                                                {/* Post test bar */}
+                                                                <div>
+                                                                    <div className="flex justify-between items-center text-xs font-bold mb-1.5">
+                                                                        <span className="text-slate-500">Post-Test Score</span>
+                                                                        <span className="text-slate-850 font-bold">{postPercent !== null ? `${postPercent}%` : "Pending"}</span>
+                                                                    </div>
+                                                                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                        <div 
+                                                                            className={`h-full rounded-full transition-all duration-500 ${isPassed ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-orange-500'}`} 
+                                                                            style={{ width: postPercent !== null ? `${postPercent}%` : '0%' }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
 
-                                {/* Progress/Attendance badge list */}
-                                <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 text-xs font-semibold">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-slate-400">Attendance:</span>
-                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${selectedTraining.attendance ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                                            {selectedTraining.attendance ? 'Present' : 'Absent'}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-slate-400">Final Result:</span>
-                                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${isPassed ? 'bg-emerald-50 text-emerald-700' : isFailed ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
-                                            {selectedTraining.bandBadge || 'IN EVALUATION'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {improvement !== null && improvement > 0 && (
-                                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-3.5 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                                <path fillRule="evenodd" d="M10 17a.75.75 0 0 1-.75-.75V5.612L5.29 9.77a.75.75 0 0 1-1.08-1.04l5.25-5.5a.75.75 0 0 1 1.08 0l5.25 5.5a.75.75 0 1 1-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0 1 10 17Z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-emerald-800">Excellent Progress!</p>
-                                            <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Your score improved by {improvement}% from the Pre-Test to the Post-Test.</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                                                                {/* Progress/Attendance badge list */}
+                                                                <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 text-xs font-semibold">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-slate-400">Attendance:</span>
+                                                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${selectedTraining.attendance ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                                                            {selectedTraining.attendance ? 'Present' : 'Absent'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-slate-400">Final Result:</span>
+                                                                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${isPassed ? 'bg-emerald-50 text-emerald-700' : isFailed ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
+                                                                            {selectedTraining.bandBadge || 'IN EVALUATION'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
 
                             <button
                                 onClick={() => {
