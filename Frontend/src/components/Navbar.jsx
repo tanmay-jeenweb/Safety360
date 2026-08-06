@@ -548,7 +548,7 @@ export default function Navbar() {
                             </div>
                         )}
 
-                        {/* Training Exceptions Tab */}
+                        {/* Training Approvals Tab */}
                         {(isAdmin || hasPermission("employee_training_approval", "read")) && (
                             <div className="relative">
                                 <button
@@ -557,7 +557,7 @@ export default function Navbar() {
                                         }`}
                                 >
                                     <span className="flex items-center gap-2 font-semibold text-white truncate">
-                                        Exceptions
+                                        Approvals
                                     </span>
                                 </button>
                             </div>

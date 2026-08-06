@@ -30,8 +30,8 @@ import CreateFeedbackPaper from "./pages/admin/feedback/CreateFeedbackPaper";
 import EmployeeMaster from "./pages/admin/employee/EmployeeMaster";
 import BatchMaster from "./pages/admin/batch/BatchMaster";
 import ManageBatch from "./pages/admin/batch/ManageBatch";
-import RequestTrainingException from "./pages/admin/batch/RequestTrainingException";
-import TrainingExceptionApprovals from "./pages/admin/batch/TrainingExceptionApprovals";
+import RequestTrainingApproval from "./pages/admin/batch/RequestTrainingApproval";
+import TrainingApprovals from "./pages/admin/batch/TrainingApprovals";
 import ActivityReport from "./pages/admin/ActivityReport";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -176,11 +176,11 @@ export default function AppRoutes() {
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_training_approval" requiredAction="read" />}>
-                <Route path="/admin/batches/allow-training" element={<RequestTrainingException />} />
+                <Route path="/admin/batches/allow-training" element={<RequestTrainingApproval />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="employee_training_approval" requiredAction="read" />}>
-                <Route path="/admin/batches/training-approvals" element={<TrainingExceptionApprovals />} />
+                <Route path="/admin/batches/training-approvals" element={<TrainingApprovals />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="admin" requiredMaster="question_paper" requiredAction="write" />}>

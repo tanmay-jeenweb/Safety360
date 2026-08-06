@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import Navbar from "../../../components/Navbar";
 import DataTable from "../../../components/DataTable";
-import { getExceptionRequests, updateExceptionRequestStatus } from "../../../api/batchApi";
+import { getApprovalRequests, updateApprovalRequestStatus } from "../../../api/batchApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { usePermission } from "../../../context/PermissionContext";
 
-export default function TrainingExceptionApprovals() {
+export default function TrainingApprovals() {
     const navigate = useNavigate();
     const { hasPermission } = usePermission();
     const [requests, setRequests] = useState([]);
@@ -19,10 +19,10 @@ export default function TrainingExceptionApprovals() {
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            const res = await getExceptionRequests();
+            const res = await getApprovalRequests();
             setRequests(res.data.data || []);
         } catch (err) {
-            console.error("Failed to load exception requests", err);
+            console.error("Failed to load training approval requests", err);
             toast.error("Failed to load requests");
         } finally {
             setLoading(false);
@@ -38,10 +38,10 @@ export default function TrainingExceptionApprovals() {
 
         setActionLoadingId(requestId);
         try {
-            await updateExceptionRequestStatus(requestId, status);
+            await updateApprovalRequestStatus(requestId, status);
             toast.success(`Request successfully ${status === 'Approved' ? 'approved' : 'rejected'}`);
             // Refresh
-            const res = await getExceptionRequests();
+            const res = await getApprovalRequests();
             setRequests(res.data.data || []);
         } catch (err) {
             console.error(`Failed to update status to ${status}`, err);
@@ -134,7 +134,7 @@ export default function TrainingExceptionApprovals() {
                                 disabled={actionLoadingId !== null || !canApprove}
                                 onClick={() => handleAction(row.id, "Approved")}
                                 className="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[10px] font-extrabold shadow-sm transition-all border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                title="Approve Exception"
+                                title="Approve Request"
                             >
                                 <i className="fa-solid fa-check"></i>
                                 <span>Approve</span>
@@ -143,7 +143,7 @@ export default function TrainingExceptionApprovals() {
                                 disabled={actionLoadingId !== null || !canApprove}
                                 onClick={() => handleAction(row.id, "Rejected")}
                                 className="px-2.5 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[10px] font-extrabold shadow-sm transition-all border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                title="Reject Exception"
+                                title="Reject Request"
                             >
                                 <i className="fa-solid fa-xmark"></i>
                                 <span>Reject</span>
@@ -189,10 +189,10 @@ export default function TrainingExceptionApprovals() {
                                         : 'border-transparent text-slate-500 hover:text-slate-755 hover:border-slate-300'
                                     }`}
                             >
-                                {status === "Pending" && "Pending Exception Approvals"}
-                                {status === "Approved" && "Approved Exceptions"}
-                                {status === "Rejected" && "Rejected Exceptions"}
-                                {status === "All" && "Exception History"}
+                                {status === "Pending" && "Pending Approvals"}
+                                {status === "Approved" && "Approved Approvals"}
+                                {status === "Rejected" && "Rejected Approvals"}
+                                {status === "All" && "Approval History"}
                             </button>
                         ))}
                     </nav>
@@ -200,12 +200,12 @@ export default function TrainingExceptionApprovals() {
 
                 {/* DataTable Integration */}
                 <DataTable
-                    tableId="training_exception_approvals"
-                    title="Training Exception Approvals"
+                    tableId="training_approvals"
+                    title="Training Approvals"
                     data={filteredRequests}
                     columns={columns}
                     loading={loading}
-                    searchPlaceholder="Search exception requests..."
+                    searchPlaceholder="Search approval requests..."
                 />
             </main>
         </div>

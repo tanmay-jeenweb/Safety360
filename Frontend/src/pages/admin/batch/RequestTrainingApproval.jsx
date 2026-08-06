@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import Navbar from "../../../components/Navbar";
-import { getBatches, getBatchParticipants, requestTrainingException, getExceptionRequests } from "../../../api/batchApi";
+import { getBatches, getBatchParticipants, requestTrainingApproval, getApprovalRequests } from "../../../api/batchApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-export default function RequestTrainingException() {
+export default function RequestTrainingApproval() {
     const navigate = useNavigate();
     const [batches, setBatches] = useState([]);
     const [selectedBatchId, setSelectedBatchId] = useState("");
@@ -20,7 +20,7 @@ export default function RequestTrainingException() {
         try {
             const [batchesRes, requestsRes] = await Promise.all([
                 getBatches(),
-                getExceptionRequests()
+                getApprovalRequests()
             ]);
             // Filter batches that are active and not closed
             const activeBatches = (batchesRes.data.data || []).filter(b => 
@@ -62,7 +62,7 @@ export default function RequestTrainingException() {
         fetchParticipants();
     }, [selectedBatchId]);
 
-    // Trainees who missed the pre-test and don't already have an approved exception
+    // Trainees who missed the pre-test and don't already have an approved training approval
     const ineligibleTrainees = useMemo(() => {
         return participants.filter(p => p.pre_test_score === null && p.allow_training_exception === 0);
     }, [participants]);
@@ -76,16 +76,16 @@ export default function RequestTrainingException() {
 
         setSubmitting(true);
         try {
-            await requestTrainingException(selectedBatchId, selectedEmployeeId, comments);
-            toast.success("Exception request submitted to administrator");
+            await requestTrainingApproval(selectedBatchId, selectedEmployeeId, comments);
+            toast.success("Training approval request submitted to administrator");
             setComments("");
             setSelectedEmployeeId("");
             // Reload requests
-            const reqsRes = await getExceptionRequests();
+            const reqsRes = await getApprovalRequests();
             setRequests(reqsRes.data.data || []);
         } catch (err) {
-            console.error("Failed to submit exception request", err);
-            toast.error(err?.response?.data?.message || "Failed to submit exception request");
+            console.error("Failed to submit training approval request", err);
+            toast.error(err?.response?.data?.message || "Failed to submit training approval request");
         } finally {
             setSubmitting(false);
         }
@@ -109,7 +109,7 @@ export default function RequestTrainingException() {
                 <div className="flex-1 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-slate-300 border-t-orange-500 rounded-full animate-spin"></div>
-                        <span className="text-sm font-semibold text-slate-600">Loading request exception page...</span>
+                        <span className="text-sm font-semibold text-slate-600">Loading request approval page...</span>
                     </div>
                 </div>
             </div>
@@ -127,7 +127,7 @@ export default function RequestTrainingException() {
                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#253361]"></div>
                     <div className="pl-2">
                         <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Allow Employee to Attend Training</h1>
-                        <p className="text-slate-500 text-xs font-semibold mt-1">Submit exception requests for trainees who missed their pre-test assessments.</p>
+                        <p className="text-slate-500 text-xs font-semibold mt-1">Submit training approval requests for trainees who missed their pre-test assessments.</p>
                     </div>
                     <button
                         onClick={() => navigate("/admin/batches")}
@@ -143,7 +143,7 @@ export default function RequestTrainingException() {
                     {/* Submission Form */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5 lg:col-span-1">
                         <div className="border-b border-slate-100 pb-3">
-                            <h3 className="font-extrabold text-slate-900 text-xs tracking-wider uppercase">Submit Exception Request</h3>
+                            <h3 className="font-extrabold text-slate-900 text-xs tracking-wider uppercase">Submit Approval Request</h3>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -187,7 +187,7 @@ export default function RequestTrainingException() {
                                 <textarea
                                     value={comments}
                                     onChange={(e) => setComments(e.target.value)}
-                                    placeholder="Provide a brief reason for requesting this exception..."
+                                    placeholder="Provide a brief reason for requesting this training approval..."
                                     rows="4"
                                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white"
                                 />
@@ -198,15 +198,15 @@ export default function RequestTrainingException() {
                                 disabled={submitting || !selectedBatchId || !selectedEmployeeId}
                                 className="w-full bg-[#253361] hover:bg-[#1a2446] text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-none flex justify-center items-center gap-1.5"
                             >
-                                {submitting ? "Submitting..." : "Submit Exception Request"}
+                                {submitting ? "Submitting..." : "Submit Approval Request"}
                             </button>
                         </form>
                     </div>
 
-                    {/* Exceptions List */}
+                    {/* Approvals List */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5 lg:col-span-2">
                         <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
-                            <h3 className="font-extrabold text-slate-900 text-xs tracking-wider uppercase">My Exception Requests History</h3>
+                            <h3 className="font-extrabold text-slate-900 text-xs tracking-wider uppercase">My Approval Requests History</h3>
                             <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">
                                 Total: {requests.length}
                             </span>
@@ -227,7 +227,7 @@ export default function RequestTrainingException() {
                                     {requests.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" className="py-8 text-center text-sm font-semibold text-slate-400">
-                                                No exception requests submitted yet.
+                                                No training approval requests submitted yet.
                                             </td>
                                         </tr>
                                     ) : (
