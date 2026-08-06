@@ -314,7 +314,7 @@ const importEmployees = async (records, addedBy) => {
                         client_id,
                         site_id,
                         added_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `;
                 await connection.execute(insertQuery, [
                     code,
