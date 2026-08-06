@@ -1017,66 +1017,77 @@ export default function ManageBatch() {
                                     const preTotal = preQp?.questions?.length || 0;
                                     const postQp = questionPapers.find(q => q.id === batch?.post_test_question_paper_id);
                                     const postTotal = postQp?.questions?.length || 0;
+                                    const passingMarks = trainingModule?.passing_marks || 0;
 
-                                    return participants.map(part => (
-                                        <tr key={part.id} className="hover:bg-slate-50/50 transition-colors text-sm">
-                                            <td className="py-4 px-6 font-mono text-slate-500 font-semibold text-xs">{part.employee_code}</td>
-                                            <td className="py-4 px-6">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-slate-900">{part.full_name}</span>
-                                                    <span className="text-[11px] text-slate-400 mt-0.5">{part.employee_type}</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-6 text-center">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={Boolean(part.attendance)}
-                                                    disabled={!batch.status || batch.status.toLowerCase() !== "training held"}
-                                                    onChange={() => handleAttendanceChange(part.employee_id, part.attendance)}
-                                                    className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                                />
-                                            </td>
-                                            <td className="py-4 px-6 text-center font-bold text-slate-700">{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
-                                            <td className="py-4 px-6 text-center">
-                                                {part.post_test_score !== null ? (
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="font-bold text-slate-700">{part.post_test_score}</span>
-                                                        {part.post_test_attempts_count > 0 && (
-                                                            <span className="text-[10px] text-slate-400 font-normal">({part.post_test_attempts_count} attempt{part.post_test_attempts_count > 1 ? 's' : ''})</span>
-                                                        )}
+                                    return participants.map(part => {
+                                        const preScorePercent = part.pre_test_score !== null && preTotal > 0 ? Math.round((part.pre_test_score / preTotal) * 100) : null;
+                                        const isPrePass = preScorePercent !== null ? preScorePercent >= passingMarks : null;
+                                        const preColorClass = isPrePass === null ? "text-slate-700" : (isPrePass ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold");
+
+                                        const postScorePercent = part.post_test_score !== null && postTotal > 0 ? Math.round((part.post_test_score / postTotal) * 100) : null;
+                                        const isPostPass = postScorePercent !== null ? postScorePercent >= passingMarks : null;
+                                        const postColorClass = isPostPass === null ? "text-slate-700" : (isPostPass ? "text-emerald-600 font-extrabold" : "text-rose-600 font-extrabold");
+
+                                        return (
+                                            <tr key={part.id} className="hover:bg-slate-50/50 transition-colors text-sm">
+                                                <td className="py-4 px-6 font-mono text-slate-500 font-semibold text-xs">{part.employee_code}</td>
+                                                <td className="py-4 px-6">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-slate-900">{part.full_name}</span>
+                                                        <span className="text-[11px] text-slate-400 mt-0.5">{part.employee_type}</span>
                                                     </div>
-                                                ) : (
-                                                    <span className="font-bold text-slate-700">—</span>
-                                                )}
-                                            </td>
-                                            <td className="py-4 px-6 text-center font-bold text-slate-700">
-                                                {part.band_badge === 'PASSED' ? (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
-                                                        Pass
-                                                    </span>
-                                                ) : part.band_badge === 'FAILED' ? (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
-                                                        Fail
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-slate-400 font-medium">—</span>
-                                                )}
-                                            </td>
-                                            <td className="py-4 px-6 text-right">
-                                                {batch.status === 'Draft' && (
-                                                    <button
-                                                        onClick={() => handleRemoveParticipant(part.employee_id)}
-                                                        className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
-                                                        title="Remove Trainee"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-4.5 h-4.5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                                        </svg>
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))
+                                                </td>
+                                                <td className="py-4 px-6 text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={Boolean(part.attendance)}
+                                                        disabled={!batch.status || batch.status.toLowerCase() !== "training held"}
+                                                        onChange={() => handleAttendanceChange(part.employee_id, part.attendance)}
+                                                        className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    />
+                                                </td>
+                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : "—"}</td>
+                                                <td className="py-4 px-6 text-center">
+                                                    {part.post_test_score !== null ? (
+                                                        <div className="flex flex-col items-center">
+                                                            <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
+                                                            {part.post_test_attempts_count > 0 && (
+                                                                <span className="text-[10px] text-slate-400 font-normal">({part.post_test_attempts_count} attempt{part.post_test_attempts_count > 1 ? 's' : ''})</span>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="font-bold text-slate-700">—</span>
+                                                    )}
+                                                </td>
+                                                <td className="py-4 px-6 text-center font-bold text-slate-700">
+                                                    {part.band_badge === 'PASSED' ? (
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                                                            Pass
+                                                        </span>
+                                                    ) : part.band_badge === 'FAILED' ? (
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
+                                                            Fail
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-slate-400 font-medium">—</span>
+                                                    )}
+                                                </td>
+                                                <td className="py-4 px-6 text-right">
+                                                    {batch.status === 'Draft' && (
+                                                        <button
+                                                            onClick={() => handleRemoveParticipant(part.employee_id)}
+                                                            className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                                                            title="Remove Trainee"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-4.5 h-4.5">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 })()}
                             </tbody>
                         </table>
