@@ -4,7 +4,8 @@ const {
     getQuestionById,
     updateQuestion,
     deleteQuestion,
-    getQuestionsByModule
+    getQuestionsByModule,
+    bulkCreateQuestions
 } = require("../models/questionBankModel.js");
 const { createAuditLog } = require("../models/auditLogModel.js");
 
@@ -178,11 +179,62 @@ const getQuestionsByModuleController = async (req, res) => {
     }
 };
 
+// ─── Bulk Import Questions ────────────────────────────────────────────────────
+const bulkAddQuestionsController = async (req, res) => {
+    try {
+        const { questions } = req.body;
+
+        if (!Array.isArray(questions) || questions.length === 0) {
+            return res.status(400).json({ success: false, message: "A list of questions is required for import." });
+        }
+
+        // Basic sanity check
+        for (const q of questions) {
+            if (!q.moduleId) {
+                return res.status(400).json({ success: false, message: "Module association is required for all questions." });
+            }
+            if (!q.questionText || !q.questionText.trim()) {
+                return res.status(400).json({ success: false, message: "Question text is required for all questions." });
+            }
+            if (!Array.isArray(q.options) || q.options.length < 2) {
+                return res.status(400).json({ success: false, message: "At least 2 options are required for MCQ questions." });
+            }
+            if (!q.correctAnswer || !q.correctAnswer.trim()) {
+                return res.status(400).json({ success: false, message: "Correct answer is required for all questions." });
+            }
+        }
+
+        const addedBy = req.user.id;
+        const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
+        
+        await bulkCreateQuestions(questions, addedBy);
+
+        await createAuditLog(
+            addedBy,
+            req.user?.name || req.user?.username || 'Unknown',
+            deviceId,
+            'Question Bank Master',
+            'bulk_imported',
+            null,
+            { count: questions.length }
+        );
+
+        res.status(201).json({
+            success: true,
+            message: `Successfully imported ${questions.length} questions.`
+        });
+    } catch (error) {
+        console.error("Error bulk importing questions:", error);
+        res.status(500).json({ success: false, message: "Failed to import questions." });
+    }
+};
+
 module.exports = {
     addQuestionController,
     getAllQuestionsController,
     getQuestionByIdController,
     updateQuestionController,
     deleteQuestionController,
-    getQuestionsByModuleController
+    getQuestionsByModuleController,
+    bulkAddQuestionsController
 };

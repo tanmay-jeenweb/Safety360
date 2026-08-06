@@ -174,6 +174,49 @@ const getQuestionsByModule = async (moduleId) => {
     }));
 };
 
+const bulkCreateQuestions = async (questionsList, addedBy) => {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const results = [];
+        
+        const query = `
+            INSERT INTO question_bank (
+                module_id,
+                language,
+                question_type,
+                question_text,
+                options,
+                correct_answer,
+                added_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        for (const q of questionsList) {
+            const optionsJson = JSON.stringify(q.options || []);
+            const params = [
+                q.moduleId,
+                q.language || 'English',
+                q.questionType || 'MCQ',
+                q.questionText,
+                optionsJson,
+                q.correctAnswer,
+                addedBy
+            ];
+            const [result] = await connection.execute(query, params);
+            results.push(result);
+        }
+
+        await connection.commit();
+        return results;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
 module.exports = {
     createQuestionBankTable,
     createQuestion,
@@ -181,6 +224,7 @@ module.exports = {
     getQuestionById,
     updateQuestion,
     deleteQuestion,
-    getQuestionsByModule
+    getQuestionsByModule,
+    bulkCreateQuestions
 };
 
