@@ -402,11 +402,11 @@ export default function BatchMaster() {
                 label: "Status",
                 render: (row) => (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                        row.status === 'Pretest Active' 
+                        row.status === 'Pretest Active' || row.status === 'Posttest Active'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                             : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}>
-                        {row.status === 'Feedback' ? 'Closed' : row.status === 'Pretest Active' ? 'Pre-Validation Active' : row.status === 'Posttest Active' ? 'Post-Validation Active' : row.status}
+                        {row.status === 'Feedback' ? 'Closed' : row.status === 'Pretest Active' ? 'Pre Validation Active' : row.status === 'Posttest Active' ? 'Post Validation Active' : row.status}
                     </span>
                 )
             }

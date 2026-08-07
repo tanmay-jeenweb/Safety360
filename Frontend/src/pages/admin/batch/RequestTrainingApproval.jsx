@@ -120,7 +120,7 @@ export default function RequestTrainingApproval() {
         <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-800">
             <Navbar />
 
-            <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
+            <main className="flex-1 w-full mx-auto p-6 md:p-8 space-y-6">
                 
                 {/* Page Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">

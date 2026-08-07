@@ -366,13 +366,6 @@ export default function ManageBatch() {
 
         // Intercept Training Held -> Posttest Active transition to show the Post-Test Question Paper select modal
         if (batch.status === "Training Held" && nextStep.value === "Posttest Active") {
-            if (batch.post_test_question_paper_id) {
-                let confirmMessage = "Trainees who have not completed the post-validation will not be able to attend/take it anymore. Are you sure you want to proceed?";
-                const confirmAdvance = window.confirm(confirmMessage);
-                if (!confirmAdvance) return;
-                await submitStatusAdvance(nextStep.value, nextStatusLabel);
-                return;
-            }
             setSelectedPostQpId(batch.post_test_question_paper_id || "");
             setIsPostQpModalOpen(true);
             return;
@@ -559,7 +552,7 @@ export default function ManageBatch() {
                                         setIsQpModalOpen(false);
                                         await submitStatusAdvance("Pretest Active", "Pre-Validation Active", {
                                             preTestQuestionPaperId: Number(selectedQpId),
-                                            postTestQuestionPaperId: Number(selectedQpId)
+                                            postTestQuestionPaperId: null
                                         });
                                     }}
                                     disabled={!selectedQpId}
@@ -807,7 +800,7 @@ export default function ManageBatch() {
 
 
             {/* Main Area */}
-            <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
+            <main className="flex-1 w-full mx-auto p-6 md:p-8 space-y-6">
 
                 {/* Batch Header Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -825,7 +818,7 @@ export default function ManageBatch() {
                                     ? 'bg-orange-50 text-orange-700 border-orange-200'
                                     : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 }`}>
-                                {batch.status}
+                                {batch.status === 'Pretest Active' ? 'Pre Validation Active' : batch.status === 'Posttest Active' ? 'Post Validation Active' : batch.status}
                             </span>
                         </div>
                     </div>
