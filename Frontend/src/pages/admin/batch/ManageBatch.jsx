@@ -818,7 +818,7 @@ export default function ManageBatch() {
                                     ? 'bg-orange-50 text-orange-700 border-orange-200'
                                     : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 }`}>
-                                {batch.status}
+                                {batch.status === 'Pretest Active' ? 'Pre Validation Active' : batch.status === 'Posttest Active' ? 'Post Validation Active' : batch.status}
                             </span>
                         </div>
                     </div>
