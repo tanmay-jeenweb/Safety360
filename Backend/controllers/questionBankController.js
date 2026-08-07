@@ -12,10 +12,11 @@ const { createAuditLog } = require("../models/auditLogModel.js");
 // ─── Add Question ────────────────────────────────────────────────────────────
 const addQuestionController = async (req, res) => {
     try {
-        const { moduleId, language, questionType, questionText, options, correctAnswer } = req.body;
+        const { moduleId, moduleIds, language, questionType, questionText, options, correctAnswer, valuationType } = req.body;
 
-        if (!moduleId) {
-            return res.status(400).json({ success: false, message: "Module association is required" });
+        const targetModuleIds = Array.isArray(moduleIds) ? moduleIds : (moduleId ? [moduleId] : []);
+        if (targetModuleIds.length === 0) {
+            return res.status(400).json({ success: false, message: "At least one module association is required" });
         }
         if (!questionText || !questionText.trim()) {
             return res.status(400).json({ success: false, message: "Question text is required" });
@@ -29,7 +30,14 @@ const addQuestionController = async (req, res) => {
 
         const addedBy = req.user.id;
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
-        const result = await createQuestion(req.body, addedBy);
+        
+        // Pass normalized values to createQuestion
+        const requestData = {
+            ...req.body,
+            moduleIds: targetModuleIds,
+            valuationType: valuationType || 'Both'
+        };
+        const result = await createQuestion(requestData, addedBy);
 
         await createAuditLog(
             addedBy,
@@ -38,7 +46,7 @@ const addQuestionController = async (req, res) => {
             'Question Bank Master',
             'created',
             null,
-            { id: result.insertId, ...req.body, added_by: addedBy }
+            { id: result.insertId, ...requestData, added_by: addedBy }
         );
 
         res.status(201).json({
@@ -89,15 +97,16 @@ const getQuestionByIdController = async (req, res) => {
 const updateQuestionController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { moduleId, questionText, options, correctAnswer } = req.body;
+        const { moduleId, moduleIds, questionText, options, correctAnswer, valuationType } = req.body;
 
         const existing = await getQuestionById(id);
         if (!existing) {
             return res.status(404).json({ success: false, message: "Question not found" });
         }
 
-        if (!moduleId) {
-            return res.status(400).json({ success: false, message: "Module association is required" });
+        const targetModuleIds = Array.isArray(moduleIds) ? moduleIds : (moduleId ? [moduleId] : []);
+        if (targetModuleIds.length === 0) {
+            return res.status(400).json({ success: false, message: "At least one module association is required" });
         }
         if (!questionText || !questionText.trim()) {
             return res.status(400).json({ success: false, message: "Question text is required" });
@@ -110,7 +119,13 @@ const updateQuestionController = async (req, res) => {
         }
 
         const deviceId = req.headers['x-device-id'] || req.headers['device-id'] || 'Unknown';
-        await updateQuestion(id, req.body);
+        
+        const requestData = {
+            ...req.body,
+            moduleIds: targetModuleIds,
+            valuationType: valuationType || 'Both'
+        };
+        await updateQuestion(id, requestData);
 
         await createAuditLog(
             req.user.id,
@@ -119,7 +134,7 @@ const updateQuestionController = async (req, res) => {
             'Question Bank Master',
             'updated',
             existing,
-            { id, ...req.body }
+            { id, ...requestData }
         );
 
         res.status(200).json({
@@ -190,7 +205,8 @@ const bulkAddQuestionsController = async (req, res) => {
 
         // Basic sanity check
         for (const q of questions) {
-            if (!q.moduleId) {
+            const targetModuleIds = Array.isArray(q.moduleIds) ? q.moduleIds : (q.moduleId ? [q.moduleId] : []);
+            if (targetModuleIds.length === 0) {
                 return res.status(400).json({ success: false, message: "Module association is required for all questions." });
             }
             if (!q.questionText || !q.questionText.trim()) {
@@ -202,6 +218,10 @@ const bulkAddQuestionsController = async (req, res) => {
             if (!q.correctAnswer || !q.correctAnswer.trim()) {
                 return res.status(400).json({ success: false, message: "Correct answer is required for all questions." });
             }
+            
+            // Normalize q moduleIds
+            q.moduleIds = targetModuleIds;
+            q.valuationType = q.valuationType || 'Both';
         }
 
         const addedBy = req.user.id;

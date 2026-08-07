@@ -57,7 +57,8 @@ export default function QuestionBankMaster() {
 
             // Headers for Template
             const headers = [
-                "Module Name",
+                "Module Names (Semicolon separated)",
+                "Valuation Type",
                 "Language",
                 "Question Type",
                 "Question Text",
@@ -73,7 +74,7 @@ export default function QuestionBankMaster() {
             // Format Template Header Row
             const headerRow = worksheet.getRow(1);
             headerRow.height = 24;
-            headerRow.eachCell((cell) => {
+            headerRow.eachCell((cell, colNumber) => {
                 cell.font = { name: "Segoe UI", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
                 cell.fill = {
                     type: "pattern",
@@ -81,20 +82,32 @@ export default function QuestionBankMaster() {
                     fgColor: { argb: "FF253361" } // Dark blue theme
                 };
                 cell.alignment = { horizontal: "center", vertical: "middle" };
+                
+                if (colNumber === 1) {
+                    cell.note = {
+                        texts: [
+                            { font: { bold: true, size: 9, name: "Segoe UI" }, text: "Instructions:\n" },
+                            { font: { size: 9, name: "Segoe UI" }, text: "Standard Excel dropdown lists do not allow multi-selecting items natively. To associate multiple modules with a single question, please type or copy-paste the training module names separated by semicolons (e.g. Fire Safety; Electrical Safety)." }
+                        ],
+                        margins: { left: "0.5in", top: "0.25in", right: "0.25in", bottom: "0.25in" }
+                    };
+                }
             });
 
             // Populate Lists sheet
             const moduleNames = allModulesList.map(m => m.module_name).filter(Boolean);
+            const valuationTypes = ["Pre", "Post", "Both"];
             const languages = ["English", "Hindi"];
             const questionTypes = ["MCQ", "True/False"];
             const correctAnswers = ["A", "B", "C", "D", "True", "False"];
 
-            const maxListLength = Math.max(moduleNames.length, languages.length, questionTypes.length, correctAnswers.length);
-            listsSheet.addRow(["Modules", "Languages", "QuestionTypes", "CorrectAnswers"]);
+            const maxListLength = Math.max(moduleNames.length, valuationTypes.length, languages.length, questionTypes.length, correctAnswers.length);
+            listsSheet.addRow(["Modules", "ValuationTypes", "Languages", "QuestionTypes", "CorrectAnswers"]);
 
             for (let i = 0; i < maxListLength; i++) {
                 listsSheet.addRow([
                     moduleNames[i] || "",
+                    valuationTypes[i] || "",
                     languages[i] || "",
                     questionTypes[i] || "",
                     correctAnswers[i] || ""
@@ -103,21 +116,28 @@ export default function QuestionBankMaster() {
 
             // Data validation formulas in Excel notation
             const moduleRange = `Lists!$A$2:$A$${moduleNames.length + 1}`;
-            const languageRange = `Lists!$B$2:$B$3`;
-            const typeRange = `Lists!$C$2:$C$3`;
-            const answerRange = `Lists!$D$2:$D$7`;
+            const valuationRange = `Lists!$B$2:$B$4`;
+            const languageRange = `Lists!$C$2:$C$3`;
+            const typeRange = `Lists!$D$2:$D$3`;
 
             // Apply validations to rows 2 to 1000
             worksheet.dataValidations.add("A2:A1000", {
                 type: "list",
                 allowBlank: true,
                 formulae: [moduleRange],
-                showErrorMessage: true,
-                errorTitle: "Invalid Option",
-                error: "Please select a training module from the list."
+                showErrorMessage: false // Allow custom typing for semicolon separated entries
             });
 
             worksheet.dataValidations.add("B2:B1000", {
+                type: "list",
+                allowBlank: true,
+                formulae: [valuationRange],
+                showErrorMessage: true,
+                errorTitle: "Invalid Option",
+                error: "Please select Pre, Post, or Both."
+            });
+
+            worksheet.dataValidations.add("C2:C1000", {
                 type: "list",
                 allowBlank: true,
                 formulae: [languageRange],
@@ -126,7 +146,7 @@ export default function QuestionBankMaster() {
                 error: "Please select English or Hindi."
             });
 
-            worksheet.dataValidations.add("C2:C1000", {
+            worksheet.dataValidations.add("D2:D1000", {
                 type: "list",
                 allowBlank: true,
                 formulae: [typeRange],
@@ -137,11 +157,11 @@ export default function QuestionBankMaster() {
 
             // Apply row-by-row validations for dependent dropdowns
             for (let r = 2; r <= 1000; r++) {
-                // Correct Answer dropdown: depends on Question Type in column C
-                worksheet.getCell(`I${r}`).dataValidation = {
+                // Correct Answer dropdown: depends on Question Type in column D
+                worksheet.getCell(`J${r}`).dataValidation = {
                     type: "list",
                     allowBlank: true,
-                    formulae: [`IF(C${r}="True/False", Lists!$D$6:$D$7, Lists!$D$2:$D$5)`],
+                    formulae: [`IF(D${r}="True/False", Lists!$E$6:$E$7, Lists!$E$2:$E$5)`],
                     showErrorMessage: true,
                     errorTitle: "Invalid Correct Answer",
                     error: "For MCQ, select A, B, C, or D. For True/False, select True or False."
@@ -214,7 +234,8 @@ export default function QuestionBankMaster() {
                 for (const row of jsonData) {
                     rowNum++;
 
-                    const moduleName = getVal(row, ["module name", "module_name", "module"]);
+                    const moduleNamesRaw = getVal(row, ["module names", "module name", "module_name", "module"]);
+                    const valuationTypeRaw = getVal(row, ["valuation type", "valuation_type", "valuation"]);
                     const language = getVal(row, ["language"]) || "English";
                     const questionType = getVal(row, ["question type", "question_type", "type"]);
                     const questionText = getVal(row, ["question text", "question_text", "question"]);
@@ -224,7 +245,7 @@ export default function QuestionBankMaster() {
                     const optD = getVal(row, ["option d", "option_d", "option4", "d"]);
                     const correctAnswerRaw = getVal(row, ["correct answer", "correct_answer", "answer", "correct"]);
 
-                    if (!moduleName) {
+                    if (!moduleNamesRaw) {
                         throw new Error(`Row ${rowNum}: Module Name is missing.`);
                     }
                     if (!questionText) {
@@ -237,10 +258,34 @@ export default function QuestionBankMaster() {
                         throw new Error(`Row ${rowNum}: Correct Answer is missing.`);
                     }
 
-                    // Map module name to module id
-                    const matchMod = allModulesList.find(m => m.module_name.toLowerCase().trim() === String(moduleName).toLowerCase().trim());
-                    if (!matchMod) {
-                        throw new Error(`Row ${rowNum}: Training module "${moduleName}" not found in database.`);
+                    // Map multiple module names to module IDs
+                    const moduleNames = String(moduleNamesRaw)
+                        .split(/[;,]/)
+                        .map(m => m.trim())
+                        .filter(Boolean);
+
+                    const targetModuleIds = [];
+                    for (const name of moduleNames) {
+                        const matchMod = allModulesList.find(m => m.module_name.toLowerCase().trim() === name.toLowerCase());
+                        if (!matchMod) {
+                            throw new Error(`Row ${rowNum}: Training module "${name}" not found in database.`);
+                        }
+                        targetModuleIds.push(matchMod.id);
+                    }
+                    if (targetModuleIds.length === 0) {
+                        throw new Error(`Row ${rowNum}: Please select/provide at least one training module.`);
+                    }
+
+                    // Parse Valuation Type
+                    let valType = "Both";
+                    if (valuationTypeRaw) {
+                        const rawType = String(valuationTypeRaw).trim().toLowerCase();
+                        if (rawType.includes("pre")) valType = "Pre";
+                        else if (rawType.includes("post")) valType = "Post";
+                        else if (rawType.includes("both")) valType = "Both";
+                        else {
+                            throw new Error(`Row ${rowNum}: Valuation Type must be Pre, Post, or Both.`);
+                        }
                     }
 
                     const normalizedType = String(questionType).trim();
@@ -295,7 +340,8 @@ export default function QuestionBankMaster() {
                     }
 
                     mappedQuestions.push({
-                        moduleId: matchMod.id,
+                        moduleIds: targetModuleIds,
+                        valuationType: valType,
                         language: normalizedLanguage,
                         questionType: qType,
                         questionText: String(questionText).trim(),
@@ -359,10 +405,44 @@ export default function QuestionBankMaster() {
             sortable: false,
         },
         {
-            key: "module_name",
+            key: "modules",
             label: "Module Association",
+            sortable: false,
+            render: (row) => {
+                const associatedModules = Array.isArray(row.modules) ? row.modules : [];
+                return (
+                    <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {associatedModules.length === 0 ? (
+                            <span className="text-slate-400 text-xs">N/A</span>
+                        ) : (
+                            associatedModules.map((m, idx) => (
+                                <span key={idx} className="bg-blue-50 text-blue-700 text-[11px] px-2 py-0.5 rounded border border-blue-200 truncate font-semibold max-w-[130px]" title={m.name}>
+                                    {m.name}
+                                </span>
+                            ))
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            key: "valuation_type",
+            label: "Valuation Type",
             sortable: true,
-            render: (row) => <span className="font-semibold text-slate-700">{row.module_name || "N/A"}</span>
+            render: (row) => {
+                const valType = row.valuation_type || "Both";
+                let colorClass = "bg-slate-100 text-slate-700 border-slate-200";
+                if (valType === "Pre") {
+                    colorClass = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                } else if (valType === "Post") {
+                    colorClass = "bg-pink-50 text-pink-700 border-pink-200";
+                }
+                return (
+                    <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${colorClass}`}>
+                        {valType === "Both" ? "Both" : `${valType}-Validation`}
+                    </span>
+                );
+            }
         },
         {
             key: "language",
@@ -517,8 +597,6 @@ export default function QuestionBankMaster() {
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <Navbar />
             <div className="flex-1 p-6 w-full mx-auto">
-                
-
                 {loading ? (
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center text-slate-400">
                         {questions.length === 0 && loading ? "Processing import file and loading data..." : "Loading Question Bank data..."}
