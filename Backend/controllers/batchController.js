@@ -113,6 +113,13 @@ const updateBatchController = async (req, res) => {
             }
         }
 
+        const finalPreQpId = preTestQuestionPaperId !== undefined ? (preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null) : beforeData.pre_test_question_paper_id;
+        let finalPostQpId = postTestQuestionPaperId !== undefined ? (postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null) : beforeData.post_test_question_paper_id;
+        
+        if (status === 'Pretest Active' && postTestQuestionPaperId === undefined && finalPreQpId) {
+            finalPostQpId = finalPreQpId;
+        }
+
         await updateBatch(id, {
             clientId,
             siteId,
@@ -122,8 +129,8 @@ const updateBatchController = async (req, res) => {
             venue,
             batchSize,
             status,
-            preTestQuestionPaperId: preTestQuestionPaperId !== undefined ? (preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null) : beforeData.pre_test_question_paper_id,
-            postTestQuestionPaperId: postTestQuestionPaperId !== undefined ? (postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null) : beforeData.post_test_question_paper_id,
+            preTestQuestionPaperId: finalPreQpId,
+            postTestQuestionPaperId: finalPostQpId,
             preTestWeightage: preTestWeightage !== undefined ? parseInt(preTestWeightage, 10) : beforeData.pre_test_weightage,
             feedbackPaperId: feedbackPaperId !== undefined ? (feedbackPaperId ? parseInt(feedbackPaperId, 10) : null) : beforeData.feedback_paper_id
         });

@@ -117,7 +117,7 @@ const getTestDetailsController = async (req, res) => {
         
         // Fetch batch details and verify status
         const [batchRows] = await db.execute(
-            `SELECT b.*, tm.module_name 
+            `SELECT b.*, tm.module_name, tm.passing_marks
              FROM batches b
              INNER JOIN training_modules tm ON b.training_module_id = tm.id
              WHERE b.id = ?`,

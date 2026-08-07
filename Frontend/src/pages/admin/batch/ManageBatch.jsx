@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../../components/Navbar";
 import {
@@ -60,6 +60,7 @@ export default function ManageBatch() {
 
     const [feedbackPapers, setFeedbackPapers] = useState([]);
     const [selectedFeedbackPaperId, setSelectedFeedbackPaperId] = useState("");
+    const dropdownRef = useRef(null);
 
     // Custom Approval Request Modal states
     const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
@@ -132,11 +133,35 @@ export default function ManageBatch() {
         );
     }, [batch, questionPapers]);
 
+    const preTotal = useMemo(() => {
+        if (!batch || !questionPapers.length) return 0;
+        const qp = questionPapers.find(q => q.id === batch.pre_test_question_paper_id);
+        return qp?.questions?.length || 0;
+    }, [batch, questionPapers]);
+
+    const postTotal = useMemo(() => {
+        if (!batch || !questionPapers.length) return 0;
+        const qp = questionPapers.find(q => q.id === batch.post_test_question_paper_id);
+        return qp?.questions?.length || 0;
+    }, [batch, questionPapers]);
+
     useEffect(() => {
         if (id) {
             fetchData();
         }
     }, [id]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         if (batch) {
@@ -341,6 +366,13 @@ export default function ManageBatch() {
 
         // Intercept Training Held -> Posttest Active transition to show the Post-Test Question Paper select modal
         if (batch.status === "Training Held" && nextStep.value === "Posttest Active") {
+            if (batch.post_test_question_paper_id) {
+                let confirmMessage = "Trainees who have not completed the post-validation will not be able to attend/take it anymore. Are you sure you want to proceed?";
+                const confirmAdvance = window.confirm(confirmMessage);
+                if (!confirmAdvance) return;
+                await submitStatusAdvance(nextStep.value, nextStatusLabel);
+                return;
+            }
             setSelectedPostQpId(batch.post_test_question_paper_id || "");
             setIsPostQpModalOpen(true);
             return;
@@ -526,7 +558,8 @@ export default function ManageBatch() {
                                         }
                                         setIsQpModalOpen(false);
                                         await submitStatusAdvance("Pretest Active", "Pre-Validation Active", {
-                                            preTestQuestionPaperId: Number(selectedQpId)
+                                            preTestQuestionPaperId: Number(selectedQpId),
+                                            postTestQuestionPaperId: Number(selectedQpId)
                                         });
                                     }}
                                     disabled={!selectedQpId}
@@ -930,7 +963,11 @@ export default function ManageBatch() {
                         <div className="border-b border-slate-100 pb-2">
                             <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Validation Configs</span>
                             <span className="font-bold text-slate-800 text-sm">
-                                {trainingModule ? `${trainingModule.pre_test_qs} Pre-Val / ${trainingModule.post_test_qs} Post-Val Qs` : '—'}
+                                {batch?.pre_test_question_paper_id ? (
+                                    `${preTotal} Pre-Val / ${batch?.post_test_question_paper_id ? postTotal : preTotal} Post-Val Qs`
+                                ) : trainingModule ? (
+                                    `${trainingModule.pre_test_qs} Pre-Val / ${trainingModule.post_test_qs} Post-Val Qs`
+                                ) : '—'}
                             </span>
                         </div>
                         <div className="border-b border-slate-100 pb-2">
@@ -1016,52 +1053,127 @@ export default function ManageBatch() {
 
                             {/* Search & Add Action Row */}
                             <form onSubmit={handleAddParticipant} className="flex flex-col sm:flex-row gap-3 items-end sm:items-center justify-between">
-                                <div className="flex-1 space-y-1 relative w-full">
-                                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Search & Select Employees</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Type name or code to filter search..."
-                                            value={searchQuery}
-                                            onChange={(e) => {
-                                                setSearchQuery(e.target.value);
-                                                setDropdownOpen(true);
-                                            }}
-                                            onFocus={() => setDropdownOpen(true)}
-                                            onBlur={() => {
-                                                setTimeout(() => setDropdownOpen(false), 200);
-                                            }}
-                                            className="w-full border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white"
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-slate-400">
-                                            <i className="fa-solid fa-chevron-down text-[10px]"></i>
-                                        </div>
+                                <div ref={dropdownRef} className="flex-1 relative w-full space-y-1">
+                                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Select Participants</label>
+                                    
+                                    {/* Dropdown Trigger Header */}
+                                    <div
+                                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                                        className="flex justify-between items-center border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 bg-white cursor-pointer select-none h-[34px] box-border"
+                                    >
+                                        <span>
+                                            {selectedEmployeeIds.length === 0
+                                                ? "Click to select trainees from the list..."
+                                                : `${selectedEmployeeIds.length} trainee(s) selected`}
+                                        </span>
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2}
+                                            stroke="currentColor"
+                                            className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        </svg>
                                     </div>
 
+                                    {/* Dropdown Panel */}
                                     {dropdownOpen && (
-                                        <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto border border-slate-200 rounded-xl shadow-lg bg-white z-50 divide-y divide-slate-50">
-                                            {filteredAvailableEmployees.filter(emp => !selectedEmployeeIds.includes(emp.id)).length === 0 ? (
-                                                <div className="text-xs text-slate-400 text-center py-4 font-semibold">
-                                                    No matching employees found.
+                                        <div className="absolute left-0 right-0 mt-1 max-h-80 border border-slate-200 rounded-xl shadow-lg bg-white z-50 overflow-hidden flex flex-col">
+                                            {/* Search Input inside Dropdown */}
+                                            <div className="p-2 border-b border-slate-100 bg-slate-50/50 relative">
+                                                <input
+                                                    type="text"
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    placeholder="Search trainees by name or code..."
+                                                    className="w-full border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white"
+                                                />
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.602 10.602z" />
+                                                </svg>
+                                            </div>
+
+                                            {/* Select All Toggle Header inside Dropdown */}
+                                            {filteredAvailableEmployees.length > 0 && (
+                                                <div className="flex items-center px-4 py-2 border-b border-slate-100 bg-slate-50 text-[11px] font-bold text-slate-500">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={filteredAvailableEmployees.length > 0 && filteredAvailableEmployees.every(emp => selectedEmployeeIds.includes(emp.id))}
+                                                        ref={el => {
+                                                            if (el) {
+                                                                const someSelected = filteredAvailableEmployees.some(emp => selectedEmployeeIds.includes(emp.id));
+                                                                const allSelected = filteredAvailableEmployees.length > 0 && filteredAvailableEmployees.every(emp => selectedEmployeeIds.includes(emp.id));
+                                                                el.indeterminate = someSelected && !allSelected;
+                                                            }
+                                                        }}
+                                                        onChange={() => {
+                                                            const allSelected = filteredAvailableEmployees.every(emp => selectedEmployeeIds.includes(emp.id));
+                                                            if (allSelected) {
+                                                                const filteredIds = filteredAvailableEmployees.map(emp => emp.id);
+                                                                setSelectedEmployeeIds(prev => prev.filter(id => !filteredIds.includes(id)));
+                                                            } else {
+                                                                setSelectedEmployeeIds(prev => {
+                                                                    const newIds = [...prev];
+                                                                    filteredAvailableEmployees.forEach(emp => {
+                                                                        if (!newIds.includes(emp.id)) {
+                                                                            newIds.push(emp.id);
+                                                                        }
+                                                                    });
+                                                                    return newIds;
+                                                                });
+                                                            }
+                                                        }}
+                                                        className="w-3.5 h-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer mr-2.5"
+                                                    />
+                                                    <span>Select All Filtered ({filteredAvailableEmployees.length} trainees)</span>
                                                 </div>
-                                            ) : (
-                                                filteredAvailableEmployees
-                                                    .filter(emp => !selectedEmployeeIds.includes(emp.id))
-                                                    .map(emp => (
-                                                        <div
-                                                            key={emp.id}
-                                                            onMouseDown={(e) => {
-                                                                e.preventDefault();
-                                                                setSelectedEmployeeIds(prev => [...prev, emp.id]);
-                                                                setSearchQuery("");
-                                                            }}
-                                                            className="flex flex-col p-2.5 hover:bg-slate-50 cursor-pointer transition-colors text-xs font-semibold text-slate-700"
-                                                        >
-                                                            <span>{emp.full_name}</span>
-                                                            <span className="text-[10px] text-slate-400 font-mono mt-0.5">{emp.employee_code} ({emp.employee_type})</span>
-                                                        </div>
-                                                    ))
                                             )}
+
+                                            {/* Trainees List inside Dropdown */}
+                                            <div className="max-h-56 overflow-y-auto divide-y divide-slate-50">
+                                                {filteredAvailableEmployees.length === 0 ? (
+                                                    <div className="text-xs text-slate-400 text-center py-6 font-semibold">
+                                                        No matching employees found.
+                                                    </div>
+                                                ) : (
+                                                    filteredAvailableEmployees.map(emp => {
+                                                        const isChecked = selectedEmployeeIds.includes(emp.id);
+                                                        return (
+                                                            <div
+                                                                key={emp.id}
+                                                                onClick={() => {
+                                                                    if (isChecked) {
+                                                                        setSelectedEmployeeIds(prev => prev.filter(id => id !== emp.id));
+                                                                    } else {
+                                                                        setSelectedEmployeeIds(prev => [...prev, emp.id]);
+                                                                    }
+                                                                }}
+                                                                className={`flex items-center px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors text-xs font-semibold ${isChecked ? "bg-orange-50/20" : ""}`}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={() => {}} // toggled by row click
+                                                                    className="w-3.5 h-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer mr-2.5 flex-shrink-0"
+                                                                />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="font-bold text-slate-800">{emp.full_name}</div>
+                                                                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">{emp.employee_code} ({emp.employee_type})</div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -1147,10 +1259,6 @@ export default function ManageBatch() {
                                         </td>
                                     </tr>
                                 ) : (() => {
-                                    const preQp = questionPapers.find(q => q.id === batch?.pre_test_question_paper_id);
-                                    const preTotal = preQp?.questions?.length || 0;
-                                    const postQp = questionPapers.find(q => q.id === batch?.post_test_question_paper_id);
-                                    const postTotal = postQp?.questions?.length || 0;
                                     const passingMarks = trainingModule?.passing_marks || 0;
 
                                     return activeParticipants.map(part => {
@@ -1195,10 +1303,10 @@ export default function ManageBatch() {
                                                         );
                                                     })()}
                                                 </td>
-                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : (part.allow_training_exception ? "No Pre-Validation" : "—")}</td>
+                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{preScorePercent !== null ? `${preScorePercent}% (${part.pre_test_score}/${preTotal})` : (part.allow_training_exception ? "No Pre-Validation" : "—")}</td>
                                                 <td className="py-4 px-6 text-center">
-                                                    {part.post_test_score !== null ? (
-                                                        <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
+                                                    {postScorePercent !== null ? (
+                                                        <span className={`font-bold ${postColorClass}`}>{postScorePercent}% ({part.post_test_score}/{postTotal})</span>
                                                     ) : (
                                                         <span className="font-bold text-slate-700">—</span>
                                                     )}
