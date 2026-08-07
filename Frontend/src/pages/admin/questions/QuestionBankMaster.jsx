@@ -234,7 +234,7 @@ export default function QuestionBankMaster() {
                 for (const row of jsonData) {
                     rowNum++;
 
-                    const moduleNamesRaw = getVal(row, ["module names", "module name", "module_name", "module"]);
+                    const moduleNamesRaw = getVal(row, ["module names (semicolon separated)", "module names", "module name", "module_name", "module"]);
                     const valuationTypeRaw = getVal(row, ["valuation type", "valuation_type", "valuation"]);
                     const language = getVal(row, ["language"]) || "English";
                     const questionType = getVal(row, ["question type", "question_type", "type"]);
