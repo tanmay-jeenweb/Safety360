@@ -406,7 +406,7 @@ export default function BatchMaster() {
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                             : 'bg-slate-50 text-slate-600 border-slate-200'
                     }`}>
-                        {row.status === 'Feedback' ? 'Closed' : row.status}
+                        {row.status === 'Feedback' ? 'Closed' : row.status === 'Pretest Active' ? 'Pre-Validation Active' : row.status === 'Posttest Active' ? 'Post-Validation Active' : row.status}
                     </span>
                 )
             }

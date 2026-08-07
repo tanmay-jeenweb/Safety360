@@ -22,9 +22,9 @@ import { usePermission } from "../../../context/PermissionContext";
 
 const STATUS_STEPS = [
     { label: "Draft Setup", value: "Draft" },
-    { label: "Pre-Test Active", value: "Pretest Active" },
+    { label: "Pre-Validation Active", value: "Pretest Active" },
     { label: "Training Held", value: "Training Held" },
-    { label: "Post-Test Active", value: "Posttest Active" },
+    { label: "Post-Validation Active", value: "Posttest Active" },
     { label: "Batch Closed", value: "Closed" }
 ];
 
@@ -348,9 +348,9 @@ export default function ManageBatch() {
 
         let confirmMessage = `Are you sure you want to advance this batch status to "${nextStatusLabel}"?`;
         if (batch.status && batch.status.toLowerCase() === "pretest active") {
-            confirmMessage = "Trainees who have not completed the pre-test will not be able to attend/take it anymore. Are you sure you want to proceed?";
+            confirmMessage = "Trainees who have not completed the pre-validation will not be able to attend/take it anymore. Are you sure you want to proceed?";
         } else if (batch.status && batch.status.toLowerCase() === "posttest active") {
-            confirmMessage = "Trainees who have not completed the post-test will not be able to attend/take it anymore. Are you sure you want to proceed?";
+            confirmMessage = "Trainees who have not completed the post-validation will not be able to attend/take it anymore. Are you sure you want to proceed?";
         }
 
         const confirmAdvance = window.confirm(confirmMessage);
@@ -444,7 +444,7 @@ export default function ManageBatch() {
                             background: "linear-gradient(135deg, #1e293b, #0f172a)"
                         }}>
                             <h3 style={{ margin: 0, color: "#fff", fontSize: 16, fontWeight: 800 }}>
-                                Select Pre-Test Question Paper
+                                Select Pre-Validation Question Paper
                             </h3>
                             <button 
                                 onClick={() => setIsQpModalOpen(false)}
@@ -457,7 +457,7 @@ export default function ManageBatch() {
                         {/* Body */}
                         <div style={{ padding: 24 }}>
                             <p style={{ margin: "0 0 16px 0", fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
-                                Before activating the Pre-test for this batch, you must select a pre-test question paper for the module <strong>{batch.module_name}</strong>.
+                                Before activating the Pre-validation for this batch, you must select a pre-validation question paper for the module <strong>{batch.module_name}</strong>.
                             </p>
 
                             {preTestPapers.length === 0 ? (
@@ -465,8 +465,8 @@ export default function ManageBatch() {
                                     padding: 16, borderRadius: 12, background: "#fff1f2", border: "1px solid #fecdd3",
                                     color: "#be123c", fontSize: 13, display: "flex", flexDirection: "column", gap: 8
                                 }}>
-                                    <span style={{ fontWeight: 700 }}>No Pre-Test Question Papers Found</span>
-                                    <span>There are no Pre-Test question papers registered for this training module. Please create one in the Question Paper Master first to proceed.</span>
+                                    <span style={{ fontWeight: 700 }}>No Pre-Validation Question Papers Found</span>
+                                    <span>There are no Pre-Validation question papers registered for this training module. Please create one in the Question Paper Master first to proceed.</span>
                                     <button
                                         onClick={() => navigate("/admin/question-paper/create")}
                                         style={{
@@ -525,7 +525,7 @@ export default function ManageBatch() {
                                             return;
                                         }
                                         setIsQpModalOpen(false);
-                                        await submitStatusAdvance("Pretest Active", "Pre-Test Active", {
+                                        await submitStatusAdvance("Pretest Active", "Pre-Validation Active", {
                                             preTestQuestionPaperId: Number(selectedQpId)
                                         });
                                     }}
@@ -537,7 +537,7 @@ export default function ManageBatch() {
                                         cursor: !selectedQpId ? "not-allowed" : "pointer"
                                     }}
                                 >
-                                    Activate Pre-test
+                                    Activate Pre-validation
                                 </button>
                             )}
                         </div>
@@ -564,7 +564,7 @@ export default function ManageBatch() {
                             background: "linear-gradient(135deg, #1e293b, #0f172a)"
                         }}>
                             <h3 style={{ margin: 0, color: "#fff", fontSize: 16, fontWeight: 800 }}>
-                                Select Post-Test Question Paper
+                                Select Post-Validation Question Paper
                             </h3>
                             <button 
                                 onClick={() => setIsPostQpModalOpen(false)}
@@ -577,7 +577,7 @@ export default function ManageBatch() {
                         {/* Body */}
                         <div style={{ padding: 24 }}>
                             <p style={{ margin: "0 0 16px 0", fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
-                                Before activating the Post-test for this batch, you must select a post-test question paper for the module <strong>{batch.module_name}</strong>.
+                                Before activating the Post-validation for this batch, you must select a post-validation question paper for the module <strong>{batch.module_name}</strong>.
                             </p>
 
                             {postTestPapers.length === 0 ? (
@@ -585,8 +585,8 @@ export default function ManageBatch() {
                                     padding: 16, borderRadius: 12, background: "#fff1f2", border: "1px solid #fecdd3",
                                     color: "#be123c", fontSize: 13, display: "flex", flexDirection: "column", gap: 8
                                 }}>
-                                    <span style={{ fontWeight: 700 }}>No Post-Test Question Papers Found</span>
-                                    <span>There are no Post-Test question papers registered for this training module. Please create one in the Question Paper Master first to proceed.</span>
+                                    <span style={{ fontWeight: 700 }}>No Post-Validation Question Papers Found</span>
+                                    <span>There are no Post-Validation question papers registered for this training module. Please create one in the Question Paper Master first to proceed.</span>
                                     <button
                                         onClick={() => navigate("/admin/question-paper/create")}
                                         style={{
@@ -666,7 +666,7 @@ export default function ManageBatch() {
                                             return;
                                         }
                                         setIsPostQpModalOpen(false);
-                                        await submitStatusAdvance("Posttest Active", "Post-Test Active", {
+                                        await submitStatusAdvance("Posttest Active", "Post-Validation Active", {
                                             postTestQuestionPaperId: Number(selectedPostQpId),
                                             feedbackPaperId: selectedFeedbackPaperId ? Number(selectedFeedbackPaperId) : null
                                         });
@@ -679,7 +679,7 @@ export default function ManageBatch() {
                                         cursor: !selectedPostQpId ? "not-allowed" : "pointer"
                                     }}
                                 >
-                                    Activate Post-test
+                                    Activate Post-validation
                                 </button>
                             )}
                         </div>
@@ -729,7 +729,7 @@ export default function ManageBatch() {
                             <textarea
                                 value={approvalComments}
                                 onChange={(e) => setApprovalComments(e.target.value)}
-                                placeholder="E.g., Trainee missed the pre-test because they were off-duty, but they have completed all preparatory material..."
+                                placeholder="E.g., Trainee missed the pre-validation because they were off-duty, but they have completed all preparatory material..."
                                 rows={4}
                                 style={{ 
                                     width: "100%", border: "1.5px solid #cbd5e1", borderRadius: 9, 
@@ -883,11 +883,11 @@ export default function ManageBatch() {
                         <div className="text-2xl font-black text-slate-900">{participants.length} / {batch.batch_size}</div>
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Pre-Tests Submitted</span>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Pre-Validations Submitted</span>
                         <div className="text-2xl font-black text-slate-900">{preTestsSubmittedCount} / {participants.length}</div>
                     </div>
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Post Tests Submitted</span>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Post Validations Submitted</span>
                         <div className="text-2xl font-black text-slate-900">{postTestsSubmittedCount} / {eligiblePostTestCount}</div>
                     </div>
                 </div>
@@ -928,19 +928,19 @@ export default function ManageBatch() {
                             <span className="font-bold text-slate-800 text-sm">{trainingModule?.practical_required || '—'}</span>
                         </div>
                         <div className="border-b border-slate-100 pb-2">
-                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Test Configs</span>
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Validation Configs</span>
                             <span className="font-bold text-slate-800 text-sm">
-                                {trainingModule ? `${trainingModule.pre_test_qs} Pre / ${trainingModule.post_test_qs} Post Qs` : '—'}
+                                {trainingModule ? `${trainingModule.pre_test_qs} Pre-Val / ${trainingModule.post_test_qs} Post-Val Qs` : '—'}
                             </span>
                         </div>
                         <div className="border-b border-slate-100 pb-2">
-                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre-Test Paper</span>
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Pre-Validation Paper</span>
                             <span className="font-bold text-slate-800 text-sm">
                                 {batch.pre_test_question_paper_name || '—'}
                             </span>
                         </div>
                         <div className="border-b border-slate-100 pb-2">
-                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Post-Test Paper</span>
+                            <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">Post-Validation Paper</span>
                             <span className="font-bold text-slate-800 text-sm">
                                 {batch.post_test_question_paper_name || '—'}
                             </span>
@@ -1127,8 +1127,8 @@ export default function ManageBatch() {
                                     <th className="py-3.5 px-6">Code</th>
                                     <th className="py-3.5 px-6">Trainee Name</th>
                                     <th className="py-3.5 px-6 text-center">Attendance</th>
-                                    <th className="py-3.5 px-6 text-center">Pre Test</th>
-                                    <th className="py-3.5 px-6 text-center">Post Test</th>
+                                    <th className="py-3.5 px-6 text-center">Pre Validation</th>
+                                    <th className="py-3.5 px-6 text-center">Post Validation</th>
                                     <th className="py-3.5 px-6 text-center">Result</th>
                                     <th className="py-3.5 px-6"></th>
                                 </tr>
@@ -1143,7 +1143,7 @@ export default function ManageBatch() {
                                 ) : activeParticipants.length === 0 ? (
                                     <tr>
                                         <td colSpan="7" className="py-8 text-center text-sm font-semibold text-rose-500">
-                                            No eligible trainees (all registered trainees missed the pre-test).
+                                            No eligible trainees (all registered trainees missed the pre-validation).
                                         </td>
                                     </tr>
                                 ) : (() => {
@@ -1184,18 +1184,18 @@ export default function ManageBatch() {
                                                                     disabled={!batch.status || batch.status.toLowerCase() !== "training held" || showNoPreTestWarning}
                                                                     onChange={() => handleAttendanceChange(part.employee_id, part.attendance)}
                                                                     className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    title={showNoPreTestWarning ? "Cannot mark attendance because trainee did not take the pre-test" : ""}
+                                                                    title={showNoPreTestWarning ? "Cannot mark attendance because trainee did not take the pre-validation" : ""}
                                                                 />
                                                                 {showNoPreTestWarning && (
                                                                     <span className="text-[9px] text-red-500 font-extrabold uppercase tracking-wider">
-                                                                        No Pre-Test
+                                                                        No Pre-Validation
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         );
                                                     })()}
                                                 </td>
-                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : (part.allow_training_exception ? "No Pre-Test" : "—")}</td>
+                                                <td className={`py-4 px-6 text-center font-bold ${preColorClass}`}>{part.pre_test_score !== null ? part.pre_test_score : (part.allow_training_exception ? "No Pre-Validation" : "—")}</td>
                                                 <td className="py-4 px-6 text-center">
                                                     {part.post_test_score !== null ? (
                                                         <span className={`font-bold ${postColorClass}`}>{part.post_test_score}</span>
@@ -1238,7 +1238,7 @@ export default function ManageBatch() {
                     </div>
                 </div>
 
-                {/* Ineligible Trainees Table - Only shown if there are participants who missed the pre-test */}
+                {/* Ineligible Trainees Table - Only shown if there are participants who missed the pre-validation */}
                 {inactiveParticipants.length > 0 && (
                     <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-rose-50/20">
@@ -1246,7 +1246,7 @@ export default function ManageBatch() {
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-rose-600">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
                                 </svg>
-                                <h3 className="font-extrabold text-rose-955 text-sm tracking-wider uppercase">Ineligible Trainees (Missed Pre-Test)</h3>
+                                <h3 className="font-extrabold text-rose-955 text-sm tracking-wider uppercase">Ineligible Trainees (Missed Pre-Validation)</h3>
                             </div>
                             <span className="px-2.5 py-0.5 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
                                 {inactiveParticipants.length} Trainee(s)
@@ -1259,7 +1259,7 @@ export default function ManageBatch() {
                                     <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase bg-slate-50/40">
                                         <th className="py-3.5 px-6">Code</th>
                                         <th className="py-3.5 px-6">Trainee Name</th>
-                                        <th className="py-3.5 px-6 text-center">Pre Test Score</th>
+                                        <th className="py-3.5 px-6 text-center">Pre-Validation Score</th>
                                         <th className="py-3.5 px-6 text-center">Status</th>
                                         <th className="py-3.5 px-6 text-right">Approval Request</th>
                                     </tr>
@@ -1274,7 +1274,7 @@ export default function ManageBatch() {
                                                     <span className="text-[11px] text-slate-400 mt-0.5">{part.employee_type}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-4 px-6 text-center font-bold text-rose-600">No Pre-Test</td>
+                                            <td className="py-4 px-6 text-center font-bold text-rose-600">No Pre-Validation</td>
                                             <td className="py-4 px-6 text-center">
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 uppercase">
                                                     Ineligible

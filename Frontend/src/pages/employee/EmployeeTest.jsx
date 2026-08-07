@@ -116,7 +116,7 @@ export default function EmployeeTest() {
                     </div>
                     <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mb-2">Submit Assessment</h3>
                     <p className="text-slate-500 font-semibold text-xs sm:text-sm leading-relaxed mb-6">
-                        Are you sure you want to submit? You cannot appear for this test again.
+                        Are you sure you want to submit? You cannot appear for this validation again.
                     </p>
                     
                     {unansweredCount > 0 && (
@@ -341,7 +341,7 @@ export default function EmployeeTest() {
             {/* Test Header */}
             <header className="w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/80 px-6 py-4 flex items-center justify-between z-10 sticky top-0 shadow-[0_2px_15px_rgba(0,0,0,0.02)]">
                 <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{testType} Test Assessment</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{testType === 'Pre' ? 'Pre-Validation' : 'Post-Validation'} Assessment</span>
                     <h2 className="text-sm sm:text-base font-extrabold text-slate-800 tracking-tight line-clamp-1">
                         {testInfo?.moduleName}
                     </h2>

@@ -127,7 +127,7 @@ export default function RequestTrainingApproval() {
                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#253361]"></div>
                     <div className="pl-2">
                         <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Allow Employee to Attend Training</h1>
-                        <p className="text-slate-500 text-xs font-semibold mt-1">Submit training approval requests for trainees who missed their pre-test assessments.</p>
+                        <p className="text-slate-500 text-xs font-semibold mt-1">Submit training approval requests for trainees who missed their pre-validation assessments.</p>
                     </div>
                     <button
                         onClick={() => navigate("/admin/batches")}
@@ -165,7 +165,7 @@ export default function RequestTrainingApproval() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Select Trainee (who missed pre-test)</label>
+                                <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Select Trainee (who missed pre-validation)</label>
                                 <select
                                     value={selectedEmployeeId}
                                     onChange={(e) => setSelectedEmployeeId(e.target.value)}
@@ -173,7 +173,7 @@ export default function RequestTrainingApproval() {
                                     disabled={!selectedBatchId || ineligibleTrainees.length === 0}
                                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:border-orange-500 bg-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <option value="">{selectedBatchId ? (ineligibleTrainees.length === 0 ? "No trainees missed pre-test" : "Choose Trainee...") : "First choose a batch..."}</option>
+                                    <option value="">{selectedBatchId ? (ineligibleTrainees.length === 0 ? "No trainees missed pre-validation" : "Choose Trainee...") : "First choose a batch..."}</option>
                                     {ineligibleTrainees.map(t => (
                                         <option key={t.employee_id} value={t.employee_id}>
                                             {t.full_name} ({t.employee_code})
