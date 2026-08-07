@@ -288,14 +288,14 @@ export default function CreateTrainingModule() {
                             {/* Section 3: Assessment Questions */}
                             <div className="mb-6">
                                 <h3 className={sectionHeadingClass}>
-                                    3. Test Questions Count
+                                    3. Validation Questions Count
                                 </h3>
 
                                 <div className="grid grid-cols-2 gap-5">
                                     {/* Pre-Test Qs */}
                                     <div>
                                         <label className={labelClass}>
-                                            Pre-Test Qs (Count)
+                                            Pre-Validation Qs (Count)
                                         </label>
                                         <input
                                             type="number"
@@ -311,7 +311,7 @@ export default function CreateTrainingModule() {
                                     {/* Post-Test Qs */}
                                     <div>
                                         <label className={labelClass}>
-                                            Post-Test Qs (Count)
+                                            Post-Validation Qs (Count)
                                         </label>
                                         <input
                                             type="number"

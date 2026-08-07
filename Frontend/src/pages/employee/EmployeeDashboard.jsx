@@ -197,11 +197,11 @@ export default function EmployeeDashboard() {
             case "Draft":
                 return "Draft Setup";
             case "Pretest Active":
-                return "Pre-Test Active";
+                return "Pre-Validation Active";
             case "Training Held":
                 return "Training Held";
             case "Posttest Active":
-                return "Post-Test Active";
+                return "Post-Validation Active";
             case "Closed":
                 return "Batch Closed";
             default:
@@ -248,16 +248,16 @@ export default function EmployeeDashboard() {
     const getProgressSteps = (training) => {
         const { status, preTestScore, postTestScore, attendance } = training;
 
-        // Step 1: Pre-Test
+        // Step 1: Pre-Validation
         let preTestStep = {
-            label: "Pre-Test",
+            label: "Pre-Validation",
             icon: "1",
             style: "bg-white border-slate-200 text-slate-400",
             labelStyle: "text-slate-400"
         };
         if (preTestScore !== null) {
             preTestStep = {
-                label: "Pre-Test",
+                label: "Pre-Validation",
                 icon: (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                         <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -268,7 +268,7 @@ export default function EmployeeDashboard() {
             };
         } else if (status === "Pretest Active") {
             preTestStep = {
-                label: "Pre-Test",
+                label: "Pre-Validation",
                 icon: "1",
                 style: "bg-blue-50 border-blue-500 text-blue-600 ring-4 ring-blue-100",
                 labelStyle: "text-blue-600 font-extrabold"
@@ -305,16 +305,16 @@ export default function EmployeeDashboard() {
             }
         }
 
-        // Step 3: Post-Test
+        // Step 3: Post-Validation
         let postTestStep = {
-            label: "Post-Test",
+            label: "Post-Validation",
             icon: "3",
             style: "bg-white border-slate-200 text-slate-400",
             labelStyle: "text-slate-400"
         };
         if (postTestScore !== null || status === "Closed") {
             postTestStep = {
-                label: "Post-Test",
+                label: "Post-Validation",
                 icon: (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                         <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
@@ -325,7 +325,7 @@ export default function EmployeeDashboard() {
             };
         } else if (status === "Posttest Active") {
             postTestStep = {
-                label: "Post-Test",
+                label: "Post-Validation",
                 icon: "3",
                 style: "bg-purple-50 border-purple-500 text-purple-600 ring-4 ring-purple-100",
                 labelStyle: "text-purple-600 font-extrabold"
@@ -595,7 +595,7 @@ export default function EmployeeDashboard() {
                                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">Training Stage Progress</h4>
                                                                 <div className="relative px-3 py-1 mb-2">
                                                                     {/* Connection Line */}
-                                                                    <div className="absolute left-[10%] right-[10%] top-5 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0">
+                                                                    <div className="absolute left-[28px] right-[28px] top-5 -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0">
                                                                         <div 
                                                                             className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-550" 
                                                                             style={{ width: getProgressPercent(training.status, training.preTestScore, training.postTestScore) }}
@@ -624,7 +624,7 @@ export default function EmployeeDashboard() {
                                                                 <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-semibold bg-white px-4 py-2.5 rounded-xl border border-slate-200/60 shadow-sm w-fit">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                                                                        <span>Pre-Test: <strong className="text-slate-800">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
+                                                                        <span>Pre-Validation: <strong className="text-slate-800">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
                                                                     </div>
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
@@ -634,7 +634,7 @@ export default function EmployeeDashboard() {
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className={`w-2 h-2 rounded-full ${training.postTestScore !== null ? (training.bandBadge === 'PASSED' ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
-                                                                        <span>Post-Test: <strong className="text-slate-800">{training.postTestScore !== null ? `${Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
+                                                                        <span>Post-Validation: <strong className="text-slate-800">{training.postTestScore !== null ? `${Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
                                                                     </div>
                                                                 </div>
 
@@ -651,7 +651,7 @@ export default function EmployeeDashboard() {
                                                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                                                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
                                                                                     </svg>
-                                                                                    Start {t.type}-Test
+                                                                                    Start {t.type === 'Pre' ? 'Pre-Validation' : 'Post-Validation'}
                                                                                 </button>
                                                                             ))}
                                                                         </div>
@@ -769,7 +769,7 @@ export default function EmployeeDashboard() {
                                                                 <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-semibold bg-white px-4 py-2.5 rounded-xl border border-slate-200/60 shadow-sm w-fit">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className={`w-2 h-2 rounded-full ${history.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                                                                        <span>Pre-Test: <strong className="text-slate-800">{history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
+                                                                        <span>Pre-Validation: <strong className="text-slate-800">{history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
                                                                     </div>
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
@@ -779,7 +779,7 @@ export default function EmployeeDashboard() {
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className={`w-2 h-2 rounded-full ${history.postTestScore !== null ? (isPassed ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
-                                                                        <span>Post-Test: <strong className="text-slate-800">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
+                                                                        <span>Post-Validation: <strong className="text-slate-800">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
                                                                     </div>
                                                                 </div>
 
@@ -1012,12 +1012,12 @@ export default function EmployeeDashboard() {
                                 {/* Pre test bar */}
                                                                 <div>
                                                                     <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                                                                        <span className="text-slate-500">Pre-Test Score</span>
+                                                                        <span className="text-slate-500">Pre-Validation Score</span>
                                                                         <span className="text-slate-805 font-bold">{prePercent !== null ? `${prePercent}%` : "Pending"}</span>
                                                                     </div>
                                                                     <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
                                                                         <div 
-                                                                            className="h-full bg-amber-500 rounded-full transition-all duration-500" 
+                                                                            className="h-full bg-amber-500 rounded-full transition-all duration-550" 
                                                                             style={{ width: prePercent !== null ? `${prePercent}%` : '0%' }}
                                                                         />
                                                                     </div>
@@ -1026,7 +1026,7 @@ export default function EmployeeDashboard() {
                                                                 {/* Post test bar */}
                                                                 <div>
                                                                     <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                                                                        <span className="text-slate-500">Post-Test Score</span>
+                                                                        <span className="text-slate-500">Post-Validation Score</span>
                                                                         <span className="text-slate-850 font-bold">{postPercent !== null ? `${postPercent}%` : "Pending"}</span>
                                                                     </div>
                                                                     <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
