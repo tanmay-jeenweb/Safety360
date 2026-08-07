@@ -116,9 +116,6 @@ const updateBatchController = async (req, res) => {
         const finalPreQpId = preTestQuestionPaperId !== undefined ? (preTestQuestionPaperId ? parseInt(preTestQuestionPaperId, 10) : null) : beforeData.pre_test_question_paper_id;
         let finalPostQpId = postTestQuestionPaperId !== undefined ? (postTestQuestionPaperId ? parseInt(postTestQuestionPaperId, 10) : null) : beforeData.post_test_question_paper_id;
         
-        if (status === 'Pretest Active' && postTestQuestionPaperId === undefined && finalPreQpId) {
-            finalPostQpId = finalPreQpId;
-        }
 
         await updateBatch(id, {
             clientId,
