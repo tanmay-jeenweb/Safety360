@@ -409,7 +409,7 @@ export default function EmployeeDashboard() {
             </header>
 
             {/* Dashboard Content */}
-            <main className="flex-1 w-full mx-auto px-6 py-6 z-10 flex flex-col justify-start max-w-7xl">
+            <main className="flex-1 w-full mx-auto px-6 py-6 z-10 flex flex-col justify-start">
                 {/* Welcome Card */}
                 <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-5 sm:p-8 shadow-[0_20px_50px_rgba(37,51,97,0.04)] mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>

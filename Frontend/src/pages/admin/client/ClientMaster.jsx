@@ -448,7 +448,7 @@ export default function ClientMaster() {
         <div className="flex flex-col flex-1 min-h-screen bg-[#f8fafc] font-sans">
             <Navbar title="CRM Admin" />
 
-            <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto py-8 px-7">
+            <main className="flex-1 flex flex-col w-full mx-auto py-8 px-7">
                 {error && (
                     <div className="bg-[#fff1f2] border border-[#fecdd3] text-[#be123c] px-4 py-3 rounded-[10px] mb-5 text-[14px] font-medium">
                         {error}

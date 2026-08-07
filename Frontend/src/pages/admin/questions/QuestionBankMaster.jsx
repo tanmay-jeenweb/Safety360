@@ -516,7 +516,7 @@ export default function QuestionBankMaster() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <Navbar />
-            <div className="flex-1 p-6 max-w-7xl w-full mx-auto">
+            <div className="flex-1 p-6 w-full mx-auto">
                 
 
                 {loading ? (

@@ -807,7 +807,7 @@ export default function ManageBatch() {
 
 
             {/* Main Area */}
-            <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
+            <main className="flex-1 w-full mx-auto p-6 md:p-8 space-y-6">
 
                 {/* Batch Header Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

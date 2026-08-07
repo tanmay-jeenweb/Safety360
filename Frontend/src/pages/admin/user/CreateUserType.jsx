@@ -164,7 +164,7 @@ export default function CreateUserType() {
     <div className="flex flex-col flex-1 min-h-screen bg-gradient-to-br from-[#f8fafc] to-[#eef2ff] font-sans">
       <Navbar title="CRM Admin" />
 
-      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 flex flex-col w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-7">

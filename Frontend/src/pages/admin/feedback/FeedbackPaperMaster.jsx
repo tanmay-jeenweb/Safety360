@@ -147,7 +147,7 @@ export default function FeedbackPaperMaster() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <Navbar />
-            <div className="flex-1 p-6 max-w-7xl w-full mx-auto">
+            <div className="flex-1 p-6 w-full mx-auto">
                 {loading && papers.length === 0 ? (
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center text-slate-400 font-semibold animate-pulse">
                         Loading Feedback Papers...
