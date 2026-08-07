@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Navbar from "../../../components/Navbar";
 import { getFeedbackQuestions } from "../../../api/feedbackQuestionBankApi";
 import {
@@ -18,8 +18,12 @@ export default function CreateFeedbackPaper() {
     
     // Questions from Feedback Question Bank
     const [bankQuestions, setBankQuestions] = useState([]);
-    const [selectedQuestionId, setSelectedQuestionId] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     
+    // Custom dropdown states
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
     // Questions added to this paper
     const [addedQuestions, setAddedQuestions] = useState([]);
 
@@ -73,24 +77,57 @@ export default function CreateFeedbackPaper() {
         loadEditingDetails();
     }, [id, isEditMode]);
 
-    // Add selected question from dropdown to the list
-    const handleAddQuestion = () => {
-        if (!selectedQuestionId) {
-            toast.error("Please select a question to add");
-            return;
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    // Filter available questions by search term
+    const availableFiltered = useMemo(() => {
+        let qs = bankQuestions;
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            qs = qs.filter(q => 
+                (q.question_text && q.question_text.toLowerCase().includes(term)) ||
+                (q.question_type && q.question_type.toLowerCase().includes(term)) ||
+                (q.language && q.language.toLowerCase().includes(term))
+            );
         }
+        return qs;
+    }, [bankQuestions, searchTerm]);
 
-        const qObj = bankQuestions.find(q => q.id === parseInt(selectedQuestionId));
-        if (!qObj) return;
+    const isAllSelected = useMemo(() => {
+        return availableFiltered.length > 0 && 
+            availableFiltered.every(q => addedQuestions.some(added => added.id === q.id));
+    }, [availableFiltered, addedQuestions]);
 
-        if (addedQuestions.some(q => q.id === qObj.id)) {
-            toast.error("Question is already added to this paper");
-            return;
+    const handleToggleQuestion = (qObj) => {
+        const isAlreadyAdded = addedQuestions.some(added => added.id === qObj.id);
+        if (isAlreadyAdded) {
+            setAddedQuestions(addedQuestions.filter(added => added.id !== qObj.id));
+        } else {
+            setAddedQuestions([...addedQuestions, qObj]);
         }
+    };
 
-        setAddedQuestions([...addedQuestions, qObj]);
-        setSelectedQuestionId("");
-        toast.success("Question added to paper");
+    const handleToggleSelectAll = () => {
+        if (isAllSelected) {
+            // Remove all availableFiltered questions from addedQuestions
+            const filteredIds = availableFiltered.map(q => q.id);
+            setAddedQuestions(prev => prev.filter(added => !filteredIds.includes(added.id)));
+        } else {
+            // Add all availableFiltered questions that are not already in addedQuestions
+            const toAdd = availableFiltered.filter(q => !addedQuestions.some(added => added.id === q.id));
+            setAddedQuestions(prev => [...prev, ...toAdd]);
+        }
     };
 
     // Remove question from the list
@@ -118,11 +155,6 @@ export default function CreateFeedbackPaper() {
         newQuestions[index + 1] = temp;
         setAddedQuestions(newQuestions);
     };
-
-    // Filter available questions (not yet added) for the dropdown selection
-    const availableQuestions = useMemo(() => {
-        return bankQuestions.filter(q => !addedQuestions.some(added => added.id === q.id));
-    }, [bankQuestions, addedQuestions]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -169,16 +201,18 @@ export default function CreateFeedbackPaper() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter',sans-serif" }}>
             <Navbar />
-            <div className="flex-1 p-6 w-full mx-auto">
+
+            <main style={{ flex: 1, padding: "32px 30px", width: "100%", margin: "0 auto", boxSizing: "border-box", maxWidth: 1200 }}>
+                {/* Header */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
                     <div>
                         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#1e293b" }}>
-                            {isEditMode ? "Edit Feedback Paper" : "Create Feedback Paper"}
+                            {isEditMode ? "Edit Feedback Paper" : "Create New Feedback Paper"}
                         </h1>
                         <p style={{ margin: "4px 0 0", fontSize: 14, color: "#64748b" }}>
-                            Assemble a sequence of survey/feedback questions for course evaluations
+                            {isEditMode ? "Modify feedback paper configuration and questions below" : "Assemble course evaluation sheets from Feedback Question Bank"}
                         </p>
                     </div>
                     <button
@@ -196,174 +230,306 @@ export default function CreateFeedbackPaper() {
                     </button>
                 </div>
 
-                {loading && bankQuestions.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center text-slate-400 font-semibold animate-pulse">
-                        Loading details...
-                    </div>
-                ) : error ? (
-                    <div className="bg-red-50 text-red-600 rounded-2xl border border-red-200 shadow-sm p-6 text-center font-bold">
+                {error && (
+                    <div style={{ background: "#fff1f2", border: "1px solid #fecdd3", color: "#be123c", padding: "12px 16px", borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500 }}>
                         {error}
                     </div>
+                )}
+
+                {loading && bankQuestions.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>Loading feedback paper details...</div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column: Meta & Question Selection */}
-                        <div className="lg:col-span-1 space-y-6">
-                            {/* Paper Meta Details */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-                                <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2.5">Paper Details</h3>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Paper Name</label>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        placeholder="e.g. Trainer Evaluation Form"
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-slate-400 font-semibold transition"
-                                    />
-                                </div>
-                            </div>
+                    <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.06)", overflow: "visible", border: "1px solid #e2e8f0" }}>
+                        <div style={{ padding: "28px" }}>
+                            
+                            {/* Section 1: Configuration */}
+                            <div style={{ marginBottom: 28 }}>
+                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                                    1. Configuration
+                                </h3>
 
-                            {/* Question Select Panel */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-                                <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2.5">Add Questions</h3>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Question</label>
-                                    <select
-                                        value={selectedQuestionId}
-                                        onChange={(e) => setSelectedQuestionId(e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-slate-400 font-semibold transition text-sm"
-                                    >
-                                        <option value="">-- Choose feedback question --</option>
-                                        {availableQuestions.map((q) => (
-                                            <option key={q.id} value={q.id}>
-                                                [{q.question_type} - {q.language}] {q.question_text.length > 50 ? q.question_text.substring(0, 50) + "..." : q.question_text}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={handleAddQuestion}
-                                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-950 text-white font-bold text-sm rounded-xl transition cursor-pointer flex items-center justify-center gap-2"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
-                                    Add Question to Paper
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Right Column: Assembled List */}
-                        <div className="lg:col-span-2">
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-full">
-                                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                    {/* Paper Name */}
                                     <div>
-                                        <h3 className="text-sm font-bold text-slate-800">Assembled Questions</h3>
-                                        <p className="text-slate-400 text-xs mt-0.5">Define sequence and order of questions inside the feedback form</p>
+                                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                            Feedback Paper Name <span style={{ color: "#e11d48" }}>*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            placeholder="E.g., Trainer Evaluation Form"
+                                            style={{
+                                                width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1",
+                                                borderRadius: 9, padding: "11px 14px", fontSize: 14, outline: "none", color: "#1e293b"
+                                            }}
+                                            onFocus={e => e.target.style.borderColor = "#253361"}
+                                            onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                            required
+                                        />
                                     </div>
-                                    <span className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
-                                        {addedQuestions.length} Question{addedQuestions.length !== 1 ? 's' : ''} Added
-                                    </span>
                                 </div>
+                            </div>
 
-                                {/* List Container */}
-                                <div className="flex-1 min-h-[300px] space-y-3">
-                                    {addedQuestions.length === 0 ? (
-                                        <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8 border-2 border-dashed border-slate-100 rounded-2xl">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-10 h-10 text-slate-300 mb-2">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 2.24a4.5 4.5 0 1 1 9.016 0D12 6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08" />
-                                            </svg>
-                                            <p className="text-sm font-semibold text-slate-400">No questions added yet</p>
-                                            <p className="text-xs text-slate-400 mt-0.5">Select feedback questions on the left side to build this paper</p>
-                                        </div>
-                                    ) : (
-                                        addedQuestions.map((q, index) => (
-                                            <div
-                                                key={q.id}
-                                                className="flex items-start justify-between gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100/70 transition"
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <span className="flex items-center justify-center w-6 h-6 rounded bg-slate-200 text-slate-600 font-bold text-xs shrink-0 mt-0.5">
-                                                        {index + 1}
-                                                    </span>
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-slate-800 leading-snug">{q.question_text}</p>
-                                                        <div className="flex gap-2 mt-1.5">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${q.language === "English" ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-purple-50 text-purple-700 border border-purple-100"}`}>
-                                                                {q.language}
-                                                            </span>
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${q.question_type === "Rating" ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"}`}>
-                                                                {q.question_type === "Rating" ? "Rating (0-5)" : "Text"}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                            {/* Section 2: Assemble Questions */}
+                            <div style={{ marginBottom: 20 }}>
+                                <h3 style={{ margin: "0 0 16px 0", fontSize: 15, fontWeight: 700, color: "#253361", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1.5px solid #f1f5f9", paddingBottom: 8 }}>
+                                    2. Assemble Questions
+                                </h3>
 
-                                                <div className="flex items-center gap-1 shrink-0">
-                                                    {/* Move Up */}
-                                                    <button
-                                                        type="button"
-                                                        disabled={index === 0}
-                                                        onClick={() => moveQuestionUp(index)}
-                                                        className={`p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 transition cursor-pointer text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed`}
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                                        </svg>
-                                                    </button>
-                                                    {/* Move Down */}
-                                                    <button
-                                                        type="button"
-                                                        disabled={index === addedQuestions.length - 1}
-                                                        onClick={() => moveQuestionDown(index)}
-                                                        className={`p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 transition cursor-pointer text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed`}
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                                        </svg>
-                                                    </button>
-                                                    {/* Remove */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveQuestion(q.id)}
-                                                        className="p-1.5 rounded border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 transition cursor-pointer"
-                                                        title="Remove Question"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
+                                {/* Custom Searchable Multi-Select Dropdown */}
+                                <div ref={dropdownRef} style={{ position: "relative", marginBottom: 24 }}>
+                                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                                        Select Questions <span style={{ color: "#e11d48" }}>*</span>
+                                    </label>
+                                    
+                                    {/* Dropdown Trigger Header */}
+                                    <div
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        style={{
+                                            display: "flex", justifyContent: "space-between", alignItems: "center",
+                                            boxSizing: "border-box", border: "1.5px solid #cbd5e1", borderRadius: 9,
+                                            padding: "11px 14px", fontSize: 14, color: "#1e293b",
+                                            background: "#fff", cursor: "pointer", userSelect: "none"
+                                        }}
+                                    >
+                                        <span>
+                                            {addedQuestions.length === 0 
+                                                ? "Click to select questions from the bank..." 
+                                                : `${addedQuestions.length} question(s) selected`}
+                                        </span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 16, height: 16, color: "#64748b", transition: "transform 0.2s", transform: isDropdownOpen ? "rotate(180deg)" : "none" }}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                    </div>
+
+                                    {/* Dropdown Panel */}
+                                    {isDropdownOpen && (
+                                        <div style={{
+                                            position: "absolute", top: "100%", left: 0, right: 0, marginTop: 6,
+                                            background: "#fff", border: "1px solid #cbd5e1", borderRadius: 12,
+                                            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+                                            zIndex: 1000, overflow: "hidden", display: "flex", flexDirection: "column"
+                                        }}>
+                                            {/* Search Input inside Dropdown */}
+                                            <div style={{ padding: 12, borderBottom: "1px solid #e2e8f0", position: "relative", background: "#f8fafc" }}>
+                                                <input
+                                                    type="text"
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    placeholder="Search feedback questions by text, type or language..."
+                                                    style={{
+                                                        width: "100%", boxSizing: "border-box", border: "1.5px solid #cbd5e1",
+                                                        borderRadius: 8, padding: "8px 12px 8px 36px", fontSize: 13, outline: "none", color: "#1e293b",
+                                                        background: "#fff"
+                                                    }}
+                                                    onFocus={e => e.target.style.borderColor = "#253361"}
+                                                    onBlur={e => e.target.style.borderColor = "#cbd5e1"}
+                                                />
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ position: "absolute", left: 24, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "#94a3b8" }}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.602 10.602z" />
+                                                </svg>
                                             </div>
-                                        ))
+
+                                            {/* Select All Toggle Header inside Dropdown */}
+                                            {availableFiltered.length > 0 && (
+                                                <div style={{ display: "flex", alignItems: "center", padding: "10px 16px", borderBottom: "1px solid #e2e8f0", background: "#f1f5f9", fontSize: 12.5, fontWeight: 700, color: "#475569" }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isAllSelected}
+                                                        ref={el => {
+                                                            if (el) {
+                                                                const someSelected = availableFiltered.some(q => addedQuestions.some(added => added.id === q.id));
+                                                                const allSelected = availableFiltered.length > 0 && availableFiltered.every(q => addedQuestions.some(added => added.id === q.id));
+                                                                el.indeterminate = someSelected && !allSelected;
+                                                            }
+                                                        }}
+                                                        onChange={handleToggleSelectAll}
+                                                        style={{ width: 15, height: 15, cursor: "pointer", accentColor: "#253361", marginRight: 10 }}
+                                                    />
+                                                    <span>Select All Filtered ({availableFiltered.length} questions)</span>
+                                                </div>
+                                            )}
+
+                                            {/* Questions List inside Dropdown */}
+                                            <div style={{ maxHeight: 250, overflowY: "auto" }}>
+                                                {availableFiltered.length === 0 ? (
+                                                    <div style={{ textAlign: "center", padding: "30px 20px", color: "#94a3b8", fontSize: 13 }}>
+                                                        {bankQuestions.length === 0 ? "No questions available in the feedback question bank. Please add some first." : "No matching questions found."}
+                                                    </div>
+                                                ) : (
+                                                    availableFiltered.map((q) => {
+                                                        const isChecked = addedQuestions.some(added => added.id === q.id);
+                                                        return (
+                                                            <div 
+                                                                key={q.id} 
+                                                                onClick={() => handleToggleQuestion(q)}
+                                                                style={{ 
+                                                                    display: "flex", 
+                                                                    alignItems: "center", 
+                                                                    padding: "10px 16px", 
+                                                                    borderBottom: "1px solid #f1f5f9",
+                                                                    background: isChecked ? "#f0f4ff" : "#fff",
+                                                                    cursor: "pointer",
+                                                                    userSelect: "none",
+                                                                    transition: "background 0.15s"
+                                                                }}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isChecked}
+                                                                    onChange={() => {}} // toggled by row click
+                                                                    style={{ width: 15, height: 15, cursor: "pointer", accentColor: "#253361", marginRight: 10, flexShrink: 0 }}
+                                                                />
+                                                                <div style={{ flex: 1, minWidth: 0, paddingRight: 10 }}>
+                                                                    <div style={{ fontWeight: 600, color: "#1e293b", fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={q.question_text}>
+                                                                        {q.question_text}
+                                                                    </div>
+                                                                    <div style={{ display: "flex", gap: 6, marginTop: 3, alignItems: "center" }}>
+                                                                        <span style={{ fontSize: 9.5, fontWeight: 800, padding: "1.5px 5px", borderRadius: 4, background: q.language === "English" ? "#eff6ff" : "#faf5ff", color: q.language === "English" ? "#1e40af" : "#6b21a8", border: q.language === "English" ? "1px solid #dbeafe" : "1px solid #f3e8ff" }}>
+                                                                            {q.language}
+                                                                        </span>
+                                                                        <span style={{ fontSize: 9.5, fontWeight: 800, padding: "1.5px 5px", borderRadius: 4, background: q.question_type === "Rating" ? "#fffbeb" : "#ecfdf5", color: q.question_type === "Rating" ? "#92400e" : "#065f46", border: q.question_type === "Rating" ? "1px solid #fef3c7" : "1px solid #d1fae5" }}>
+                                                                            {q.question_type === "Rating" ? "Rating (0-5)" : "Text"}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
 
-                                {/* Form Action Buttons */}
-                                <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate("/admin/feedback-paper")}
-                                        className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 border border-transparent rounded-xl text-slate-700 text-sm font-bold transition cursor-pointer"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSubmit}
-                                        disabled={saving}
-                                        className="px-5 py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white text-sm font-bold rounded-xl transition cursor-pointer shadow-md shadow-slate-900/10 flex items-center justify-center min-w-[100px]"
-                                    >
-                                        {saving ? "Saving..." : "Save Feedback Paper"}
-                                    </button>
+                                <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 8 }}>
+                                    Assembled Sheet ({addedQuestions.length} Questions)
+                                </label>
+                                
+                                <div style={{ border: "1px solid #cbd5e1", borderRadius: 12, overflow: "hidden", background: "#f8fafc" }}>
+                                    {addedQuestions.length === 0 ? (
+                                        <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8", fontSize: 14 }}>
+                                            No questions have been added yet. Use the selector above to find and add questions.
+                                        </div>
+                                    ) : (
+                                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                                            <thead>
+                                                <tr style={{ background: "#f1f5f9", textAlign: "left", borderBottom: "1px solid #cbd5e1" }}>
+                                                    <th style={{ padding: "12px 16px", width: 60, color: "#475569", fontWeight: 700 }}>#</th>
+                                                    <th style={{ padding: "12px 16px", color: "#475569", fontWeight: 700 }}>Question Content</th>
+                                                    <th style={{ padding: "12px 16px", width: 140, color: "#475569", textAlign: "center", fontWeight: 700 }}>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {addedQuestions.map((q, idx) => (
+                                                    <tr key={q.id} style={{ borderBottom: "1px solid #e2e8f0", background: "#fff" }}>
+                                                        <td style={{ padding: "14px 16px", color: "#64748b", fontWeight: 700 }}>{idx + 1}</td>
+                                                        <td style={{ padding: "14px 16px", color: "#1e293b" }}>
+                                                            <div style={{ fontWeight: 600 }}>{q.question_text}</div>
+                                                            <div style={{ display: "flex", gap: 12, marginTop: 6, alignItems: "center" }}>
+                                                                <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 8px", borderRadius: 6, background: q.language === "English" ? "#eff6ff" : "#faf5ff", color: q.language === "English" ? "#1e40af" : "#6b21a8", border: q.language === "English" ? "1px solid #dbeafe" : "1px solid #f3e8ff" }}>
+                                                                    {q.language}
+                                                                </span>
+                                                                <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 8px", borderRadius: 6, background: q.question_type === "Rating" ? "#fffbeb" : "#ecfdf5", color: q.question_type === "Rating" ? "#92400e" : "#065f46", border: q.question_type === "Rating" ? "1px solid #fef3c7" : "1px solid #d1fae5" }}>
+                                                                    {q.question_type === "Rating" ? "Rating (0-5)" : "Text"}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td style={{ padding: "14px 16px", textAlign: "center" }}>
+                                                            <div style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                                                                {/* Move Up */}
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={idx === 0}
+                                                                    onClick={() => moveQuestionUp(idx)}
+                                                                    style={{
+                                                                        padding: 6, borderRadius: 8, border: "1.5px solid #cbd5e1",
+                                                                        background: "#fff", color: "#475569", cursor: idx === 0 ? "not-allowed" : "pointer",
+                                                                        opacity: idx === 0 ? 0.4 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center"
+                                                                    }}
+                                                                    title="Move Up"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 14, height: 14 }}>
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                                                    </svg>
+                                                                </button>
+                                                                {/* Move Down */}
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={idx === addedQuestions.length - 1}
+                                                                    onClick={() => moveQuestionDown(idx)}
+                                                                    style={{
+                                                                        padding: 6, borderRadius: 8, border: "1.5px solid #cbd5e1",
+                                                                        background: "#fff", color: "#475569", cursor: idx === addedQuestions.length - 1 ? "not-allowed" : "pointer",
+                                                                        opacity: idx === addedQuestions.length - 1 ? 0.4 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center"
+                                                                    }}
+                                                                    title="Move Down"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: 14, height: 14 }}>
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                                    </svg>
+                                                                </button>
+                                                                {/* Remove */}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleRemoveQuestion(q.id)}
+                                                                    style={{
+                                                                        background: "#fff1f2", border: "1px solid #fecdd3", color: "#be123c",
+                                                                        cursor: "pointer", display: "inline-flex", padding: 6, borderRadius: 8,
+                                                                        alignItems: "center", justifyContent: "center"
+                                                                    }}
+                                                                    title="Remove Question"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: 14, height: 14 }}>
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        {/* Form Actions */}
+                        <div style={{
+                            padding: "20px 28px", borderTop: "1px solid #e2e8f0",
+                            display: "flex", justifyContent: "flex-end", gap: 14, background: "#fafafa",
+                            borderBottomLeftRadius: 16, borderBottomRightRadius: 16
+                        }}>
+                            <button
+                                type="button"
+                                onClick={() => navigate("/admin/feedback-paper")}
+                                disabled={saving}
+                                style={{
+                                    padding: "10px 22px", borderRadius: 9, border: "1.5px solid #cbd5e1",
+                                    color: "#475569", background: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer"
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={saving || !name.trim() || addedQuestions.length === 0}
+                                style={{
+                                    padding: "10px 26px", borderRadius: 9, border: "none",
+                                    background: (saving || !name.trim() || addedQuestions.length === 0) ? "#94a3b8" : "linear-gradient(135deg,#253361,#1a2446)",
+                                    color: "#fff", fontWeight: 700, fontSize: 13,
+                                    cursor: (saving || !name.trim() || addedQuestions.length === 0) ? "not-allowed" : "pointer",
+                                    boxShadow: (saving || !name.trim() || addedQuestions.length === 0) ? "none" : "0 2px 8px rgba(37,51,97,0.35)"
+                                }}
+                            >
+                                {saving ? "Saving…" : isEditMode ? "Save Changes" : "Create Paper"}
+                            </button>
+                        </div>
+                    </form>
                 )}
-            </div>
+            </main>
         </div>
     );
 }
