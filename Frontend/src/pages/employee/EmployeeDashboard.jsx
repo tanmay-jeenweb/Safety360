@@ -603,13 +603,13 @@ export default function EmployeeDashboard() {
                                                                     </div>
                                                                     
                                                                     {/* Steps */}
-                                                                    <div className="relative flex justify-between items-center w-full z-10">
+                                                                    <div className="relative flex justify-between items-start w-full z-10">
                                                                         {getProgressSteps(training).map((step, idx) => (
-                                                                            <div key={idx} className="flex flex-col items-center">
+                                                                            <div key={idx} className="w-8 h-12 relative flex flex-col items-center">
                                                                                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-extrabold transition-all duration-300 ${step.style}`}>
                                                                                     {step.icon}
                                                                                 </div>
-                                                                                <span className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${step.labelStyle}`}>
+                                                                                <span className={`text-[10px] font-bold uppercase tracking-wider absolute bottom-0 left-1/2 -translate-x-1/2 whitespace-nowrap ${step.labelStyle}`}>
                                                                                     {step.label}
                                                                                 </span>
                                                                             </div>
@@ -623,17 +623,17 @@ export default function EmployeeDashboard() {
                                                                 {/* Left Side: Score Summaries */}
                                                                 <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-semibold bg-white px-4 py-2.5 rounded-xl border border-slate-200/60 shadow-sm w-fit">
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span className={`w-2 h-2 rounded-full ${training.preTestScore !== null ? 'bg-[#253361]' : 'bg-slate-300'}`}></span>
                                                                         <span>Pre-Validation: <strong className="text-slate-800">{training.preTestScore !== null ? `${Math.round((training.preTestScore / (training.preTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
                                                                     </div>
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${training.attendance ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span className={`w-2 h-2 rounded-full ${training.attendance ? 'bg-[#253361]' : 'bg-slate-300'}`}></span>
                                                                         <span>Attendance: <strong className="text-slate-800">{training.attendance ? 'Present' : 'Absent'}</strong></span>
                                                                     </div>
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${training.postTestScore !== null ? (training.bandBadge === 'PASSED' ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
+                                                                        <span className={`w-2 h-2 rounded-full ${training.postTestScore !== null ? 'bg-[#253361]' : 'bg-slate-300'}`}></span>
                                                                         <span>Post-Validation: <strong className="text-slate-800">{training.postTestScore !== null ? `${Math.round((training.postTestScore / (training.postTotalQuestions || 1)) * 100)}%` : 'Pending'}</strong></span>
                                                                     </div>
                                                                 </div>
@@ -768,17 +768,17 @@ export default function EmployeeDashboard() {
                                                                 {/* Left Side: Scores Summary */}
                                                                 <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 font-semibold bg-white px-4 py-2.5 rounded-xl border border-slate-200/60 shadow-sm w-fit">
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${history.preTestScore !== null ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span className={`w-2 h-2 rounded-full ${history.preTestScore !== null ? 'bg-[#253361]' : 'bg-slate-300'}`}></span>
                                                                         <span>Pre-Validation: <strong className="text-slate-800">{history.preTestScore !== null ? `${Math.round((history.preTestScore / (history.preTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
                                                                     </div>
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${history.attendance ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                                                        <span className={`w-2 h-2 rounded-full ${history.attendance ? 'bg-[#253361]' : 'bg-slate-300'}`}></span>
                                                                         <span>Attendance: <strong className="text-slate-800">{history.attendance ? 'Present' : 'Absent'}</strong></span>
                                                                     </div>
                                                                     <span className="w-px h-4 bg-slate-200 hidden md:block"></span>
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className={`w-2 h-2 rounded-full ${history.postTestScore !== null ? (isPassed ? 'bg-emerald-500' : 'bg-red-500') : 'bg-slate-300'}`}></span>
+                                                                        <span className={`w-2 h-2 rounded-full ${history.postTestScore !== null ? 'bg-[#253361]' : 'bg-slate-300'}`}></span>
                                                                         <span>Post-Validation: <strong className="text-slate-800">{history.postTestScore !== null ? `${Math.round((history.postTestScore / (history.postTotalQuestions || 1)) * 100)}%` : '-'}</strong></span>
                                                                     </div>
                                                                 </div>
