@@ -125,13 +125,16 @@ export default function CreateQuestionPaper() {
         setAddedQuestions([]);
     };
 
-    // All questions belonging to the selected training module (filtered by search term only)
+    // All questions belonging to the selected training module and matching the exam type
     const availableFiltered = useMemo(() => {
         if (!moduleId) return [];
         let qs = allBankQuestions;
 
         // Filter by module (uses paper's selected moduleId directly)
-        qs = qs.filter(q => q.module_id === parseInt(moduleId));
+        qs = qs.filter(q => Array.isArray(q.modules) && q.modules.some(m => m.id === parseInt(moduleId)));
+
+        // Filter by exam type / valuation type
+        qs = qs.filter(q => q.valuation_type === "Both" || q.valuation_type === examType);
 
         // Filter by search term
         if (searchTerm.trim()) {
@@ -139,12 +142,12 @@ export default function CreateQuestionPaper() {
             qs = qs.filter(q => 
                 (q.question_text && q.question_text.toLowerCase().includes(term)) ||
                 (q.question_type && q.question_type.toLowerCase().includes(term)) ||
-                (q.module_name && q.module_name.toLowerCase().includes(term))
+                (q.modules && q.modules.some(m => m.name && m.name.toLowerCase().includes(term)))
             );
         }
 
         return qs;
-    }, [allBankQuestions, moduleId, searchTerm]);
+    }, [allBankQuestions, moduleId, examType, searchTerm]);
 
     const isAllSelected = useMemo(() => {
         return availableFiltered.length > 0 && 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Navbar from "../../../components/Navbar";
 import { getTrainingModules } from "../../../api/trainingModuleApi";
 import { createQuestion, getQuestionById, updateQuestion } from "../../../api/questionBankApi";
@@ -15,12 +15,18 @@ export default function CreateQuestion() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
-    const [moduleId, setModuleId] = useState("");
+    const [selectedModuleIds, setSelectedModuleIds] = useState([]);
+    const [valuationType, setValuationType] = useState("Both");
     const [language, setLanguage] = useState("English");
     const [questionType, setQuestionType] = useState("MCQ");
     const [questionText, setQuestionText] = useState("");
     const [options, setOptions] = useState(["", ""]);
     const [correctAnswer, setCorrectAnswer] = useState("");
+
+    // Custom modules dropdown state
+    const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState(false);
+    const [moduleSearchTerm, setModuleSearchTerm] = useState("");
+    const moduleDropdownRef = useRef(null);
 
     useEffect(() => {
         const fetchModules = async () => {
@@ -43,7 +49,8 @@ export default function CreateQuestion() {
                     const res = await getQuestionById(id);
                     const q = res.data.data;
                     if (q) {
-                        setModuleId(q.module_id || "");
+                        setSelectedModuleIds(Array.isArray(q.modules) ? q.modules.map(m => m.id) : (q.module_id ? [q.module_id] : []));
+                        setValuationType(q.valuation_type || "Both");
                         setLanguage(q.language || "English");
                         setQuestionType(q.question_type || "MCQ");
                         setQuestionText(q.question_text || "");
@@ -64,6 +71,24 @@ export default function CreateQuestion() {
             fetchQuestionDetails();
         }
     }, [id, isEditMode]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (moduleDropdownRef.current && !moduleDropdownRef.current.contains(event.target)) {
+                setIsModuleDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const filteredModules = useMemo(() => {
+        if (!moduleSearchTerm.trim()) return modules;
+        const term = moduleSearchTerm.toLowerCase();
+        return modules.filter(m => m.module_name && m.module_name.toLowerCase().includes(term));
+    }, [modules, moduleSearchTerm]);
 
     const handleQuestionTypeChange = (newType) => {
         setQuestionType(newType);
@@ -108,8 +133,8 @@ export default function CreateQuestion() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!moduleId) {
-            toast.error("Please select a Module Association");
+        if (selectedModuleIds.length === 0) {
+            toast.error("Please select at least one Module Association");
             return;
         }
         if (!questionText.trim()) {
@@ -142,7 +167,8 @@ export default function CreateQuestion() {
         }
 
         const data = {
-            moduleId,
+            moduleIds: selectedModuleIds,
+            valuationType,
             language,
             questionType,
             questionText: questionText.trim(),
@@ -212,24 +238,126 @@ export default function CreateQuestion() {
                                     1. Configuration
                                 </h3>
 
-                                <div className="grid grid-cols-2 gap-5">
+                                <div className="grid grid-cols-3 gap-5">
                                     {/* Module Association */}
-                                    <div>
+                                    <div className="relative" ref={moduleDropdownRef}>
                                         <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
                                             Module Association <span className="text-[#e11d48]">*</span>
                                         </label>
+                                        <div
+                                            onClick={() => setIsModuleDropdownOpen(!isModuleDropdownOpen)}
+                                            className="flex justify-between items-center w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] bg-white cursor-pointer select-none transition-colors duration-200"
+                                        >
+                                            <span className={selectedModuleIds.length === 0 ? "text-[#94a3b8]" : "text-[#1e293b] font-medium"}>
+                                                {selectedModuleIds.length === 0
+                                                    ? "Select Modules..."
+                                                    : `${selectedModuleIds.length} selected`}
+                                            </span>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className={`w-[16px] h-[16px] text-[#64748b] transition-transform duration-200 ${isModuleDropdownOpen ? "rotate-180" : ""}`}
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </div>
+
+                                        {isModuleDropdownOpen && (
+                                            <div className="absolute top-[100%] left-0 right-0 mt-1.5 bg-white border border-[#cbd5e1] rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),_0_8px_10px_-6px_rgba(0,0,0,0.1)] z-[1000] overflow-hidden flex flex-col">
+                                                <div className="p-2 border-b border-[#e2e8f0] relative bg-[#f8fafc]">
+                                                    <input
+                                                        type="text"
+                                                        value={moduleSearchTerm}
+                                                        onChange={(e) => setModuleSearchTerm(e.target.value)}
+                                                        placeholder="Search modules..."
+                                                        className="w-full box-border border border-[#cbd5e1] rounded-lg py-1.5 px-2.5 pl-7 text-[12px] outline-none text-[#1e293b] bg-white focus:border-[#253361] transition-colors"
+                                                    />
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                        stroke="currentColor"
+                                                        className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#94a3b8]"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.602 10.602z" />
+                                                    </svg>
+                                                </div>
+
+                                                {filteredModules.length > 0 && (
+                                                    <div className="flex items-center px-3 py-1.5 border-b border-[#e2e8f0] bg-[#f1f5f9] text-[11px] font-bold text-[#475569]">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={filteredModules.every(m => selectedModuleIds.includes(m.id))}
+                                                            onChange={() => {
+                                                                const allFilteredSelected = filteredModules.every(m => selectedModuleIds.includes(m.id));
+                                                                if (allFilteredSelected) {
+                                                                    const filteredIds = filteredModules.map(m => m.id);
+                                                                    setSelectedModuleIds(prev => prev.filter(id => !filteredIds.includes(id)));
+                                                                } else {
+                                                                    const idsToAdd = filteredModules.map(m => m.id).filter(id => !selectedModuleIds.includes(id));
+                                                                    setSelectedModuleIds(prev => [...prev, ...idsToAdd]);
+                                                                }
+                                                            }}
+                                                            className="w-3.5 h-3.5 mr-2 accent-[#253361] cursor-pointer"
+                                                        />
+                                                        <span>Select All Filtered ({filteredModules.length})</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="max-h-[160px] overflow-y-auto">
+                                                    {filteredModules.length === 0 ? (
+                                                        <div className="text-center p-3 text-[#94a3b8] text-[12px]">No modules found</div>
+                                                    ) : (
+                                                        filteredModules.map((m) => {
+                                                            const isChecked = selectedModuleIds.includes(m.id);
+                                                            return (
+                                                                <div
+                                                                    key={m.id}
+                                                                    onClick={() => {
+                                                                        if (isChecked) {
+                                                                            setSelectedModuleIds(prev => prev.filter(id => id !== m.id));
+                                                                        } else {
+                                                                            setSelectedModuleIds(prev => [...prev, m.id]);
+                                                                        }
+                                                                    }}
+                                                                    className={`flex items-center px-3 py-2 border-b border-[#f1f5f9] cursor-pointer hover:bg-[#f8fafc] transition-colors select-none ${isChecked ? "bg-[#f0f4ff]" : ""}`}
+                                                                >
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={isChecked}
+                                                                        onChange={() => {}}
+                                                                        className="w-3.5 h-3.5 mr-2 accent-[#253361] cursor-pointer flex-shrink-0"
+                                                                    />
+                                                                    <span className={`text-[12.5px] ${isChecked ? "text-[#253361] font-semibold" : "text-[#1e293b] font-medium"}`}>
+                                                                        {m.module_name}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Valuation Type */}
+                                    <div>
+                                        <label className="block text-[13px] font-bold text-[#475569] mb-1.5">
+                                            Valuation Type <span className="text-[#e11d48]">*</span>
+                                        </label>
                                         <select
-                                            value={moduleId}
-                                            onChange={(e) => setModuleId(e.target.value)}
+                                            value={valuationType}
+                                            onChange={(e) => setValuationType(e.target.value)}
                                             className="w-full box-border border-[1.5px] border-[#cbd5e1] rounded-[9px] py-[11px] px-[14px] text-[14px] outline-none text-[#1e293b] bg-white focus:border-[#253361] transition-colors duration-200"
                                             required
                                         >
-                                            <option value="">Select Training Module...</option>
-                                            {modules.map((m) => (
-                                                <option key={m.id} value={m.id}>
-                                                    {m.module_name}
-                                                </option>
-                                            ))}
+                                            <option value="Both">Both (Pre & Post)</option>
+                                            <option value="Pre">Pre-Validation</option>
+                                            <option value="Post">Post-Validation</option>
                                         </select>
                                     </div>
 
