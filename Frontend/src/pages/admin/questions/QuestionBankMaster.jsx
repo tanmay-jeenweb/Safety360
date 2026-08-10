@@ -260,7 +260,7 @@ export default function QuestionBankMaster() {
 
                     // Map multiple module names to module IDs
                     const moduleNames = String(moduleNamesRaw)
-                        .split(/[;,]/)
+                        .split(";")
                         .map(m => m.trim())
                         .filter(Boolean);
 
